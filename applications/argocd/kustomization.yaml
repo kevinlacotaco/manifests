@@ -8,6 +8,7 @@ resources:
 
 configMapGenerator:
   - name: argocd-cmd-params-cm
+    namespace: argocd
     behavior: merge
     literals:
       - "server.insecure=true"
