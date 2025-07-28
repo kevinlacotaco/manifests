@@ -10,7 +10,7 @@ spec:
     namespace: synology-csi
   sources:
     - repoURL: https://christian-schlichtherle.github.io/synology-csi-chart
-      chart: synology-csi-chart
+      chart: synology-csi
       targetRevision: 0.10.1
   syncPolicy:
     syncOptions:
