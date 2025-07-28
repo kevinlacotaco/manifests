@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - synology-csi.yaml
+  - client-info-sealedsecret.yaml
