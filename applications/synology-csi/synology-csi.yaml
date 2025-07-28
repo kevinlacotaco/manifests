@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: synology-csi
+  namespace: synology-csi
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: synology-csi
+  sources:
+    - repoUrl: https://christian-schlichtherle.github.io/synology-csi-chart
+      chart: synology-csi-chart
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true
