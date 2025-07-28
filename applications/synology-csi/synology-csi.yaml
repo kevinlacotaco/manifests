@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: synology-csi
   sources:
-    - repoUrl: https://christian-schlichtherle.github.io/synology-csi-chart
+    - repoURL: https://christian-schlichtherle.github.io/synology-csi-chart
       chart: synology-csi-chart
       targetRevision: 0.10.1
   syncPolicy:
