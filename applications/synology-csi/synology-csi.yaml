@@ -11,6 +11,7 @@ spec:
   sources:
     - repoUrl: https://christian-schlichtherle.github.io/synology-csi-chart
       chart: synology-csi-chart
+      targetRevision: 0.10.1
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
