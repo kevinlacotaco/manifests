@@ -14,6 +14,17 @@ spec:
         server:
           service:
             type: ClusterIP
+         extraScrapeConfigs:
+           - job_name: 'argocd'
+             static_configs:
+               - targets:
+                 - argocd-server.argocd.svc:8082
+             kubernetes_sd_configs:
+               - role: endpoints
+             relabel_configs:
+               - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+                 action: keep
+                 regex: argocd;argocd-metrics;metrics
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
