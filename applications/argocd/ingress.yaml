@@ -3,6 +3,9 @@ kind: IngressRoute
 metadata:
   name: argo-server
   namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+    argocd.argoproj.io/instance: applications
 spec:
   entryPoints:
     - argocd
