@@ -14,6 +14,17 @@ spec:
         adminPassword: "admin"
         service:
           type: ClusterIP
+        ingress:
+          enabled: true
+          annotations:
+            kubernetes.io/ingress.class: traefik
+          hosts:
+            - host: boulder.local
+              paths:
+                - path: /
+                  pathType: Prefix
+                  port: 8082
+          tls: []
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
