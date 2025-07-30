@@ -9,7 +9,7 @@ spec:
     namespace: default
     server: https://kubernetes.default.svc
   source:
-    repoURL: https://github.com/kevinlacotaco/manifests
+    repoURL: git@github.com:kevinlacotaco/manifests.git
     targetRevision: HEAD
     path: applications
   syncPolicy:
