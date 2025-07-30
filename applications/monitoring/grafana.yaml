@@ -14,18 +14,6 @@ spec:
         adminPassword: "admin"
         service:
           type: ClusterIP
-        ingress:
-          enabled: true
-          ingressClassName: nginx
-          annotations:
-            kubernetes.io/ingress.class: nginx
-          hosts:
-            - host: boulder.local
-              paths:
-                - path: /
-                  pathType: Prefix
-                  port: 8082
-          tls: []
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
