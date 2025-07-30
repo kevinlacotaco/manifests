@@ -18,8 +18,8 @@ spec:
           - job_name: 'argocd'
             static_configs:
               - targets:
-                - argo-argocd-application-controller-metrics.argocd.svc:8082/metrics
-                - argo-argocd-server-metrics.argocd.svc:8083/metrics
+                - argo-argocd-application-controller-metrics.argocd.svc:8082
+                - argo-argocd-server-metrics.argocd.svc:8083
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
