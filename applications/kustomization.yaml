@@ -6,3 +6,4 @@ resources:
   - argocd
   - sealed-secrets
   - synology-csi
+  - monitoring
