@@ -1,0 +1,25 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--api.insecure=true"
+    ingressRoute:
+      dashboard:
+        enabled: true
+    ports:
+      argocd:
+        port: 8081
+        expose:
+          default: true
+        exposedPort: 8081
+        protocol: TCP
+      traefik:
+        port: 8080
+        expose:
+          default: true
+        exposedPort: 8080
+        protocol: TCP
