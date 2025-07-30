@@ -28,6 +28,12 @@ spec:
         controller:
           metrics:
             enabled: true
+        repoServer:
+          metrics:
+            enabled: true
+        applicationSet:
+          metrics:
+            enabled: true
   syncPolicy:
     automated: {}
     syncOptions:
