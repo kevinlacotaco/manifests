@@ -18,6 +18,9 @@ spec:
         configs:
           params:
             server.insecure: "true"
+        server:
+          metrics:
+            enabled: true
   syncPolicy:
     automated: {}
     syncOptions:
