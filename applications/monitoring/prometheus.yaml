@@ -14,10 +14,11 @@ spec:
         server:
           service:
             type: ClusterIP
-         extraScrapeConfigs:
-           - job_name: 'argocd'
-             static_configs:
-               - targets: ['argocd-server.argocd.svc:8082']
+        extraScrapeConfigs:
+          - job_name: 'argocd'
+            static_configs:
+              - targets:
+                - argocd-server.argocd.svc:8082
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
