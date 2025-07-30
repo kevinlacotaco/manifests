@@ -16,7 +16,7 @@ spec:
       releaseName: argo
       values: |
         global:
-          domain: boulder-test.local
+          domain: boulder.local
         configs:
           params:
             server.insecure: "true"
