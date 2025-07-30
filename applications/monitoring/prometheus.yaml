@@ -17,8 +17,7 @@ spec:
          extraScrapeConfigs:
            - job_name: 'argocd'
              static_configs:
-               - targets:
-                 - argocd-server.argocd.svc:8082
+               - targets: ['argocd-server.argocd.svc:8082']
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
