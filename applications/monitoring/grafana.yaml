@@ -16,8 +16,9 @@ spec:
           type: ClusterIP
         ingress:
           enabled: true
+          ingressClassName: nginx
           annotations:
-            kubernetes.io/ingress.class: traefik
+            kubernetes.io/ingress.class: nginx
           hosts:
             - host: boulder.local
               paths:
