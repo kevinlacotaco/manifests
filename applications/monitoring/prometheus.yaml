@@ -14,7 +14,7 @@ spec:
         server:
           service:
             type: ClusterIP
-        extraScrapeConfigs:
+        extraScrapeConfigs: |
           - job_name: 'argocd'
             static_configs:
               - targets:
