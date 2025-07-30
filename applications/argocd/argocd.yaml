@@ -19,6 +19,7 @@ spec:
       values: |
         global:
           domain: boulder.local
+          addPrometheusAnnotations: true
         configs:
           params:
             server.insecure: "true"
