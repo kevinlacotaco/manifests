@@ -6,7 +6,7 @@ metadata:
 data:
   hoist.server: |
     hoist.local:53 {
-      hosts custom.hosts {
+      hosts {
         192.168.68.138 hoist.local
         fallthrough
       }
