@@ -5,8 +5,8 @@ metadata:
   namespace: kube-system
 data:
   Corefile.override: |
-    hoist.local:53 {
-      hosts {
+    .:53 {
+      hosts custom.hosts {
         192.168.68.138 hoist.local
         fallthrough
       }
