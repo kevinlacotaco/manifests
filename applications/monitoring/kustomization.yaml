@@ -5,3 +5,4 @@ resources:
   - grafana.yaml
   - grafana-ingress.yaml
   - prometheus.yaml
+  - loki.yaml
