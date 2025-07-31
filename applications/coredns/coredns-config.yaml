@@ -4,7 +4,5 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 data:
-  Corefile.override: |
-    log hoist.local
   NodeHosts: |
     192.168.68.138 hoist.local
