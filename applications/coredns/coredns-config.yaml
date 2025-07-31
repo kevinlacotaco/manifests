@@ -4,8 +4,10 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 data:
-  Corefile.override: |
-    hosts custom.hosts {
-      192.168.68.138 hoist.local
-      fallthrough
+  hoist.server: |
+    hoist.local:53 {
+      hosts custom.hosts {
+        192.168.68.138 hoist.local
+        fallthrough
+      }
     }
