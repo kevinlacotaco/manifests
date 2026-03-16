@@ -16,6 +16,12 @@ spec:
         values: |
           clientInfoSecret:
             name: 0.10.1-client-info
+
+          nfs:
+            enabled: true
+
+          iscsi:
+            enabled: true
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
