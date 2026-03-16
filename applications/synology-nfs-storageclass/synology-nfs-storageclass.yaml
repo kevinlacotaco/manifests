@@ -4,7 +4,7 @@ metadata:
   annotations:
     storageclass.kubernetes.io/is-default-class: 'false'
   name: synology-nfs
-provisioner: csi.nfs.synology.com
+provisioner: csi.san.synology.com
 parameters:
   server: 192.168.68.138
   share: /volume1/kubernetes
