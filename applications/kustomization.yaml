@@ -9,3 +9,5 @@ resources:
   - monitoring
   - traefik
   - coredns
+  - synology-nfs-storageclass
+  - synology-pvc
