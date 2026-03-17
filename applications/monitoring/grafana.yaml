@@ -16,7 +16,10 @@ spec:
           type: ClusterIP
         persistence:
           enabled: true
-          volumeName: grafana-pvc
+          type: pvc
+          storageClassName: synology-nfs-storageclass
+          accessModes:
+            - ReadWriteMany
           size: 10Gi
   destination:
     server: https://kubernetes.default.svc
