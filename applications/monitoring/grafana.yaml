@@ -17,7 +17,7 @@ spec:
         persistence:
           enabled: true
           type: pvc
-          storageClassName: synology-nfs-storageclass
+          storageClassName: synology-nfs
           accessModes:
             - ReadWriteMany
           size: 10Gi
