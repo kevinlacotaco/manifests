@@ -3,12 +3,12 @@ kind: StorageClass
 metadata:
   annotations:
     storageclass.kubernetes.io/is-default-class: 'false'
-  name: synology-nfs
+  name: synology-iscsi
 provisioner: csi.san.synology.com
 parameters:
   dsm: 192.168.68.138
-  location: /volume1/kubernetes
-  mountPermissions: "0755"
-  protocol: "nfs"
+  location: /volume1/k8s-iscsi
+  protocol: "iscsi"
+  fsType: "btrfs"
 reclaimPolicy: Retain
 allowVolumeExpansion: true
