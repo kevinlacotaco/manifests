@@ -10,5 +10,7 @@ parameters:
   location: /volume1/kubernetes
   mountPermissions: "0777"
   protocol: "nfs"
+mountOptions:
+  - nfsvers=4.1
 reclaimPolicy: Retain
 allowVolumeExpansion: true
