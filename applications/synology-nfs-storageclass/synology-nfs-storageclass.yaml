@@ -8,7 +8,7 @@ provisioner: csi.san.synology.com
 parameters:
   dsm: 192.168.68.138
   location: /volume1/kubernetes
-  mountPermissions: "0755"
+  mountPermissions: "0777"
   protocol: "nfs"
 reclaimPolicy: Retain
 allowVolumeExpansion: true
