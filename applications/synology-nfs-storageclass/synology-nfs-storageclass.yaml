@@ -11,6 +11,6 @@ parameters:
   mountPermissions: "0777"
   protocol: "nfs"
 mountOptions:
-  - nfsvers=4.1
+  - vers=4.1
 reclaimPolicy: Retain
 allowVolumeExpansion: true
