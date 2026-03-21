@@ -7,8 +7,8 @@ metadata:
 provisioner: csi.san.synology.com
 parameters:
   dsm: 192.168.68.138
-  location: /volume1/kube
-  mountPermissions: "0777"
+  location: /volume1/kubernetes
+  mountPermissions: "0755"
   protocol: "nfs"
 mountOptions:
   - vers=4.1
