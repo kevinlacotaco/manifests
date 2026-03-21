@@ -21,6 +21,8 @@ spec:
           accessModes:
             - ReadWriteMany
           size: 10Gi
+        podSecurityContext:
+          fsGroup: 472
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
