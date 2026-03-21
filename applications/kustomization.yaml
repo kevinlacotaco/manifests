@@ -10,4 +10,5 @@ resources:
   - traefik
   - coredns
   - synology-nfs-storageclass
+  - synology-iscsi-storageclass
   - synology-pvc
