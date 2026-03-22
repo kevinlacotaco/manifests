@@ -22,12 +22,10 @@ spec:
             - ReadWriteMany
           size: 10Gi
         securityContext:
-          runAsUser: 1025
-          runAsGroup: 100
-          fsGroup: 100
+          runAsUser: 472
           fsGroupChangePolicy: "OnRootMismatch"
         initChownData:
-          enabled: false
+          enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
