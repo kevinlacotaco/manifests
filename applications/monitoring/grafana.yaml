@@ -22,9 +22,9 @@ spec:
             - ReadWriteMany
           size: 10Gi
         securityContext:
-          runAsUser: 472
-          runAsGroup: 472
-          fsGroup: 472
+          runAsUser: 1025
+          runAsGroup: 100
+          fsGroup: 100
           fsGroupChangePolicy: "OnRootMismatch"
         initChownData:
           enabled: false
