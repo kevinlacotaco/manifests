@@ -14,11 +14,11 @@ spec:
         deploymentMode: SingleBinary
         loki:
           auth_enabled: false
-        storage:
-          type: filesystem
-          bucketNames:
-            chunks: chunks
-            ruler: ruler
+          storage:
+            type: filesystem
+            bucketNames:
+              chunks: chunks
+              ruler: ruler
         singleBinary:
           replicas: 1
         service:
