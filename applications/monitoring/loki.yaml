@@ -11,6 +11,7 @@ spec:
     chart: loki
     helm:
       values: |
+        deploymentMode: SingleBinary
         loki:
           auth_enabled: false
           storage:
