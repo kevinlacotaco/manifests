@@ -27,10 +27,6 @@ spec:
             size: 20Gi
             storageClass: synology-iscsi
 
-        read: {}
-        write: {}
-        backend: {}
-
         service:
           type: ClusterIP
   destination:
