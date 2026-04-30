@@ -7,8 +7,9 @@ metadata:
 provisioner: csi.san.synology.com
 parameters:
   dsm: 192.168.68.138
-  location: /volume1/k8s-iscsi
+  location: /volume1
   protocol: "iscsi"
-  fsType: "btrfs"
+  fsType: "ext4"
 reclaimPolicy: Retain
 allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
