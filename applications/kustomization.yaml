@@ -12,3 +12,4 @@ resources:
   - synology-nfs-storageclass
   - synology-iscsi-storageclass
   - synology-pvc
+  - nfs-subdir-external-provisioner

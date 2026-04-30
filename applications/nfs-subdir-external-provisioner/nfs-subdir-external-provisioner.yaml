@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nfs-subdir-provisioner
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+    chart: nfs-subdir-external-provisioner
+    targetRevision: 4.0.18
+
+    helm:
+      values: |
+        nfs:
+          server: 192.168.68.138
+          path: /volume1/k8s-nfs
+
+        storageClass:
+          name: synology-nfs-subdir
+          defaultClass: true
+          accessModes: ReadWriteMany
+          reclaimPolicy: Retain
+
+        podSecurityContext:
+          fsGroup: 1000
+
+        securityContext:
+          runAsUser: 1000
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nfs-provisioner
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
