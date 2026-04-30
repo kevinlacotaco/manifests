@@ -12,4 +12,3 @@ parameters:
   fsType: "ext4"
 reclaimPolicy: Retain
 allowVolumeExpansion: true
-volumeBindingMode: WaitForFirstConsumer
