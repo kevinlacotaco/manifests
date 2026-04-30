@@ -16,17 +16,21 @@ spec:
           auth_enabled: false
           storage:
             type: filesystem
-            bucketNames:
-              chunks: chunks
-              ruler: ruler
+          storage_config:
+            filesystem:
+              directory: /var/loki/chunks
+
         singleBinary:
           replicas: 1
-        read:
-          replicas: 0
-        write:
-          replicas: 0
-        backend:
-          replicas: 0
+          persistence:
+            enabled: true
+            size: 20Gi
+            storageClass: synology-iscsi
+
+        read: {}
+        write: {}
+        backend: {}
+
         service:
           type: ClusterIP
   destination:
