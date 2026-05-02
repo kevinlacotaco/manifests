@@ -23,11 +23,27 @@ spec:
             - sh
             - -c
             - |
+              set -eux
+
+              echo "===== INIT: START CONFIG RENDER ====="
+
+              echo "--- base.yaml ---"
+              cat /base/base.yaml || echo "missing base.yaml"
+
+              echo "--- users.yaml (redacted preview) ---"
+              sed 's/password:.*/password: [REDACTED]/' /secret/users.yaml || echo "missing users.yaml"
+
+              echo "--- file merge step ---"
               mkdir -p /config
-              echo "" > /config/AdGuardHome.yaml
-              cat /base/base.yaml >> /config/AdGuardHome.yaml
+
+              cat /base/base.yaml > /config/AdGuardHome.yaml
               echo "" >> /config/AdGuardHome.yaml
               cat /secret/users.yaml >> /config/AdGuardHome.yaml
+
+              echo "--- final merged config (sanitized) ---"
+              sed 's/password:.*/password: [REDACTED]/' /config/AdGuardHome.yaml
+
+              echo "===== INIT: DONE ====="
           volumeMounts:
             - name: base-config
               mountPath: /base
