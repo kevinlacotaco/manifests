@@ -8,17 +8,7 @@ spec:
   selector:
     app: adguard-home
   ports:
-    - name: dns-udp
-      port: 53
-      targetPort: 53
-      protocol: UDP
-      nodePort: 30915
 
-    - name: dns-tcp
-      port: 53
-      targetPort: 53
-      protocol: TCP
-      nodePort: 30916
 
     - name: web
       port: 3000
