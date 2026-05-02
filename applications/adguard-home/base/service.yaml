@@ -9,8 +9,7 @@ spec:
     app: adguard-home
   ports:
 
-
     - name: web
-      port: 3000
+      port: 3001
       targetPort: 3000
       nodePort: 31628
