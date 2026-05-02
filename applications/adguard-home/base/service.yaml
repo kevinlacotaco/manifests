@@ -18,7 +18,7 @@ spec:
       port: 53
       targetPort: 53
       protocol: TCP
-      nodePort: 30053
+      nodePort: 30054
 
     - name: web
       port: 80
