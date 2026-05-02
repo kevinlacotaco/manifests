@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguard-home
+  namespace: networking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adguard-home
+  template:
+    metadata:
+      labels:
+        app: adguard-home
+    spec:
+      securityContext:
+        fsGroup: 1000
+
+      initContainers:
+        - name: render-config
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /config
+              cat /base/base.yaml /secret/users.yaml > /config/AdGuardHome.yaml
+          volumeMounts:
+            - name: base-config
+              mountPath: /base
+            - name: secret-config
+              mountPath: /secret
+            - name: config
+              mountPath: /config
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+      containers:
+        - name: adguard-home
+          image: adguard/adguardhome:latest
+          ports:
+            - containerPort: 53
+              protocol: UDP
+            - containerPort: 53
+              protocol: TCP
+            - containerPort: 3000
+              name: web
+
+          volumeMounts:
+            - name: config
+              mountPath: /opt/adguardhome/conf/AdGuardHome.yaml
+              subPath: AdGuardHome.yaml
+
+            - name: data
+              mountPath: /opt/adguardhome/work
+
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+      volumes:
+        - name: base-config
+          configMap:
+            name: adguard-base-config
+
+        - name: secret-config
+          secret:
+            secretName: adguard-secret
+
+        - name: config
+          emptyDir: {}
+
+        - name: data
+          persistentVolumeClaim:
+            claimName: adguard-home-pvc
