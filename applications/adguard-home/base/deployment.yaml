@@ -24,7 +24,10 @@ spec:
             - -c
             - |
               mkdir -p /config
-              cat /base/base.yaml /secret/users.yaml > /config/AdGuardHome.yaml
+              echo "" > /config/AdGuardHome.yaml
+              cat /base/base.yaml >> /config/AdGuardHome.yaml
+              echo "" >> /config/AdGuardHome.yaml
+              cat /secret/users.yaml >> /config/AdGuardHome.yaml
           volumeMounts:
             - name: base-config
               mountPath: /base
