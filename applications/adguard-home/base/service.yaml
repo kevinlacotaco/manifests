@@ -4,7 +4,7 @@ metadata:
   name: adguard-home
   namespace: networking
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: adguard-home
   ports:
@@ -12,15 +12,12 @@ spec:
       port: 53
       targetPort: 53
       protocol: UDP
-      nodePort: 30053
 
     - name: dns-tcp
       port: 53
       targetPort: 53
       protocol: TCP
-      nodePort: 30054
 
     - name: web
       port: 80
       targetPort: 3000
-      nodePort: 30081
