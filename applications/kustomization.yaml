@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - applications.yaml
-  - adguard-home/overlays/home
+  - adguard-home
   - argocd
   - sealed-secrets
   - synology-csi
