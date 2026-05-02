@@ -73,8 +73,7 @@ spec:
 
           volumeMounts:
             - name: config
-              mountPath: /opt/adguardhome/conf/AdGuardHome.yaml
-              subPath: AdGuardHome.yaml
+              mountPath: /opt/adguardhome/conf
 
             - name: data
               mountPath: /opt/adguardhome/work
