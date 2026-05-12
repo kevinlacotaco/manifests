@@ -5,5 +5,6 @@ commonLabels:
   infrastructure.io/component: storage
 
 resources:
+  - namespace.yaml
   - synology-csi.yaml
   - client-info-sealedsecret.yaml

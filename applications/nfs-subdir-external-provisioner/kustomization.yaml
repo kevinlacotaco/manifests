@@ -5,4 +5,5 @@ commonLabels:
   infrastructure.io/component: storage
 
 resources:
+  - namespace.yaml
   - nfs-subdir-external-provisioner.yaml

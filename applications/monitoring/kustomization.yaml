@@ -5,6 +5,7 @@ commonLabels:
   infrastructure.io/component: observability
 
 resources:
+  - namespace.yaml
   - grafana.yaml
   - grafana-ingress.yaml
   - prometheus.yaml

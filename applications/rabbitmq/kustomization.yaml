@@ -5,6 +5,7 @@ commonLabels:
   infrastructure.io/component: messaging
 
 resources:
+  - namespace.yaml
   - rabbitmq.yaml
   - rabbitmq-sealed-secret.yaml
   - rabbitmq-configmap.yaml

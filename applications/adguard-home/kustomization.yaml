@@ -5,4 +5,5 @@ commonLabels:
   infrastructure.io/component: dns
 
 resources:
+  - namespace.yaml
   - adguard-home.yaml
