@@ -11,6 +11,10 @@ spec:
     chart: grafana
     helm:
       values: |
+        podLabels:
+          app.kubernetes.io/name: grafana
+          app.kubernetes.io/version: "7.3.7"
+          app.kubernetes.io/component: observability
         adminPassword: "admin"
         service:
           type: ClusterIP
