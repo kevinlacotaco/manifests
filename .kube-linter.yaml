@@ -1,0 +1,15 @@
+# kube-linter configuration
+# Reference: https://docs.kubelinter.io/
+
+checks:
+  addAllBuiltIn: true
+
+excludedChecks:
+  # Add checks you want to exclude here
+  # Example:
+  # - "privileged-ports"
+  # - "run-as-non-root"
+
+doNotAutoAddDefaults: false
+
+customChecks: []

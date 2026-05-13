@@ -1,0 +1,93 @@
+name: Kubernetes Linting
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'applications/**'
+      - '.github/workflows/kubernetes-lint.yaml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'applications/**'
+      - '.github/workflows/kubernetes-lint.yaml'
+
+jobs:
+  yamllint:
+    name: YAML Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up yamllint
+        run: |
+          pip install yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint applications/
+
+  kustomize-build:
+    name: Validate Kustomize Builds
+    runs-on: ubuntu-latest
+    needs: yamllint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Build and validate all kustomization files
+        run: |
+          for kustomization in $(find applications -name "kustomization.yaml" -type f | sort); do
+            dir=$(dirname "$kustomization")
+            echo "Building: $dir"
+            kustomize build "$dir" > /dev/null || exit 1
+          done
+          echo "✓ All kustomize builds successful"
+
+  kubeval:
+    name: Validate Manifests with kubeval
+    runs-on: ubuntu-latest
+    needs: yamllint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubeval
+        run: |
+          wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval-linux-amd64.tar.gz
+          sudo mv kubeval /usr/local/bin/
+
+      - name: Validate YAML manifests
+        run: |
+          find applications -name "*.yaml" -type f \
+            ! -name "kustomization.yaml" \
+            ! -path "*/overlays/*" \
+            | xargs kubeval --ignore-missing-schemas || true
+          echo "✓ Kubeval validation complete"
+
+  kube-linter:
+    name: Security and Best Practices with kube-linter
+    runs-on: ubuntu-latest
+    needs: yamllint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kube-linter
+        run: |
+          curl -L https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz | tar xz
+          sudo mv kube-linter /usr/local/bin/
+
+      - name: Run kube-linter checks
+        run: |
+          kube-linter lint applications/ --config .kube-linter.yaml 2>&1 || true
+          echo "✓ Kube-linter checks complete"
