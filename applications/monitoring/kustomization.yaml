@@ -6,6 +6,7 @@ commonLabels:
 
 resources:
   - namespace.yaml
+  - grafana-admin-sealed-secret.yaml
   - grafana.yaml
   - grafana-ingress.yaml
   - prometheus.yaml

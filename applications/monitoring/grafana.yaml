@@ -15,7 +15,10 @@ spec:
           app.kubernetes.io/name: grafana
           app.kubernetes.io/version: "7.3.7"
           app.kubernetes.io/component: observability
-        adminPassword: "admin"
+        admin:
+          existingSecret: grafana-admin-credentials
+          userKey: admin-user
+          passwordKey: admin-password
         service:
           type: ClusterIP
         persistence:
