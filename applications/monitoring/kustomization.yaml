@@ -9,5 +9,6 @@ resources:
   - grafana-admin-sealed-secret.yaml
   - grafana.yaml
   - grafana-ingress.yaml
+  - grafana-network-policy.yaml
   - prometheus.yaml
   - loki.yaml
