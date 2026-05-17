@@ -7,9 +7,9 @@ spec:
   project: default
 
   source:
-    repoURL: https://charts.bitnami.com/bitnami
+    repoURL: https://charts.rabbitmq.com
     chart: rabbitmq-cluster-operator
-    targetRevision: 4.4.19
+    targetRevision: 4.6.0
 
   destination:
     server: https://kubernetes.default.svc
