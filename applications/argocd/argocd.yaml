@@ -26,31 +26,15 @@ spec:
         server:
           metrics:
             enabled: true
-          podLabels:
-            app.kubernetes.io/name: argocd-server
-            app.kubernetes.io/version: "7.7.12"
-            app.kubernetes.io/component: gitops
         controller:
           metrics:
             enabled: true
-          podLabels:
-            app.kubernetes.io/name: argocd-controller
-            app.kubernetes.io/version: "7.7.12"
-            app.kubernetes.io/component: gitops
         repoServer:
           metrics:
             enabled: true
-          podLabels:
-            app.kubernetes.io/name: argocd-repo-server
-            app.kubernetes.io/version: "7.7.12"
-            app.kubernetes.io/component: gitops
         applicationSet:
           metrics:
             enabled: true
-          podLabels:
-            app.kubernetes.io/name: argocd-applicationset
-            app.kubernetes.io/version: "7.7.12"
-            app.kubernetes.io/component: gitops
   syncPolicy:
     automated: {}
     syncOptions:
