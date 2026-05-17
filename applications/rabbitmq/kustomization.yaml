@@ -6,6 +6,7 @@ commonLabels:
 
 resources:
   - namespace.yaml
+  - rabbitmq-operator.yaml
   - rabbitmq.yaml
   - rabbitmq-sealed-secret.yaml
   - rabbitmq-configmap.yaml

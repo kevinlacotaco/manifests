@@ -1,28 +1,23 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
 metadata:
   name: rabbitmq
-  namespace: argocd
+  namespace: messaging
 spec:
-  project: default
+  replicas: 1
 
-  source:
-    repoURL: https://charts.bitnami.com/bitnami
-    chart: rabbitmq
-    targetRevision: 16.0.14
-    helm:
-      values: |
-        image:
-          repository: rabbitmq
-          tag: 4.1-management
+  persistence:
+    storageClassName: synology-iscsi
+    storage: 20Gi
 
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: messaging
+  rabbitmq:
+    additionalConfig: |
+      log.console.level = info
+      disk_free_limit.absolute = 2GB
 
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
