@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://charts.bitnami.com/bitnami
     chart: rabbitmq
-    targetRevision: 16.0.14
+    targetRevision: 16.0.13
 
   destination:
     server: https://kubernetes.default.svc
