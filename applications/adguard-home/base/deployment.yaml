@@ -12,9 +12,6 @@ spec:
     metadata:
       labels:
         app: adguard-home
-        app.kubernetes.io/name: adguard-home
-        app.kubernetes.io/version: latest
-        app.kubernetes.io/component: dns
     spec:
       securityContext:
         fsGroup: 1000
