@@ -10,11 +10,7 @@ spec:
     repoURL: https://charts.bitnami.com/bitnami
     chart: rabbitmq
     targetRevision: 16.0.14
-    helm:
-      values: |
-        image:
-          tag: 3.12.11
-
+    
   destination:
     server: https://kubernetes.default.svc
     namespace: messaging
