@@ -23,12 +23,6 @@ spec:
           accessModes: ReadWriteMany
           reclaimPolicy: Retain
 
-        podSecurityContext:
-          fsGroup: 1000
-
-        securityContext:
-          runAsUser: 1000
-
   destination:
     server: https://kubernetes.default.svc
     namespace: nfs-provisioner
