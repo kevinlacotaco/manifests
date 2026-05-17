@@ -10,12 +10,6 @@ spec:
     repoURL: https://charts.bitnami.com/bitnami
     chart: rabbitmq
     targetRevision: 16.0.14
-    helm:
-      values: |
-        podLabels:
-          app.kubernetes.io/name: rabbitmq
-          app.kubernetes.io/version: "16.0.14"
-          app.kubernetes.io/component: messaging
 
   destination:
     server: https://kubernetes.default.svc

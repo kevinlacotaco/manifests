@@ -32,9 +32,6 @@ spec:
 
         singleBinary:
           replicas: 1
-          podLabels:
-            "app.kubernetes.io/name": loki
-            "app.kubernetes.io/version": "6.55.0"
           persistence:
             enabled: true
             size: 20Gi

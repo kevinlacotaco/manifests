@@ -12,9 +12,6 @@ spec:
     helm:
       values: |
         server:
-          podLabels:
-            app.kubernetes.io/name: prometheus
-            app.kubernetes.io/version: "25.21.0"
           service:
             type: ClusterIP
   destination:
