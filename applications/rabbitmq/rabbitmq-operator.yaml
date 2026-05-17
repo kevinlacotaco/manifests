@@ -8,8 +8,8 @@ spec:
 
   source:
     repoURL: https://github.com/rabbitmq/cluster-operator
-    chart: rabbitmq-cluster-operator
-    targetRevision: 4.6.0
+    targetRevision: v2.12.0
+    path: config/installation
 
   destination:
     server: https://kubernetes.default.svc
