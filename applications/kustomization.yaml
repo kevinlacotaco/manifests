@@ -15,6 +15,5 @@ resources:
   - traefik
   - coredns
   - synology-iscsi-storageclass
-  - synology-pvc
   - nfs-subdir-external-provisioner
   - rabbitmq
