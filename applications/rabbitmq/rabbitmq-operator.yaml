@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://charts.rabbitmq.com
+    repoURL: https://github.com/rabbitmq/cluster-operator
     chart: rabbitmq-cluster-operator
     targetRevision: 4.6.0
 
