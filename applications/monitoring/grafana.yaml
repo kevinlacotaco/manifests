@@ -14,7 +14,6 @@ spec:
         podLabels:
           app.kubernetes.io/name: grafana
           app.kubernetes.io/version: "7.3.7"
-          app.kubernetes.io/component: observability
         admin:
           existingSecret: grafana-admin-credentials
           userKey: admin-user
