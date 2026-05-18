@@ -7,13 +7,18 @@ spec:
   project: default
 
   source:
-    repoURL: https://bjw-s-labs.github.io/helm-charts/
-    chart: app-template
-    targetRevision: 3.7.2
+    - repoURL: https://bjw-s-labs.github.io/helm-charts/
+      chart: app-template
+      targetRevision: 3.7.2
 
-    helm:
-      valueFiles:
-        - values.yaml
+      helm:
+        valueFiles:
+          - $values/apps/uptime-kuma/values.yaml
+
+
+    - repoURL: git@github.com:kevinlacotaco/manifests.git
+      targetRevision: main
+      ref: values
 
   destination:
     server: https://kubernetes.default.svc
