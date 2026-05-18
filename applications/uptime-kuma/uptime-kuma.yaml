@@ -13,8 +13,7 @@ spec:
 
       helm:
         valueFiles:
-          - $values/apps/uptime-kuma/values.yaml
-
+          - $values/applications/uptime-kuma/values.yaml
 
     - repoURL: git@github.com:kevinlacotaco/manifests.git
       targetRevision: main
