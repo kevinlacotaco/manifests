@@ -13,7 +13,7 @@ controllers:
             enabled: true
 
         ports:
-          - containerPort: 3002
+          - containerPort: 3001
             name: http
             protocol: TCP
 
@@ -23,7 +23,8 @@ service:
 
     ports:
       http:
-        port: 3002
+        port: 3001
+        nodePort: 3002
 
 ingress:
   main:
