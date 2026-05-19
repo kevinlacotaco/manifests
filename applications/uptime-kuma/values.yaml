@@ -13,7 +13,7 @@ controllers:
             enabled: true
 
         ports:
-          - contaienrPort: 3001
+          - containerPort: 3001
             name: http
             protocol: TCP
 
