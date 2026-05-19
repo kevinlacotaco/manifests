@@ -23,7 +23,7 @@ service:
 
     ports:
       http:
-        port: 3002
+        port: 3001
 
 ingress:
   main:
