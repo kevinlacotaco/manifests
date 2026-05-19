@@ -20,12 +20,10 @@ controllers:
 service:
   main:
     controller: main
-    type: NodePort
 
     ports:
       http:
         port: 3001
-        nodePort: 3002
 
 ingress:
   main:
@@ -33,7 +31,7 @@ ingress:
     className: traefik
 
     hosts:
-      - host: boulder.local
+      - host: kuma.local
         paths:
           - path: /
             pathType: Prefix
