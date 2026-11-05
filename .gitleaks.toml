@@ -1,0 +1,14 @@
+title = "manifests secret scan"
+
+[extend]
+useDefault = true
+
+# SealedSecret ciphertext is high entropy by design. Keep the allowlist narrow:
+# only files whose names explicitly identify them as sealed secrets.
+[[allowlists]]
+description = "SealedSecret manifests are encrypted at rest"
+paths = [
+  '''(^|/)sealed-secret\.ya?ml$''',
+  '''(^|/).*-sealed-secret\.ya?ml$''',
+  '''(^|/).*-sealedsecret\.ya?ml$''',
+]
