@@ -4,8 +4,9 @@
 # Layers:
 #   1. YAML syntax and style (yamllint)
 #   2. Every kustomization renders (kubectl kustomize)
-#   3. Kubernetes schema validation (kubeconform + CRD schemas)
-#   4. Structural policy checks (kube-linter)
+#   3. Helm-based Argo Applications render (helm template)
+#   4. Kubernetes schema validation (kubeconform + CRD schemas)
+#   5. Structural policy checks (kube-linter)
 #
 # Usage: ./hack/validate.sh
 set -uo pipefail
@@ -23,6 +24,7 @@ KUBECONFORM="${KUBECONFORM:-kubeconform}"
 YAMLLINT="${YAMLLINT:-yamllint}"
 KUBE_LINTER="${KUBE_LINTER:-kube-linter}"
 KUBE_VERSION="${KUBE_VERSION:-1.33.0}"
+RENDER_HELM="${RENDER_HELM:-$ROOT/hack/render-helm.sh}"
 
 CRD_SCHEMA='https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
@@ -42,9 +44,15 @@ need "$KUBECONFORM"
 need "$YAMLLINT"
 need "$KUBE_LINTER"
 
+if ! command -v helm >/dev/null 2>&1; then
+  echo "error: 'helm' not found. Install Helm 3 before running validation." >&2
+  exit 2
+fi
+
 tmp="$ROOT/.tmp/validate"
 rm -rf "$tmp"
 mkdir -p "$tmp/build"
+helm_out="$tmp/helm"
 
 # Tracked + non-ignored, untracked YAML only. Ignored local secrets are skipped.
 mapfile -t yaml_files < <(
@@ -83,6 +91,33 @@ while IFS= read -r kfile; do
   fi
 done < <(find applications -name kustomization.yaml -type f | sort)
 
+step "Helm chart rendering"
+if ! "$RENDER_HELM" --output "$helm_out"; then
+  fail=1
+fi
+
+helm_built=()
+if [ -d "$helm_out" ]; then
+  while IFS= read -r f; do
+    helm_built+=("$f")
+  done < <(find "$helm_out" -maxdepth 1 -name '*.yaml' -type f | sort)
+fi
+
+step "Schema validation (Kubernetes $KUBE_VERSION, Helm-rendered manifests)"
+if [ "${#helm_built[@]}" -eq 0 ]; then
+  echo "no Helm-rendered manifests to validate"
+else
+  # CRDs are skipped because the Kubernetes JSON schema catalog does not
+  # publish a schema for the CustomResourceDefinition kind itself.
+  if ! "$KUBECONFORM" -strict -summary -kubernetes-version "$KUBE_VERSION" \
+      -schema-location default \
+      -schema-location "$CRD_SCHEMA" \
+      -skip CustomResourceDefinition \
+      -output text "${helm_built[@]}"; then
+    fail=1
+  fi
+fi
+
 step "Schema validation (Kubernetes $KUBE_VERSION, rendered manifests)"
 if [ "${#built[@]}" -eq 0 ]; then
   echo "no rendered manifests to validate"
@@ -119,9 +154,18 @@ else
   fi
 fi
 
-step "Structural checks (kube-linter)"
+step "Structural checks (kube-linter, kustomize)"
 if ! "$KUBE_LINTER" lint "$tmp/build" --config .kube-linter.yaml; then
   fail=1
+fi
+
+step "Structural checks (kube-linter, Helm-rendered)"
+if [ "${#helm_built[@]}" -eq 0 ]; then
+  echo "no Helm-rendered manifests to lint"
+else
+  if ! "$KUBE_LINTER" lint "$helm_out" --config .kube-linter.yaml; then
+    fail=1
+  fi
 fi
 
 if [ "$fail" -ne 0 ]; then

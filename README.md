@@ -96,9 +96,12 @@ Run this checklist when you come back to the cluster after a while:
 
 ```text
 .
-├── Makefile                     # make tools / make validate / make clean
+├── Makefile                     # make tools / make validate / make render / make clean
 ├── hack/
 │   ├── install-tools.sh         # downloads pinned validation tools into .bin/
+│   ├── render-helm.py           # renders chart-backed Argo CD Applications
+│   ├── render-helm.sh           # wrapper that uses the repo virtualenv
+│   ├── render-helm.skip         # applications that cannot be rendered yet
 │   └── validate.sh              # the validation pipeline
 ├── applications/
 │   ├── applications.yaml        # app-of-apps: the root Argo CD Application
@@ -118,6 +121,7 @@ Run this checklist when you come back to the cluster after a while:
 │   ├── mealie/                  # not wired in yet
 │   ├── ntfy/                    # not wired in yet
 │   └── postgresql/              # not wired in yet
+├── .github/workflows/validate.yaml
 ├── .editorconfig
 ├── .gitignore
 ├── .gitleaks.toml
@@ -405,19 +409,26 @@ Runs `hack/validate.sh`, which currently does the following:
 
 1. `yamllint` on all git-tracked and non-ignored untracked YAML files.
 2. Builds every `applications/**/kustomization.yaml` with `kubectl kustomize`.
-3. Runs `kubeconform` in strict mode against Kubernetes `1.33.0` schemas.
-   It also uses the Datree CRDs catalog for CRDs such as Argo CD
-   `Application`, `SealedSecret`, `IngressRoute`, `HelmChartConfig`, and
-   `RabbitmqCluster`.
-4. Runs `kubeconform` on standalone manifests under `applications/`
+3. Renders every chart-backed Argo CD `Application` with `helm template`.
+   Inline `helm.values` are written to temporary files, and `$values/...`
+   references are resolved against this checkout.
+4. Runs `kubeconform` in strict mode against Kubernetes `1.33.0` schemas on
+   both the Kustomize and Helm-rendered output. It also uses the Datree CRDs
+   catalog for CRDs such as Argo CD `Application`, `SealedSecret`,
+   `IngressRoute`, `HelmChartConfig`, and `RabbitmqCluster`.
+   `CustomResourceDefinition` objects themselves are skipped because the
+   Kubernetes JSON schema catalog does not publish a schema for that kind.
+5. Runs `kubeconform` on standalone manifests under `applications/`
    (excluding `kustomization.yaml` and `values.yaml`).
-5. Runs `kube-linter` on the rendered output.
+6. Runs `kube-linter` on the Kustomize and Helm-rendered output.
 
 Current baseline (at the time of writing):
 
 ```text
 16 kustomizations build
-71 rendered resources: 71 valid, 0 invalid, 0 skipped
+9 chart-backed Applications render
+149 Helm-rendered resources: 145 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
+71 Kustomize-rendered resources: 71 valid, 0 invalid, 0 skipped
 46 standalone resources: 46 valid, 0 skipped
 kube-linter: no lint errors
 ```
@@ -427,28 +438,59 @@ The numbers will change as manifests are added.
 Override the Kubernetes version when needed:
 
 ```sh
-KUBERNETES_VERSION=1.34.0 make validate
+KUBE_VERSION=1.34.0 make validate
 ```
+
+### Render Helm charts by themselves
+
+```sh
+make render
+```
+
+This runs `hack/render-helm.sh` and writes one file per Application to
+`.tmp/helm/`. It is useful when you want to inspect chart output without
+running the whole validation pipeline:
+
+```sh
+make render
+grep -n 'kind:' .tmp/helm/grafana.yaml
+```
+
+The renderer follows Argo CD's rules for value files:
+
+- `$values/...` paths are resolved from this repository.
+- Plain `valueFiles` entries are rejected for Helm repository sources,
+  because Argo CD cannot read files from a Helm repository.
+- Inline `helm.values` are applied last.
+
+Applications that cannot be rendered yet are listed in
+`hack/render-helm.skip` with a reason. The current entry is `ntfy`, whose
+chart repository (`charts.ntfy.sh`) no longer resolves. Remove the entry once
+the chart source is replaced.
 
 ### What it does **not** cover yet
 
-- Helm charts are not rendered by `make validate`. It validates the Argo CD
-  `Application` objects, not the workloads those charts produce.
+- Helm charts that pull values from a separate Git repository are not
+  rendered locally.
 - Cluster-specific admission, policy, and CRD behavior is not checked.
 - Server-side validation requires a reachable cluster.
+- Charts can render differently under a live cluster because of
+  `.Capabilities`, `lookup`, and API discovery.
 
-For Helm-rendered output, use Argo CD itself:
+For a true server-side view, use Argo CD itself:
 
 ```sh
 argocd app manifests <app-name> > /tmp/rendered.yaml
 argocd app diff <app-name>
+kubectl diff -k applications
 ```
 
-Or render a chart manually when you have its values:
+### CI
 
-```sh
-helm template <release> <repo>/<chart> --version <version> -f values.yaml
-```
+`.github/workflows/validate.yaml` runs on pull requests, pushes to `main`, and
+manual dispatches. It installs kubectl, Helm, and the pinned validation tools,
+runs `make validate`, then scans for secrets with gitleaks. All steps are
+failing steps; there are no `|| true` escape hatches.
 
 ### Individual checks
 
@@ -462,9 +504,13 @@ kubectl kustomize applications/adguard-home/overlays/home
 # YAML lint
 .venv/bin/yamllint .
 
+# Render every Helm chart
+make render
+
 # Structural lint on rendered output
 kubectl kustomize applications > .tmp/rendered.yaml
 .bin/kube-linter lint .tmp/rendered.yaml
+.bin/kube-linter lint .tmp/helm
 ```
 
 ---
@@ -609,7 +655,7 @@ plaintext secret with the new controller certificate.
 | `synology-csi` | `synology-csi` | Helm `0.10.1` | iSCSI driver |
 | `uptime-kuma` | `monitoring` | Helm `app-template` `3.7.2` | 5Gi iSCSI |
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Not wired into root |
-| `ntfy` | `ntfy` | Helm `ntfy` `0.18.1` | Not wired into root |
+| `ntfy` | `ntfy` | Helm `ntfy` `0.18.1` | Not wired; chart repo dead, skipped by renderer |
 
 Additional resources not represented as child Applications:
 
@@ -778,12 +824,13 @@ fixed.
 
 ### Validation and CI
 
-- [ ] Add Helm rendering to validation. `make validate` currently checks the
-  Argo CD `Application` objects, not the workloads the charts produce.
-- [ ] Add a CI workflow that runs `make validate` on pull requests.
+- [x] Render Helm charts in `make validate` (`hack/render-helm.sh`).
+- [ ] Replace the `ntfy` chart source and remove it from
+  `hack/render-helm.skip`.
+- [x] Add a CI workflow that runs `make validate` on pull requests.
 - [ ] Do not merge the existing `feat/add-github-actions` branch as-is: it
   uses abandoned `kubeval`, has `|| true`, and installs an unpinned
-  kustomize.
+  kustomize. The new workflow supersedes it.
 - [ ] Add server-side dry-run to CI once a safe, read-only cluster credential
   exists.
 
