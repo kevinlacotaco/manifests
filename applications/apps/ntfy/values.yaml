@@ -21,10 +21,13 @@ ingress:
 
 persistence:
   enabled: true
-  storageClass: synology-nfs-subdir
+  # ntfy stores SQLite files, so keep it on iSCSI rather than NFS. The old
+  # chart-managed NFS PVC (ntfy-ntfy-data) was empty and is pruned on sync.
+  existingClaim: ntfy-data-iscsi
+  storageClass: synology-iscsi
   accessModes:
-    - ReadWriteMany
-  size: 10Gi
+    - ReadWriteOnce
+  size: 2Gi
 
 resources:
   requests:
