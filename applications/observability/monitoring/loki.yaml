@@ -45,14 +45,12 @@ spec:
         resultsCache:
           enabled: false
 
+        # There are no Loki rule ConfigMaps in the cluster. The rules sidecar
+        # was OOMKilled at its 64Mi limit, which left the pod 1/2 and removed
+        # Loki from the gateway endpoints, causing 502s for every log query.
         sidecar:
-          resources:
-            requests:
-              cpu: 5m
-              memory: 32Mi
-            limits:
-              cpu: 50m
-              memory: 64Mi
+          rules:
+            enabled: false
 
         singleBinary:
           replicas: 1
