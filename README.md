@@ -901,9 +901,10 @@ fixed.
   ReadWriteMany data.
 - [x] Configure `synology-nfs-subdir` to mount new volumes with `vers=4.1`
   after fixing the Synology Windows ACL.
-- [ ] Patch or recreate existing NFS PVs so they use `vers=4.1`.
+- [x] Patch or recreate existing NFS PVs so they use `vers=4.1`.
 - [x] Verify Mealie can write to `mealie-media` as UID/GID 911.
-- [ ] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
+- [x] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
+- [ ] Delete the Released ntfy NFS PV and its NAS folder.
 - [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
   `*.example.com`.
 - [x] Remove the stale duplicate
@@ -912,9 +913,10 @@ fixed.
   matches the `argo` Helm release.
 - [x] Remove the stale `rabbitmq-values` ConfigMap and `rabbitmq-auth`
   SealedSecret from the repo.
-- [ ] Remove the orphaned Bitnami `messaging/rabbitmq` StatefulSet and its old
+- [x] Remove the orphaned Bitnami `messaging/rabbitmq` StatefulSet and its old
   8Gi NFS PVC after confirming they hold no data.
-- [ ] Verify the pinned `rabbitmq-cluster-operator` `v2.12.0` reconciles the
+- [ ] Delete the Released RabbitMQ NFS PV and its NAS folder.
+- [x] Verify the pinned `rabbitmq-cluster-operator` `v2.12.0` reconciles the
   `RabbitmqCluster` into a `rabbitmq-server` StatefulSet.
 - [ ] Verify the `postgres` security context on the cluster. It now runs as
   UID/GID 70 and needs the CSI volume to honor `fsGroup`.
