@@ -36,9 +36,50 @@ spec:
             cpu: 100m
             memory: 64Mi
 
+        labels:
+          argocd.argoproj.io/instance: nfs-subdir-provisioner
+
   destination:
     server: https://kubernetes.default.svc
     namespace: nfs-provisioner
+
+  ignoreDifferences:
+    - group: ""
+      kind: PersistentVolume
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: ""
+      kind: PersistentVolumeClaim
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: ""
+      kind: ServiceAccount
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: rbac.authorization.k8s.io
+      kind: Role
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: storage.k8s.io
+      kind: StorageClass
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
 
   syncPolicy:
     automated:

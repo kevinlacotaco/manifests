@@ -1,3 +1,7 @@
+global:
+  labels:
+    argocd.argoproj.io/instance: uptime-kuma
+
 controllers:
   main:
     containers:

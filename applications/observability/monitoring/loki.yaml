@@ -76,6 +76,10 @@ spec:
             limits:
               cpu: 100m
               memory: 64Mi
+          # The chart default is hard node anti-affinity. With a single-node
+          # cluster a rolling update can never schedule the surge pod.
+          affinity:
+            podAntiAffinity: null
 
         lokiCanary:
           resources:
@@ -97,6 +101,7 @@ spec:
 
         service:
           type: ClusterIP
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
