@@ -16,10 +16,11 @@ spec:
         nfs:
           server: 192.168.68.138
           path: /volume1/k8s-nfs
-          # Use NFSv3 so Synology's Windows ACL/NFSv4 idmap layer does not
-          # block non-root pod UIDs. New PVs inherit this mount option.
+          # NFSv4.1 is the normal protocol. The earlier write failures were
+          # caused by the Synology Windows ACL, not by idmap; the export now
+          # allows the non-root pod UIDs. New PVs inherit this mount option.
           mountOptions:
-            - vers=3
+            - vers=4.1
 
         storageClass:
           name: synology-nfs-subdir

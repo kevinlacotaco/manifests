@@ -782,11 +782,12 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 `synology-nfs` is **not** a real StorageClass in this cluster. Use
 `synology-nfs-subdir` for NFS.
 
-`synology-nfs-subdir` is configured with `mountOptions: [vers=3]` in the
-`nfs-subdir-external-provisioner` Helm values. New PVs mount over NFSv3, which
-avoids the Synology NFSv4 idmap and Windows ACL layer that denied writes from
-non-root pod UIDs. Existing PVs keep their old NFSv4 mount options until their
-`spec.mountOptions` is patched or the PV/PVC is recreated.
+`synology-nfs-subdir` is configured with `mountOptions: [vers=4.1]` in the
+`nfs-subdir-external-provisioner` Helm values. NFSv3 was a temporary
+workaround: the real write problem was the Synology Windows ACL, which denied
+non-root pod UIDs until an explicit `everyone` allow ACE was added. With that
+ACL in place, NFSv4.1 works normally. Existing PVs keep their old mount options
+until their `spec.mountOptions` is patched or the PV/PVC is recreated.
 
 Mealie keeps its media on `synology-nfs-subdir` because it is shared
 ReadWriteMany data, and runs as UID/GID 911; the NFS export must allow that UID.
@@ -898,10 +899,10 @@ fixed.
 - [x] Move ntfy to `synology-iscsi`; SQLite on NFS is unsafe.
 - [x] Keep Mealie media on `synology-nfs-subdir` so it remains shared
   ReadWriteMany data.
-- [x] Configure `synology-nfs-subdir` to mount new volumes with `vers=3`.
-- [ ] Patch or recreate existing NFS PVs so they use `vers=3`.
-- [ ] Confirm Synology NFSv3 is enabled, then verify Mealie can write to
-  `mealie-media` as UID/GID 911.
+- [x] Configure `synology-nfs-subdir` to mount new volumes with `vers=4.1`
+  after fixing the Synology Windows ACL.
+- [ ] Patch or recreate existing NFS PVs so they use `vers=4.1`.
+- [x] Verify Mealie can write to `mealie-media` as UID/GID 911.
 - [ ] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
 - [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
   `*.example.com`.
