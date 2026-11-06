@@ -32,3 +32,24 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
+
+  # The resources were originally tracked with the legacy tracking-id
+  # annotation. They now use the label configured in argocd-cm, but the old
+  # annotation can remain on live objects and show up as a permanent diff.
+  ignoreDifferences:
+    - group: ""
+      kind: PersistentVolumeClaim
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: networking.k8s.io
+      kind: Ingress
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id

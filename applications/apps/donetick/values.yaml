@@ -1,3 +1,9 @@
+global:
+  labels:
+    # Argo CD uses label tracking in this cluster. Adding the tracking label
+    # here keeps all chart resources owned by the donetick Application.
+    argocd.argoproj.io/instance: donetick
+
 defaultPodOptions:
   labels:
     requires-db: postgres
