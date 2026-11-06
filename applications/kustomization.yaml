@@ -20,5 +20,6 @@ resources:
   - nfs-subdir-external-provisioner
   - ntfy
   - postgresql
+  - mealie
   - rabbitmq
   - uptime-kuma

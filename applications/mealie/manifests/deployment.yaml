@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mealie
+  namespace: mealie
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mealie
+
+  template:
+    metadata:
+      labels:
+        app: mealie
+        requires-db: postgres
+
+    spec:
+      containers:
+        - name: mealie
+          image: ghcr.io/mealie-recipes/mealie:v3.30.0
+
+          ports:
+            - containerPort: 9000
+
+          env:
+            - name: DB_ENGINE
+              value: postgres
+
+            - name: POSTGRES_SERVER
+              value: postgres-headless-service.default.svc.cluster.local
+
+            - name: POSTGRES_PORT
+              value: "5432"
+
+            - name: POSTGRES_DB
+              value: mealie
+
+            - name: POSTGRES_USER
+              value: mealie
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mealie-db
+                  key: POSTGRES_PASSWORD
+
+            - name: BASE_URL
+              value: https://mealie.example.com
+
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+
+          readinessProbe:
+            httpGet:
+              path: /api/app/about
+              port: 9000
+            initialDelaySeconds: 15
+
+          livenessProbe:
+            httpGet:
+              path: /api/app/about
+              port: 9000
+            initialDelaySeconds: 30
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mealie-media
