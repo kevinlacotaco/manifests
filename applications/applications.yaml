@@ -18,3 +18,8 @@ spec:
       prune: true
     syncOptions:
       - CreateNamespace=true
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: AppProject
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
