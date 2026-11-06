@@ -2,5 +2,3 @@
 #
 # Format: <application-name>: <reason>
 # Remove the entry once the application is fixed.
-
-ntfy: chart repository charts.ntfy.sh does not resolve; replace the chart source before enabling this check

@@ -18,5 +18,6 @@ resources:
   - coredns
   - synology-iscsi-storageclass
   - nfs-subdir-external-provisioner
+  - ntfy
   - rabbitmq
   - uptime-kuma
