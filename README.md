@@ -469,8 +469,8 @@ Current baseline (at the time of writing):
 24 kustomizations build
 10 chart-backed Applications render
 155 Helm-rendered resources: 151 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
-138 Kustomize-rendered resources: 138 valid, 0 invalid, 0 skipped
-56 standalone resources: 56 valid, 0 skipped
+132 Kustomize-rendered resources: 132 valid, 0 invalid, 0 skipped
+54 standalone resources: 54 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -717,7 +717,7 @@ plaintext secret with the new controller certificate.
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI |
 | `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
-| `rabbitmq-operator` | `rabbitmq-system` | Git path `config/installation` | Operator `v2.12.0` |
+| `rabbitmq-operator` | `rabbitmq-system` | Git path `config/installation` | Operator `v2.12.0`, image pinned to `2.12.0` |
 | `sealed-secrets` | `kube-system` | Helm `2.17.0` | Controller |
 | `synology-csi` | `synology-csi` | Helm `0.10.1` | iSCSI driver |
 | `uptime-kuma` | `monitoring` | Helm `app-template` `3.7.2` | 5Gi iSCSI |
@@ -910,8 +910,12 @@ fixed.
   `applications/apps/adguard-home/overlays/home/application.yaml`.
 - [x] Fix the Argo CD IngressRoute service name to `argo-argocd-server`, which
   matches the `argo` Helm release.
-- [ ] Remove or repurpose the unused `rabbitmq-values` ConfigMap and the
-  possibly unused `rabbitmq-auth` SealedSecret.
+- [x] Remove the stale `rabbitmq-values` ConfigMap and `rabbitmq-auth`
+  SealedSecret from the repo.
+- [ ] Remove the orphaned Bitnami `messaging/rabbitmq` StatefulSet and its old
+  8Gi NFS PVC after confirming they hold no data.
+- [ ] Verify the pinned `rabbitmq-cluster-operator` `v2.12.0` reconciles the
+  `RabbitmqCluster` into a `rabbitmq-server` StatefulSet.
 - [ ] Verify the `postgres` security context on the cluster. It now runs as
   UID/GID 70 and needs the CSI volume to honor `fsGroup`.
 

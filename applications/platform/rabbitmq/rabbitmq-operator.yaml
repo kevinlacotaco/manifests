@@ -10,6 +10,21 @@ spec:
     repoURL: https://github.com/rabbitmq/cluster-operator
     targetRevision: v2.12.0
     path: config/installation
+    kustomize:
+      patches:
+        # Upstream config/installation floats on :latest, but v2.12.0 does not
+        # have RBAC for discovery.k8s.io/endpointslices. Pin the image so the
+        # operator binary matches the release manifest and its ClusterRole.
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: rabbitmq-cluster-operator
+            namespace: rabbitmq-system
+          patch: |-
+            - op: replace
+              path: /spec/template/spec/containers/0/image
+              value: rabbitmqoperator/cluster-operator:2.12.0
 
   destination:
     server: https://kubernetes.default.svc
