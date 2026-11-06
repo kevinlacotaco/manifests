@@ -468,7 +468,7 @@ Current baseline (at the time of writing):
 ```text
 24 kustomizations build
 11 chart-backed Applications render
-162 Helm-rendered resources: 157 valid, 0 invalid, 0 errors, 5 skipped
+161 Helm-rendered resources: 157 valid, 0 invalid, 0 errors, 4 skipped
 138 Kustomize-rendered resources: 138 valid, 0 invalid, 0 skipped
 56 standalone resources: 56 valid, 0 skipped
 kube-linter: no lint errors
