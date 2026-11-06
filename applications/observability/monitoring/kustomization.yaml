@@ -8,6 +8,7 @@ labels:
 
 resources:
   - grafana-admin-sealed-secret.yaml
+  - alertmanager-ntfy-sealed-secret.yaml
   - grafana.yaml
   - grafana-ingress.yaml
   - grafana-network-policy.yaml

@@ -2,7 +2,7 @@ image:
   tag: v2.32.0
 
 ntfy:
-  baseUrl: https://ntfy.example.com
+  baseUrl: https://ntfy.lakotko.synology.me
   behindProxy: true
   authDefaultAccess: deny-all
 
@@ -10,14 +10,10 @@ ingress:
   enabled: true
   ingressClassName: traefik
   hosts:
-    - host: ntfy.example.com
+    - host: ntfy.lakotko.synology.me
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: ntfy-tls
-      hosts:
-        - ntfy.example.com
 
 persistence:
   enabled: true
