@@ -468,9 +468,9 @@ Current baseline (at the time of writing):
 ```text
 24 kustomizations build
 10 chart-backed Applications render
-154 Helm-rendered resources: 150 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
-135 Kustomize-rendered resources: 135 valid, 0 invalid, 0 skipped
-55 standalone resources: 55 valid, 0 skipped
+153 Helm-rendered resources: 149 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
+138 Kustomize-rendered resources: 138 valid, 0 invalid, 0 skipped
+56 standalone resources: 56 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -723,7 +723,7 @@ plaintext secret with the new controller certificate.
 | `uptime-kuma` | `monitoring` | Helm `app-template` `3.7.2` | 5Gi iSCSI |
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
 | `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
-| `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-nfs-subdir` |
+| `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-iscsi` |
 | `postgresql` | `database` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
 Additional resources not represented as child Applications:
@@ -776,11 +776,21 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 
 | StorageClass | Backing store | Typical use |
 | --- | --- | --- |
-| `synology-iscsi` | Synology iSCSI, `/volume1` | Databases and single-writer workloads |
-| `synology-nfs-subdir` | NFS `192.168.68.138:/volume1/k8s-nfs` | Shared ReadWriteMany data; default class |
+| `synology-iscsi` | Synology iSCSI, `/volume1` | Databases, SQLite apps, and single-writer workloads |
+| `synology-nfs-subdir` | NFS `192.168.68.138:/volume1/k8s-nfs` | Mealie shared media and other ReadWriteMany data; default class |
 
 `synology-nfs` is **not** a real StorageClass in this cluster. Use
 `synology-nfs-subdir` for NFS.
+
+The Synology NFS export previously denied writes from non-root UIDs even when
+the directory mode was `0777`. The NFSv4.1 domain/ACL issue has been corrected
+and tested from the node, but Kubernetes pods must be recreated to pick up a
+fresh mount.
+
+Mealie keeps its media on `synology-nfs-subdir` because it is shared
+ReadWriteMany data, and runs as UID/GID 911; the export must allow that UID.
+ntfy uses `synology-iscsi` because SQLite on NFS is unsafe. Verify a non-root
+write from a test pod before relying on NFS for a new application.
 
 ---
 
@@ -883,7 +893,13 @@ fixed.
   and `donetick` roles/databases idempotently.
 - [x] Seal the `mealie-db`, `donetick-secret`, and `postgres-app-secrets`
   values and commit the SealedSecrets.
-- [ ] Verify the `postgres-init-apps` Job succeeds on the first cluster sync.
+- [x] Verify the `postgres-init-apps` Job succeeds on the first cluster sync.
+- [x] Move ntfy to `synology-iscsi`; SQLite on NFS is unsafe.
+- [x] Keep Mealie media on `synology-nfs-subdir` so it remains shared
+  ReadWriteMany data.
+- [ ] Verify Mealie can write to `mealie-media` as UID/GID 911 after the
+  NFSv4.1 fix.
+- [ ] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
 - [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
   `*.example.com`.
 - [x] Remove the stale duplicate
@@ -901,6 +917,14 @@ fixed.
 - [ ] Add liveness and readiness probes to AdGuard Home.
 - [x] Replace deprecated `commonLabels` with `labels` in the kustomizations.
 - [ ] Add resource requests and limits where they are missing.
+- [ ] Fix Grafana's `synology-iscsi` volume. It is crash-looping with
+  `input/output error` opening its SQLite database and has thousands of
+  restarts.
+- [ ] Add a log shipper (Grafana Alloy) so Loki actually receives application
+  logs.
+- [ ] Add Prometheus alert rules and an Alertmanager receiver; there are
+  currently no alerts.
+- [ ] Provision Grafana datasources and dashboards as code.
 - [ ] Add `CreateNamespace` sync options where a child app targets a namespace
   Argo CD does not create.
 

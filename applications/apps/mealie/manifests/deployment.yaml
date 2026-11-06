@@ -6,6 +6,11 @@ metadata:
 spec:
   replicas: 1
 
+  # Recreate avoids overlapping pods during upgrades. The media volume is RWX,
+  # but Mealie runs migrations on startup, so a single pod is safer.
+  strategy:
+    type: Recreate
+
   selector:
     matchLabels:
       app: mealie
@@ -17,6 +22,15 @@ spec:
         requires-db: postgres
 
     spec:
+      # The NFS export must allow UID/GID 911. NFS ignores fsGroup, but it is
+      # kept here for the old iSCSI volume and for local-path fallbacks.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 911
+        runAsGroup: 911
+        fsGroup: 911
+        fsGroupChangePolicy: OnRootMismatch
+
       containers:
         - name: mealie
           image: ghcr.io/mealie-recipes/mealie:v3.30.0

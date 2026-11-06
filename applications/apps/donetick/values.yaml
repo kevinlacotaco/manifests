@@ -60,6 +60,14 @@ controllers:
           readiness:
             enabled: true
 
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+
+          limits:
+            memory: 512Mi
+
 service:
   app:
     controller: donetick
@@ -94,11 +102,3 @@ persistence:
 
     globalMounts:
       - path: /donetick-data
-
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-
-  limits:
-    memory: 512Mi

@@ -6,4 +6,5 @@ resources:
   - mealie-db-sealed-secret.yaml
   - deployment.yaml
   - service.yaml
+  # Shared media on the Synology NFS export. This is the app's active volume.
   - pvc-media.yaml
