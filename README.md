@@ -904,7 +904,7 @@ fixed.
 - [x] Patch or recreate existing NFS PVs so they use `vers=4.1`.
 - [x] Verify Mealie can write to `mealie-media` as UID/GID 911.
 - [x] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
-- [ ] Delete the Released ntfy NFS PV and its NAS folder.
+- [x] Delete the Released ntfy NFS PV.
 - [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
   `*.example.com`.
 - [x] Remove the stale duplicate
@@ -915,7 +915,10 @@ fixed.
   SealedSecret from the repo.
 - [x] Remove the orphaned Bitnami `messaging/rabbitmq` StatefulSet and its old
   8Gi NFS PVC after confirming they hold no data.
-- [ ] Delete the Released RabbitMQ NFS PV and its NAS folder.
+- [x] Delete the Released RabbitMQ NFS PV.
+- [ ] Remove the empty NAS folders:
+  - `/volume1/k8s-nfs/ntfy-ntfy-ntfy-data-pvc-e417e1f1-97ac-4c31-8182-d89a95dddad7`
+  - `/volume1/k8s-nfs/messaging-data-rabbitmq-0-pvc-dc751ff6-5697-451b-8960-7650503554ab`
 - [x] Verify the pinned `rabbitmq-cluster-operator` `v2.12.0` reconciles the
   `RabbitmqCluster` into a `rabbitmq-server` StatefulSet.
 - [ ] Verify the `postgres` security context on the cluster. It now runs as
