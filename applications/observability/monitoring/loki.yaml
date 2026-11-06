@@ -77,9 +77,12 @@ spec:
               cpu: 100m
               memory: 64Mi
           # The chart default is hard node anti-affinity. With a single-node
-          # cluster a rolling update can never schedule the surge pod.
+          # cluster a rolling update can never schedule the surge pod, so
+          # recreate the single gateway pod instead.
           affinity:
             podAntiAffinity: null
+          deploymentStrategy:
+            type: Recreate
 
         lokiCanary:
           resources:
