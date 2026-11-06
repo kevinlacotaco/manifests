@@ -31,6 +31,25 @@ spec:
           fsGroup: 472
         initChownData:
           enabled: false
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: Prometheus
+                uid: prometheus
+                type: prometheus
+                access: proxy
+                url: http://prometheus-server.monitoring.svc.cluster.local
+                isDefault: true
+                jsonData:
+                  timeInterval: 30s
+              - name: Loki
+                uid: loki
+                type: loki
+                access: proxy
+                url: http://loki-gateway.monitoring.svc.cluster.local
+                jsonData:
+                  maxLines: 1000
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

@@ -14,6 +14,76 @@ spec:
         server:
           service:
             type: ClusterIP
+
+        serverFiles:
+          alerting_rules.yml:
+            groups:
+              - name: homelab
+                rules:
+                  - alert: NodeMemoryHigh
+                    expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
+                    for: 10m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: Node {{ $labels.instance }} memory is above 85%
+
+                  - alert: PodCrashLooping
+                    expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+                    for: 5m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting
+
+                  - alert: ArgoAppOutOfSync
+                    expr: argocd_app_info{sync_status!="Synced"} == 1
+                    for: 15m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: Argo CD app {{ $labels.name }} is {{ $labels.sync_status }}
+
+                  - alert: PersistentVolumeFillingUp
+                    expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 15
+                    for: 15m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: PVC {{ $labels.persistentvolumeclaim }} is below 15% free
+
+        extraScrapeConfigs: |
+          - job_name: grafana
+            static_configs:
+              - targets: ["grafana.monitoring.svc.cluster.local:80"]
+
+          - job_name: loki
+            static_configs:
+              - targets: ["loki.monitoring.svc.cluster.local:3100"]
+
+          - job_name: alloy
+            static_configs:
+              - targets: ["alloy.monitoring.svc.cluster.local:12345"]
+
+          - job_name: argocd-application-controller
+            static_configs:
+              - targets: ["argo-argocd-application-controller-metrics.argocd.svc.cluster.local:8082"]
+
+          - job_name: argocd-server
+            static_configs:
+              - targets: ["argo-argocd-server-metrics.argocd.svc.cluster.local:8083"]
+
+          - job_name: argocd-repo-server
+            static_configs:
+              - targets: ["argo-argocd-repo-server-metrics.argocd.svc.cluster.local:8084"]
+
+          - job_name: argocd-applicationset-controller
+            static_configs:
+              - targets: ["argo-argocd-applicationset-controller-metrics.argocd.svc.cluster.local:8080"]
+
+          - job_name: rabbitmq
+            static_configs:
+              - targets: ["rabbitmq.messaging.svc.cluster.local:15692"]
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

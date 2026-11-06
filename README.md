@@ -467,10 +467,10 @@ Current baseline (at the time of writing):
 
 ```text
 24 kustomizations build
-10 chart-backed Applications render
-155 Helm-rendered resources: 151 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
-132 Kustomize-rendered resources: 132 valid, 0 invalid, 0 skipped
-54 standalone resources: 54 valid, 0 skipped
+11 chart-backed Applications render
+162 Helm-rendered resources: 157 valid, 0 invalid, 0 errors, 5 skipped
+138 Kustomize-rendered resources: 138 valid, 0 invalid, 0 skipped
+56 standalone resources: 56 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -713,9 +713,10 @@ plaintext secret with the new controller certificate.
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
 | `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload |
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081 |
-| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; UI on 3000 |
-| `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI |
-| `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP |
+| `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
+| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
+| `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy |
+| `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP; alert rules |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
 | `rabbitmq-operator` | `rabbitmq-system` | Git path `config/installation` | Operator `v2.12.0`, image pinned to `2.12.0` |
 | `sealed-secrets` | `kube-system` | Helm `2.17.0` | Controller |
@@ -933,11 +934,14 @@ fixed.
 - [ ] Fix Grafana's `synology-iscsi` volume. It is crash-looping with
   `input/output error` opening its SQLite database and has thousands of
   restarts.
-- [ ] Add a log shipper (Grafana Alloy) so Loki actually receives application
-  logs.
-- [ ] Add Prometheus alert rules and an Alertmanager receiver; there are
-  currently no alerts.
-- [ ] Provision Grafana datasources and dashboards as code.
+- [x] Add a log shipper (Grafana Alloy) so Loki receives application logs.
+- [x] Add Prometheus alert rules for node memory, pod restarts, Argo CD sync
+  state, and PVC usage.
+- [ ] Wire Alertmanager to a real receiver (ntfy, email, or Uptime Kuma).
+  Alerts currently evaluate but are not delivered.
+- [x] Provision Grafana datasources and dashboards as code.
+- [ ] Verify the Grafana datasources, the homelab dashboard, and Loki log
+  ingestion after the next sync.
 - [ ] Add `CreateNamespace` sync options where a child app targets a namespace
   Argo CD does not create.
 
