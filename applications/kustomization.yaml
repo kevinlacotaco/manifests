@@ -19,5 +19,6 @@ resources:
   - synology-iscsi-storageclass
   - nfs-subdir-external-provisioner
   - ntfy
+  - postgresql
   - rabbitmq
   - uptime-kuma
