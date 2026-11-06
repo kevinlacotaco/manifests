@@ -29,7 +29,7 @@ spec:
               value: postgres
 
             - name: POSTGRES_SERVER
-              value: postgres-headless-service.default.svc.cluster.local
+              value: postgres-headless-service.database.svc.cluster.local
 
             - name: POSTGRES_PORT
               value: "5432"

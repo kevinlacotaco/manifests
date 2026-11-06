@@ -28,7 +28,7 @@ spec:
     - server: https://kubernetes.default.svc
       namespace: messaging
     - server: https://kubernetes.default.svc
-      namespace: default
+      namespace: database
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

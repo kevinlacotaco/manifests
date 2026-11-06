@@ -178,8 +178,9 @@ a kustomization. In this repo:
 - AppProjects live with the Argo CD configuration, in
   `applications/platform/argocd/projects/`.
 - Namespaces live with the group that owns them. `monitoring` is defined once in
-  `applications/observability/namespace.yaml`, and the other namespaces stay
-  inside their app directories.
+  `applications/observability/namespace.yaml`, `database` is defined in
+  `applications/platform/postgresql/manifests/namespace.yaml`, and the other
+  namespaces stay inside their app directories.
 - The root app's `destination.namespace` is `argocd`, since that is where the
   `Application` and `AppProject` objects it manages live. Destination
   namespaces for the child apps are declared per Application.
@@ -468,8 +469,8 @@ Current baseline (at the time of writing):
 24 kustomizations build
 10 chart-backed Applications render
 154 Helm-rendered resources: 150 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
-134 Kustomize-rendered resources: 134 valid, 0 invalid, 0 skipped
-54 standalone resources: 54 valid, 0 skipped
+135 Kustomize-rendered resources: 135 valid, 0 invalid, 0 skipped
+55 standalone resources: 55 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -723,7 +724,7 @@ plaintext secret with the new controller certificate.
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
 | `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
 | `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-nfs-subdir` |
-| `postgresql` | `default` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
+| `postgresql` | `database` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
 Additional resources not represented as child Applications:
 
@@ -733,25 +734,25 @@ Additional resources not represented as child Applications:
 | `synology-iscsi` StorageClass | cluster-wide | Synology CSI, iSCSI, Retain |
 | `traefik` HelmChartConfig | `kube-system` | Extra entry points and dashboard |
 | `coredns-custom` ConfigMap | `kube-system` | `hoist.local` -> `192.168.68.138` |
-| `postgres` StatefulSet | `default` | Managed by the `postgresql` child Application |
-| `postgres-init-apps` Job | `default` | Creates the `mealie` and `donetick` roles/databases |
-| `postgres-app-secrets` | `default` | Sealed app DB passwords used by the init Job |
+| `postgres` StatefulSet | `database` | Managed by the `postgresql` child Application |
+| `postgres-init-apps` Job | `database` | Creates the `mealie` and `donetick` roles/databases |
+| `postgres-app-secrets` | `database` | Sealed app DB passwords used by the init Job |
 | `mealie-db` | `mealie` | Sealed Mealie DB password |
 | `donetick-secret` | `donetick` | Sealed Donetick DB password and JWT secret |
 | `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
 
 ### PostgreSQL databases
 
-The `postgresql` child Application runs a single `postgres` StatefulSet in
-`default`. The `postgres-init-apps` PostSync Job creates two application
-roles/databases idempotently:
+The `postgresql` child Application runs a single `postgres` StatefulSet in the
+`database` namespace. The `postgres-init-apps` PostSync Job creates two
+application roles/databases idempotently:
 
 | Role/database | Password source | Consumer |
 | --- | --- | --- |
 | `mealie` | `mealie-db` Secret in `mealie` | Mealie |
 | `donetick` | `donetick-secret` Secret in `donetick` | Donetick |
 
-The Job also reads `postgres-app-secrets` in `default`, which contains the same
+The Job also reads `postgres-app-secrets` in `database`, which contains the same
 passwords. Keep the two SealedSecrets in sync if you rotate a password.
 
 ### Endpoints and ports

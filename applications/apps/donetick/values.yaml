@@ -25,7 +25,7 @@ controllers:
           DT_ENV: selfhosted
 
           DT_DATABASE_TYPE: postgres
-          DT_DATABASE_HOST: postgres-headless-service.default.svc.cluster.local
+          DT_DATABASE_HOST: postgres-headless-service.database.svc.cluster.local
           DT_DATABASE_PORT: "5432"
           DT_DATABASE_NAME: donetick
           DT_DATABASE_USER: donetick

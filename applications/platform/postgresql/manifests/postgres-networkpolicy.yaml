@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: postgres-network-policy
-  namespace: default
+  namespace: database
 spec:
   podSelector:
     matchLabels:
@@ -13,11 +13,11 @@ spec:
   ingress:
     # 1. Allows traffic to PostgreSQL port 5432 from explicitly authorized pods
     - from:
-        # Apps running in the default namespace
+        # Same-namespace clients, such as the database init Job
         - podSelector:
             matchLabels:
               requires-db: postgres
-        # Apps running in their own namespace
+        # Applications running in their own namespaces
         - namespaceSelector:
             matchExpressions:
               - key: kubernetes.io/metadata.name
@@ -25,7 +25,6 @@ spec:
                 values:
                   - mealie
                   - donetick
-                  - ntfy
           podSelector:
             matchLabels:
               requires-db: postgres

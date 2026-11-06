@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: postgres-init-apps
-  namespace: default
+  namespace: database
   annotations:
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
@@ -33,7 +33,7 @@ spec:
                 - ALL
           env:
             - name: PGHOST
-              value: postgres-headless-service.default.svc.cluster.local
+              value: postgres-headless-service.database.svc.cluster.local
             - name: PGPORT
               value: "5432"
             - name: PGUSER
