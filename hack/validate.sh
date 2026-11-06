@@ -59,7 +59,10 @@ mapfile -t yaml_files < <(
   {
     git ls-files '*.yaml'
     git ls-files --others --exclude-standard '*.yaml'
-  } | sort -u
+  } | sort -u | while IFS= read -r f; do
+    # git ls-files still lists tracked files after they are deleted locally.
+    [ -f "$f" ] && printf '%s\n' "$f"
+  done
 )
 
 step "YAML syntax (yamllint)"
