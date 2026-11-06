@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ntfy
+  namespace: argocd
+spec:
+  project: apps
+
+  sources:
+    - repoURL: https://repo.helmforge.dev
+      chart: ntfy
+      targetRevision: 1.7.1
+
+      helm:
+        valueFiles:
+          - $values/applications/apps/ntfy/values.yaml
+
+    - repoURL: git@github.com:kevinlacotaco/manifests.git
+      targetRevision: main
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ntfy
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true

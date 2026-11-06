@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   destination:
-    namespace: default
+    namespace: argocd
     server: https://kubernetes.default.svc
   source:
     repoURL: git@github.com:kevinlacotaco/manifests.git

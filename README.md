@@ -105,22 +105,25 @@ Run this checklist when you come back to the cluster after a while:
 │   └── validate.sh              # the validation pipeline
 ├── applications/
 │   ├── applications.yaml        # app-of-apps: the root Argo CD Application
-│   ├── kustomization.yaml       # lists every Application that is wired in
-│   ├── adguard-home/            # Kustomize base + overlays/home
-│   ├── argocd/                  # Argo CD itself (Helm)
-│   ├── coredns/                 # CoreDNS custom host entries
-│   ├── monitoring/              # Grafana, Loki, Prometheus, ingress, netpol
-│   ├── nfs-subdir-external-provisioner/
-│   ├── rabbitmq/                # RabbitMQ operator + RabbitmqCluster CR
-│   ├── sealed-secrets/          # Sealed Secrets controller
-│   ├── synology-csi/            # Synology CSI driver
-│   ├── synology-iscsi-storageclass/
-│   ├── traefik/                 # Traefik HelmChartConfig
-│   ├── uptime-kuma/
-│   ├── donetick/                # Application, namespace, sealed secret, values
-│   ├── mealie/                  # Application + manifests/ (Kustomize workload)
-│   ├── ntfy/                    # wired in; HelmForge chart
-│   └── postgresql/              # Application + manifests/ (Postgres workload)
+│   ├── kustomization.yaml       # includes platform/, observability/, apps/
+│   ├── platform/                # cluster infrastructure
+│   │   ├── argocd/              # Argo CD itself, ingress, AppProjects
+│   │   ├── coredns/             # CoreDNS custom host entries
+│   │   ├── nfs-subdir-external-provisioner/
+│   │   ├── postgresql/          # Application + manifests/ (Postgres workload)
+│   │   ├── rabbitmq/            # RabbitMQ operator + RabbitmqCluster CR
+│   │   ├── sealed-secrets/      # Sealed Secrets controller
+│   │   ├── synology-csi/        # Synology CSI driver
+│   │   ├── synology-iscsi-storageclass/
+│   │   └── traefik/             # Traefik HelmChartConfig
+│   ├── observability/           # monitoring namespace + metrics/logs/uptime
+│   │   ├── monitoring/          # Grafana, Loki, Prometheus, ingress, netpol
+│   │   └── uptime-kuma/
+│   └── apps/                    # user-facing applications
+│       ├── adguard-home/        # Kustomize base + overlays/home
+│       ├── donetick/            # Application, namespace, sealed secret, values
+│       ├── mealie/              # Application + manifests/ (Kustomize workload)
+│       └── ntfy/                # Application + values (HelmForge chart)
 ├── .github/workflows/validate.yaml
 ├── .editorconfig
 ├── .gitignore
@@ -142,15 +145,44 @@ one of:
 
 - a Helm chart, pinned with `targetRevision`, or
 - a Kustomize path inside this repo, such as
-  `applications/adguard-home/overlays/home`.
+  `applications/apps/adguard-home/overlays/home`.
 
 For apps that live in their own directory, keep the directory's
 `kustomization.yaml` limited to the `Application` object (plus any resources
 the child Application cannot create itself, such as a Helm app's namespace and
 sealed secret). Put the child-reconciled workload in a subdirectory such as
-`applications/mealie/manifests`, and point the child `Application` at that
-subdirectory. This lets the root kustomization list the app as just
-`mealie`, `postgresql`, or `donetick` without applying the workload twice.
+`applications/apps/mealie/manifests`, and point the child `Application` at that
+subdirectory. This lets the root kustomization list the app group without
+applying the workload twice.
+
+### Projects and namespaces
+
+The root kustomization lists three group directories:
+
+- `applications/platform` — cluster infrastructure and shared services
+- `applications/observability` — metrics, logs, dashboards, and uptime
+- `applications/apps` — user-facing applications
+
+Each group maps to an Argo CD `AppProject` (`platform`, `observability`,
+`apps`) defined under `applications/platform/argocd/projects/`. The projects
+restrict which Git/Helm sources and destination namespaces each Application may
+use. They carry `argocd.argoproj.io/sync-wave: "-10"` so they are created before
+the child `Application` objects that reference them. The root `applications`
+Application itself stays in the `default` project, because the custom projects
+do not exist until it creates them.
+
+Namespaces and projects do **not** have to be top-level folders. They are
+ordinary Kustomize resources, so their location only needs to be reachable from
+a kustomization. In this repo:
+
+- AppProjects live with the Argo CD configuration, in
+  `applications/platform/argocd/projects/`.
+- Namespaces live with the group that owns them. `monitoring` is defined once in
+  `applications/observability/namespace.yaml`, and the other namespaces stay
+  inside their app directories.
+- The root app's `destination.namespace` is `argocd`, since that is where the
+  `Application` and `AppProject` objects it manages live. Destination
+  namespaces for the child apps are declared per Application.
 
 **Important:** do not run `kubectl apply -k applications` against the live
 cluster during normal work. Argo CD owns these resources; manual applies cause
@@ -433,11 +465,11 @@ Runs `hack/validate.sh`, which currently does the following:
 Current baseline (at the time of writing):
 
 ```text
-17 kustomizations build
+24 kustomizations build
 10 chart-backed Applications render
 154 Helm-rendered resources: 150 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
-89 Kustomize-rendered resources: 89 valid, 0 invalid, 0 skipped
-51 standalone resources: 51 valid, 0 skipped
+134 Kustomize-rendered resources: 134 valid, 0 invalid, 0 skipped
+54 standalone resources: 54 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -506,7 +538,7 @@ failing steps; there are no `|| true` escape hatches.
 kubectl kustomize applications
 
 # Render one Kustomize app
-kubectl kustomize applications/adguard-home/overlays/home
+kubectl kustomize applications/apps/adguard-home/overlays/home
 
 # YAML lint
 .venv/bin/yamllint .
@@ -678,7 +710,7 @@ plaintext secret with the new controller certificate.
 | Application | Namespace | Source | Notes |
 | --- | --- | --- | --- |
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
-| `adguard-home` | `networking` | Git path `applications/adguard-home/overlays/home` | Only pure Kustomize workload |
+| `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload |
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081 |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; UI on 3000 |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI |
@@ -689,9 +721,9 @@ plaintext secret with the new controller certificate.
 | `synology-csi` | `synology-csi` | Helm `0.10.1` | iSCSI driver |
 | `uptime-kuma` | `monitoring` | Helm `app-template` `3.7.2` | 5Gi iSCSI |
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
-| `mealie` | `mealie` | Git path `applications/mealie/manifests` | Wired in; Postgres `mealie` DB |
+| `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
 | `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-nfs-subdir` |
-| `postgresql` | `default` | Git path `applications/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
+| `postgresql` | `default` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
 Additional resources not represented as child Applications:
 
@@ -842,7 +874,7 @@ fixed.
 ### Wiring and correctness
 
 - [x] Wire `postgresql` in as a child Application
-  (`applications/postgresql/application.yaml`).
+  (`applications/platform/postgresql/application.yaml`).
 - [x] Wire `ntfy` into `applications/kustomization.yaml` and replace its dead
   chart repository with HelmForge `ntfy` `1.7.1`.
 - [x] Wire `mealie` and `donetick` into the root app-of-apps.
@@ -854,7 +886,7 @@ fixed.
 - [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
   `*.example.com`.
 - [x] Remove the stale duplicate
-  `applications/adguard-home/overlays/home/application.yaml`.
+  `applications/apps/adguard-home/overlays/home/application.yaml`.
 - [x] Fix the Argo CD IngressRoute service name to `argo-argocd-server`, which
   matches the `argo` Helm release.
 - [ ] Remove or repurpose the unused `rabbitmq-values` ConfigMap and the

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+  - pairs:
+      infrastructure.io/component: observability
+    includeSelectors: true
+
+resources:
+  - grafana-admin-sealed-secret.yaml
+  - grafana.yaml
+  - grafana-ingress.yaml
+  - grafana-network-policy.yaml
+  - prometheus.yaml
+  - loki.yaml

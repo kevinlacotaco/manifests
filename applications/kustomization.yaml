@@ -9,18 +9,6 @@ labels:
 
 resources:
   - applications.yaml
-  - adguard-home
-  - argocd
-  - sealed-secrets
-  - synology-csi
-  - monitoring
-  - traefik
-  - coredns
-  - synology-iscsi-storageclass
-  - nfs-subdir-external-provisioner
-  - ntfy
-  - postgresql
-  - mealie
-  - donetick
-  - rabbitmq
-  - uptime-kuma
+  - platform
+  - observability
+  - apps
