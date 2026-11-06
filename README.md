@@ -80,7 +80,7 @@ Run this checklist when you come back to the cluster after a while:
    | --- | --- |
    | Argo CD | <http://boulder.local:8081> |
    | Grafana | <http://boulder.local:3000> |
-   | Uptime Kuma | <http://kuma.192.168.68.71.nip.io> |
+   | Uptime Kuma | <https://kuma.lakotko.synology.me> |
    | AdGuard Home | <http://192.168.68.71:31628> |
    | Traefik dashboard | <http://192.168.68.71:8080/dashboard/> |
 
@@ -763,10 +763,10 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 | Kubernetes API | `https://192.168.68.71:6443` |
 | Argo CD | `http://boulder.local:8081` |
 | Grafana | `http://boulder.local:3000` |
-| Uptime Kuma | `http://kuma.192.168.68.71.nip.io` |
+| Uptime Kuma | `https://kuma.lakotko.synology.me` |
 | Mealie | `https://mealie.example.com` (placeholder) |
 | Donetick | `https://donetick.example.com` (placeholder) |
-| ntfy | `https://ntfy.example.com` (placeholder) |
+| ntfy | `https://ntfy.lakotko.synology.me` |
 | AdGuard web | `http://192.168.68.71:31628` |
 | AdGuard DNS (UDP) | `192.168.68.71:30915` |
 | AdGuard DNS (TCP) | `192.168.68.71:30916` |
