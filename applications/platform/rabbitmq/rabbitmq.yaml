@@ -1,0 +1,23 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq
+  namespace: messaging
+spec:
+  replicas: 1
+
+  persistence:
+    storageClassName: synology-iscsi
+    storage: 20Gi
+
+  rabbitmq:
+    additionalConfig: |
+      log.console.level = info
+      disk_free_limit.absolute = 2GB
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi

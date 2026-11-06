@@ -1,0 +1,35 @@
+image:
+  tag: v2.32.0
+
+ntfy:
+  baseUrl: https://ntfy.example.com
+  behindProxy: true
+  authDefaultAccess: deny-all
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - host: ntfy.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ntfy-tls
+      hosts:
+        - ntfy.example.com
+
+persistence:
+  enabled: true
+  storageClass: synology-nfs-subdir
+  accessModes:
+    - ReadWriteMany
+  size: 10Gi
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

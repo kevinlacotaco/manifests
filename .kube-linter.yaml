@@ -1,0 +1,15 @@
+# Start with structural checks that catch real wiring bugs.
+# Security/hardening checks will be added as the manifests are cleaned up.
+checks:
+  doNotAutoAddDefaults: true
+  include:
+    - dangling-service
+    # NetworkPolicy targets are often Helm-managed pods that are not present in
+    # the rendered kustomize output, so these checks false-positive today.
+    # Re-enable once Helm rendering is part of validation.
+    - dangling-ingress
+    - mismatching-selector
+    - duplicate-env-var
+    - invalid-target-ports
+    - deprecated-service-account-field
+    - non-existent-service-account

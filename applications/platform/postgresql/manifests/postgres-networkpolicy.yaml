@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-network-policy
+  namespace: database
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # 1. Allows traffic to PostgreSQL port 5432 from explicitly authorized pods
+    - from:
+        # Same-namespace clients, such as the database init Job
+        - podSelector:
+            matchLabels:
+              requires-db: postgres
+        # Applications running in their own namespaces
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - mealie
+                  - donetick
+          podSelector:
+            matchLabels:
+              requires-db: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+  egress:
+    # 2. Block all outbound traffic except CoreDNS for basic lookups if needed
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53

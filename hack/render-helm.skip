@@ -1,0 +1,4 @@
+# Applications that cannot be rendered locally yet.
+#
+# Format: <application-name>: <reason>
+# Remove the entry once the application is fixed.

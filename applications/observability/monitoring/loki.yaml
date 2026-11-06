@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+spec:
+  project: observability
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 6.55.0
+    chart: loki
+    helm:
+      values: |
+        deploymentMode: SingleBinary
+        loki:
+          auth_enabled: false
+          storage:
+            type: filesystem
+          storage_config:
+            filesystem:
+              directory: /var/loki/chunks
+
+          schemaConfig:
+            configs:
+              - from: 2024-01-01
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: index_
+                  period: 24h
+
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 20Gi
+            storageClass: synology-iscsi
+
+        read:
+          replicas: 0
+
+        write:
+          replicas: 0
+
+        backend:
+          replicas: 0
+
+        service:
+          type: ClusterIP
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,19 @@
+extends: default
+
+ignore: |
+  .git/
+  .venv/
+  .bin/
+
+rules:
+  # Existing manifests use both indented and flush sequences.
+  indentation:
+    indent-sequences: whatever
+  # Long base64 seals, shell blocks, and image references are expected.
+  line-length: disable
+  # Manifests do not use document start markers.
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off']

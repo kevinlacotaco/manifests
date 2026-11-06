@@ -1,0 +1,103 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-init-apps
+  namespace: database
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 6
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: postgres-init
+        requires-db: postgres
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: init-databases
+          image: postgres:18.6-alpine
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: PGHOST
+              value: postgres-headless-service.database.svc.cluster.local
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-db
+            - name: MEALIE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: mealie-db-password
+            - name: DONETICK_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: donetick-db-password
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" >/dev/null 2>&1; do
+                echo "waiting for PostgreSQL at $PGHOST:$PGPORT"
+                sleep 2
+              done
+
+              psql -v ON_ERROR_STOP=1 \
+                -v mealie_password="$MEALIE_DB_PASSWORD" \
+                -v donetick_password="$DONETICK_DB_PASSWORD" <<'SQL'
+              SELECT format('CREATE ROLE mealie LOGIN PASSWORD %L', :'mealie_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mealie')\gexec
+              ALTER ROLE mealie WITH LOGIN PASSWORD :'mealie_password';
+
+              SELECT format('CREATE ROLE donetick LOGIN PASSWORD %L', :'donetick_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'donetick')\gexec
+              ALTER ROLE donetick WITH LOGIN PASSWORD :'donetick_password';
+
+              SELECT 'CREATE DATABASE mealie OWNER mealie'
+              WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'mealie')\gexec
+              SELECT 'CREATE DATABASE donetick OWNER donetick'
+              WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'donetick')\gexec
+
+              \c mealie
+              ALTER SCHEMA public OWNER TO mealie;
+              GRANT ALL ON SCHEMA public TO mealie;
+
+              \c donetick
+              ALTER SCHEMA public OWNER TO donetick;
+              GRANT ALL ON SCHEMA public TO donetick;
+              SQL
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi

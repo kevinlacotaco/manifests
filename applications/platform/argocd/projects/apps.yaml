@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  description: User-facing applications
+  sourceRepos:
+    - git@github.com:kevinlacotaco/manifests.git
+    - https://bjw-s-labs.github.io/helm-charts/
+    - https://repo.helmforge.dev
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: networking
+    - server: https://kubernetes.default.svc
+      namespace: donetick
+    - server: https://kubernetes.default.svc
+      namespace: mealie
+    - server: https://kubernetes.default.svc
+      namespace: ntfy
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace

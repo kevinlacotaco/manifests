@@ -1,0 +1,30 @@
+# Local-only secret material. Never commit these.
+/cluster-sealed-secrets-master.key
+
+# Plaintext manifests that must be sealed before they are committed.
+/applications/apps/adguard-home/adguard-password
+/applications/apps/adguard-home/adguard-users.yaml
+/applications/apps/mealie/mealie-db-secret.yaml
+/applications/apps/ntfy/ntfy-secret.yaml
+/applications/observability/monitoring/grafana-admin-secret.yaml
+/applications/platform/postgresql/postgres-secret.yaml
+/applications/platform/rabbitmq/rabbitmq-secret.yaml
+/applications/platform/synology-csi/client-info.yaml
+/applications/platform/synology-csi/client-info-secret.yaml
+
+# Any other plaintext Secret manifests, while keeping sealed variants tracked.
+/applications/**/*-secret.yaml
+!/applications/**/*-sealed-secret.yaml
+!/applications/**/*-sealedsecret.yaml
+!/applications/**/sealed-secret.yaml
+
+# Generated or local artifacts.
+/combined.yaml
+/applications/platform/rabbitmq-*.tgz
+/.bin/
+/.venv/
+/.tmp/
+.DS_Store
+*.swp
+
+__pycache__

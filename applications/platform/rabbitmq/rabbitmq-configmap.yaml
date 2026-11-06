@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-values
+  namespace: messaging
+data:
+  values.yaml: |
+    replicaCount: 1
+    plugins: "rabbitmq_management rabbitmq_mqtt"
+    extraPlugins: "rabbitmq_auth_backend_cache"
+    service:
+      type: ClusterIP
+    extraConfiguration: |
+      mqtt.listeners.tcp.default = 1883
+      mqtt.allow_anonymous = false
+      mqtt.vhost = /
+      mqtt.exchange = amq.topic
+    containerPorts:
+      amqp: 5672
+      manager: 15672
+      epmd: 4369
+      dist: 25672
+      mqtt: 1883
+    servicePorts:
+      amqp: 5672
+      manager: 15672
+      mqtt: 1883
+    metrics:
+      enabled: true
+    auth:
+      existingPasswordSecret: rabbitmq-auth
+      existingUsernameSecret: rabbitmq-auth
+      existingErlangSecret: rabbitmq-auth
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: synology-iscsi
