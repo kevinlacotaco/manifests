@@ -31,6 +31,20 @@ spec:
           fsGroup: 472
         initChownData:
           enabled: false
+        dashboardProviders:
+          dashboardproviders.yaml:
+            apiVersion: 1
+            providers:
+              - name: default
+                orgId: 1
+                folder: ''
+                type: file
+                disableDeletion: false
+                editable: true
+                options:
+                  path: /var/lib/grafana/dashboards/default
+        dashboardsConfigMaps:
+          default: grafana-dashboards
         datasources:
           datasources.yaml:
             apiVersion: 1
