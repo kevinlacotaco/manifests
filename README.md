@@ -468,7 +468,7 @@ Current baseline (at the time of writing):
 ```text
 24 kustomizations build
 10 chart-backed Applications render
-153 Helm-rendered resources: 149 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
+155 Helm-rendered resources: 151 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
 138 Kustomize-rendered resources: 138 valid, 0 invalid, 0 skipped
 56 standalone resources: 56 valid, 0 skipped
 kube-linter: no lint errors
@@ -782,13 +782,14 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 `synology-nfs` is **not** a real StorageClass in this cluster. Use
 `synology-nfs-subdir` for NFS.
 
-The Synology NFS export previously denied writes from non-root UIDs even when
-the directory mode was `0777`. The NFSv4.1 domain/ACL issue has been corrected
-and tested from the node, but Kubernetes pods must be recreated to pick up a
-fresh mount.
+`synology-nfs-subdir` is configured with `mountOptions: [vers=3]` in the
+`nfs-subdir-external-provisioner` Helm values. New PVs mount over NFSv3, which
+avoids the Synology NFSv4 idmap and Windows ACL layer that denied writes from
+non-root pod UIDs. Existing PVs keep their old NFSv4 mount options until their
+`spec.mountOptions` is patched or the PV/PVC is recreated.
 
 Mealie keeps its media on `synology-nfs-subdir` because it is shared
-ReadWriteMany data, and runs as UID/GID 911; the export must allow that UID.
+ReadWriteMany data, and runs as UID/GID 911; the NFS export must allow that UID.
 ntfy uses `synology-iscsi` because SQLite on NFS is unsafe. Verify a non-root
 write from a test pod before relying on NFS for a new application.
 
@@ -897,8 +898,10 @@ fixed.
 - [x] Move ntfy to `synology-iscsi`; SQLite on NFS is unsafe.
 - [x] Keep Mealie media on `synology-nfs-subdir` so it remains shared
   ReadWriteMany data.
-- [ ] Verify Mealie can write to `mealie-media` as UID/GID 911 after the
-  NFSv4.1 fix.
+- [x] Configure `synology-nfs-subdir` to mount new volumes with `vers=3`.
+- [ ] Patch or recreate existing NFS PVs so they use `vers=3`.
+- [ ] Confirm Synology NFSv3 is enabled, then verify Mealie can write to
+  `mealie-media` as UID/GID 911.
 - [ ] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
 - [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
   `*.example.com`.
