@@ -11,6 +11,9 @@ spec:
     chart: alloy
     helm:
       values: |
+        crds:
+          create: false
+
         controller:
           type: deployment
           replicas: 1
