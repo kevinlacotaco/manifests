@@ -23,6 +23,27 @@ spec:
     server: https://kubernetes.default.svc
     namespace: ntfy
 
+  # These resources were originally tracked by annotation. The label above
+  # moves them to label tracking; ignore the stale annotation until Argo CD
+  # has removed it during a sync.
+  ignoreDifferences:
+    - group: ""
+      kind: ConfigMap
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+    - group: networking.k8s.io
+      kind: Ingress
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+
   syncPolicy:
     automated:
       prune: true

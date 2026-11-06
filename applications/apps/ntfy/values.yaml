@@ -1,3 +1,6 @@
+commonLabels:
+  argocd.argoproj.io/instance: ntfy
+
 image:
   tag: v2.32.0
 
