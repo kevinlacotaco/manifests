@@ -117,10 +117,10 @@ Run this checklist when you come back to the cluster after a while:
 │   ├── synology-iscsi-storageclass/
 │   ├── traefik/                 # Traefik HelmChartConfig
 │   ├── uptime-kuma/
-│   ├── donetick/                # not wired in yet
-│   ├── mealie/                  # not wired in yet
-│   ├── ntfy/                    # not wired in yet
-│   └── postgresql/              # not wired in yet
+│   ├── donetick/                # Application, namespace, sealed secret, values
+│   ├── mealie/                  # Application + manifests/ (Kustomize workload)
+│   ├── ntfy/                    # wired in; HelmForge chart
+│   └── postgresql/              # Application + manifests/ (Postgres workload)
 ├── .github/workflows/validate.yaml
 ├── .editorconfig
 ├── .gitignore
@@ -143,6 +143,14 @@ one of:
 - a Helm chart, pinned with `targetRevision`, or
 - a Kustomize path inside this repo, such as
   `applications/adguard-home/overlays/home`.
+
+For apps that live in their own directory, keep the directory's
+`kustomization.yaml` limited to the `Application` object (plus any resources
+the child Application cannot create itself, such as a Helm app's namespace and
+sealed secret). Put the child-reconciled workload in a subdirectory such as
+`applications/mealie/manifests`, and point the child `Application` at that
+subdirectory. This lets the root kustomization list the app as just
+`mealie`, `postgresql`, or `donetick` without applying the workload twice.
 
 **Important:** do not run `kubectl apply -k applications` against the live
 cluster during normal work. Argo CD owns these resources; manual applies cause
@@ -299,13 +307,13 @@ Traefik exposes a dedicated `argocd` entry point on port `8081`.
 
 ```sh
 kubectl -n argocd get svc
-kubectl -n argocd port-forward svc/argocd-server 8080:80
+kubectl -n argocd port-forward svc/argo-argocd-server 8080:80
 ```
 
 Then open <http://localhost:8080>.
 
-If `argocd-server` is not the service name, pick the Argo CD server service
-from the `kubectl get svc` output.
+If `argo-argocd-server` is not the service name, pick the Argo CD server
+service from the `kubectl get svc` output.
 
 ### Initial admin password
 
@@ -341,7 +349,7 @@ argocd login boulder.local:8081 --plaintext --username admin
 Alternative login through port-forward:
 
 ```sh
-kubectl -n argocd port-forward svc/argocd-server 8080:80
+kubectl -n argocd port-forward svc/argo-argocd-server 8080:80
 argocd login localhost:8080 --plaintext --username admin
 ```
 
@@ -425,11 +433,11 @@ Runs `hack/validate.sh`, which currently does the following:
 Current baseline (at the time of writing):
 
 ```text
-16 kustomizations build
-9 chart-backed Applications render
-149 Helm-rendered resources: 145 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
-71 Kustomize-rendered resources: 71 valid, 0 invalid, 0 skipped
-46 standalone resources: 46 valid, 0 skipped
+17 kustomizations build
+10 chart-backed Applications render
+154 Helm-rendered resources: 150 valid, 0 invalid, 0 errors, 4 skipped (CRDs)
+89 Kustomize-rendered resources: 89 valid, 0 invalid, 0 skipped
+51 standalone resources: 51 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -464,9 +472,8 @@ The renderer follows Argo CD's rules for value files:
 - Inline `helm.values` are applied last.
 
 Applications that cannot be rendered yet are listed in
-`hack/render-helm.skip` with a reason. The current entry is `ntfy`, whose
-chart repository (`charts.ntfy.sh`) no longer resolves. Remove the entry once
-the chart source is replaced.
+`hack/render-helm.skip` with a reason. The file is currently empty: all
+chart-backed Applications render locally.
 
 ### What it does **not** cover yet
 
@@ -570,7 +577,7 @@ kubectl -n kube-system get svc traefik
 ### Port-forward examples
 
 ```sh
-kubectl -n argocd port-forward svc/argocd-server 8080:80
+kubectl -n argocd port-forward svc/argo-argocd-server 8080:80
 kubectl -n monitoring port-forward svc/grafana 3000:80
 kubectl -n monitoring port-forward svc/prometheus-server 9090:80
 kubectl -n messaging port-forward svc/rabbitmq 15672:15672
@@ -625,9 +632,36 @@ Rules:
 
   Store that backup offline and encrypted; do not commit it.
 
-The local file `cluster-sealed-secrets-master.key` is a plaintext Kubernetes
-Secret dump, **not** the Sealed Secrets controller key. Treat it as sensitive
-and keep it out of git.
+The local file `cluster-sealed-secrets-master.key` is a backup of the
+controller's keyring, including the private keys. Treat it as highly sensitive,
+keep it out of git, and store it offline. It can also be used to seal secrets
+while the cluster API is unavailable:
+
+```sh
+# Extract the newest controller certificate once.
+.venv/bin/python - <<'PY'
+import base64, pathlib, yaml
+items = []
+for doc in yaml.safe_load_all(open("cluster-sealed-secrets-master.key")):
+    for item in doc.get("items", []):
+        md = item.get("metadata", {})
+        if md.get("name", "").startswith("sealed-secrets-key"):
+            items.append(item)
+items.sort(key=lambda i: i["metadata"].get("creationTimestamp", ""))
+pathlib.Path(".tmp/sealed-secrets").mkdir(parents=True, exist_ok=True)
+pathlib.Path(".tmp/sealed-secrets/active.crt").write_bytes(
+    base64.b64decode(items[-1]["data"]["tls.crt"])
+)
+PY
+
+kubeseal --cert .tmp/sealed-secrets/active.crt --format yaml \
+  < plaintext-secret.yaml > sealed-secret.yaml
+```
+
+The controller retains old keys, so a secret sealed with an older key in the
+backup can still be decrypted. If you are unsure which key is current, seal
+with the newest key in the backup and verify the SealedSecret against the
+cluster when it is reachable.
 
 ### Re-sealing after a controller key change
 
@@ -654,8 +688,10 @@ plaintext secret with the new controller certificate.
 | `sealed-secrets` | `kube-system` | Helm `2.17.0` | Controller |
 | `synology-csi` | `synology-csi` | Helm `0.10.1` | iSCSI driver |
 | `uptime-kuma` | `monitoring` | Helm `app-template` `3.7.2` | 5Gi iSCSI |
-| `donetick` | `donetick` | Helm `app-template` `3.7.2` | Not wired into root |
-| `ntfy` | `ntfy` | Helm `ntfy` `0.18.1` | Not wired; chart repo dead, skipped by renderer |
+| `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
+| `mealie` | `mealie` | Git path `applications/mealie/manifests` | Wired in; Postgres `mealie` DB |
+| `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-nfs-subdir` |
+| `postgresql` | `default` | Git path `applications/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
 Additional resources not represented as child Applications:
 
@@ -665,8 +701,26 @@ Additional resources not represented as child Applications:
 | `synology-iscsi` StorageClass | cluster-wide | Synology CSI, iSCSI, Retain |
 | `traefik` HelmChartConfig | `kube-system` | Extra entry points and dashboard |
 | `coredns-custom` ConfigMap | `kube-system` | `hoist.local` -> `192.168.68.138` |
-| `postgres` StatefulSet | `default` | Raw manifest; not wired |
-| `mealie` Deployment/PVC/Service | `mealie` | Raw manifest; not wired |
+| `postgres` StatefulSet | `default` | Managed by the `postgresql` child Application |
+| `postgres-init-apps` Job | `default` | Creates the `mealie` and `donetick` roles/databases |
+| `postgres-app-secrets` | `default` | Sealed app DB passwords used by the init Job |
+| `mealie-db` | `mealie` | Sealed Mealie DB password |
+| `donetick-secret` | `donetick` | Sealed Donetick DB password and JWT secret |
+| `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
+
+### PostgreSQL databases
+
+The `postgresql` child Application runs a single `postgres` StatefulSet in
+`default`. The `postgres-init-apps` PostSync Job creates two application
+roles/databases idempotently:
+
+| Role/database | Password source | Consumer |
+| --- | --- | --- |
+| `mealie` | `mealie-db` Secret in `mealie` | Mealie |
+| `donetick` | `donetick-secret` Secret in `donetick` | Donetick |
+
+The Job also reads `postgres-app-secrets` in `default`, which contains the same
+passwords. Keep the two SealedSecrets in sync if you rotate a password.
 
 ### Endpoints and ports
 
@@ -676,6 +730,9 @@ Additional resources not represented as child Applications:
 | Argo CD | `http://boulder.local:8081` |
 | Grafana | `http://boulder.local:3000` |
 | Uptime Kuma | `http://kuma.192.168.68.71.nip.io` |
+| Mealie | `https://mealie.example.com` (placeholder) |
+| Donetick | `https://donetick.example.com` (placeholder) |
+| ntfy | `https://ntfy.example.com` (placeholder) |
 | AdGuard web | `http://192.168.68.71:31628` |
 | AdGuard DNS (UDP) | `192.168.68.71:30915` |
 | AdGuard DNS (TCP) | `192.168.68.71:30916` |
@@ -689,8 +746,8 @@ Additional resources not represented as child Applications:
 | `synology-iscsi` | Synology iSCSI, `/volume1` | Databases and single-writer workloads |
 | `synology-nfs-subdir` | NFS `192.168.68.138:/volume1/k8s-nfs` | Shared ReadWriteMany data; default class |
 
-`synology-nfs` is referenced by some unfinished manifests but is **not** a
-real StorageClass in this cluster. Use `synology-nfs-subdir` for NFS.
+`synology-nfs` is **not** a real StorageClass in this cluster. Use
+`synology-nfs-subdir` for NFS.
 
 ---
 
@@ -784,48 +841,40 @@ fixed.
 
 ### Wiring and correctness
 
-- [ ] Wire `mealie`, `postgresql`, `ntfy`, and `donetick` into
-  `applications/kustomization.yaml` only after their manifests are fixed.
-- [ ] Add an Argo CD `Application` for `mealie` and `postgresql` (currently
-  raw manifests only).
-- [ ] Fix `mealie` and `ntfy` to use `synology-nfs-subdir` instead of the
-  nonexistent `synology-nfs` StorageClass.
-- [ ] Fix `ntfy`'s Helm values reference. A chart-only source cannot read
-  `values.yaml` from this Git repo; use a multi-source `$values` setup like
-  `uptime-kuma`.
-- [ ] Fix `donetick`'s values source. It currently points at
-  `applications/uptime-kuma/values.yaml`.
-- [ ] Fix `donetick`'s database host, missing `donetick-secret`, and
-  placeholder hostname.
-- [ ] Fix `mealie`'s Deployment namespace, missing `mealie-data` PVC, database
-  hostname, probes, and image tag.
-- [ ] Fix the `postgres` NetworkPolicy: clients must carry the
-  `requires-db: postgres` label, or the policy must be widened.
-- [ ] Remove the unused `postgres-pvc`.
-- [ ] Remove the stale duplicate
-  `applications/adguard-home/overlays/home/application.yaml`; it points at the
-  wrong path (`apps/adguard/overlays/home`).
+- [x] Wire `postgresql` in as a child Application
+  (`applications/postgresql/application.yaml`).
+- [x] Wire `ntfy` into `applications/kustomization.yaml` and replace its dead
+  chart repository with HelmForge `ntfy` `1.7.1`.
+- [x] Wire `mealie` and `donetick` into the root app-of-apps.
+- [x] Add the `postgres-init-apps` PostSync Job, which creates the `mealie`
+  and `donetick` roles/databases idempotently.
+- [x] Seal the `mealie-db`, `donetick-secret`, and `postgres-app-secrets`
+  values and commit the SealedSecrets.
+- [ ] Verify the `postgres-init-apps` Job succeeds on the first cluster sync.
+- [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
+  `*.example.com`.
+- [x] Remove the stale duplicate
+  `applications/adguard-home/overlays/home/application.yaml`.
+- [x] Fix the Argo CD IngressRoute service name to `argo-argocd-server`, which
+  matches the `argo` Helm release.
 - [ ] Remove or repurpose the unused `rabbitmq-values` ConfigMap and the
   possibly unused `rabbitmq-auth` SealedSecret.
-- [ ] Verify the Argo CD Service name. The release name is `argo`, but the
-  IngressRoute targets `argocd-server`.
+- [ ] Verify the `postgres` security context on the cluster. It now runs as
+  UID/GID 70 and needs the CSI volume to honor `fsGroup`.
 
 ### Hardening
 
-- [ ] Pin floating image tags: AdGuard `latest`, Mealie `v3`, Donetick
-  `latest`.
+- [ ] Pin the remaining floating image tag: AdGuard `latest`.
 - [ ] Add liveness and readiness probes to AdGuard Home.
-- [ ] Replace deprecated `commonLabels` with `labels` in the kustomizations
-  that still use it.
+- [x] Replace deprecated `commonLabels` with `labels` in the kustomizations.
 - [ ] Add resource requests and limits where they are missing.
-- [ ] Review `postgres` `imagePullPolicy: Always` and pin a minor version.
 - [ ] Add `CreateNamespace` sync options where a child app targets a namespace
   Argo CD does not create.
 
 ### Validation and CI
 
 - [x] Render Helm charts in `make validate` (`hack/render-helm.sh`).
-- [ ] Replace the `ntfy` chart source and remove it from
+- [x] Replace the `ntfy` chart source and remove it from
   `hack/render-helm.skip`.
 - [x] Add a CI workflow that runs `make validate` on pull requests.
 - [ ] Do not merge the existing `feat/add-github-actions` branch as-is: it
@@ -837,9 +886,10 @@ fixed.
 ### Secrets
 
 - [ ] Seal the remaining plaintext secrets and delete the working copies.
-- [ ] Back up the Sealed Secrets controller key offline.
-- [ ] Confirm the misnamed `cluster-sealed-secrets-master.key` is stored
-  securely and never committed.
+- [x] Back up the Sealed Secrets controller keyring; the local backup is
+  `cluster-sealed-secrets-master.key`.
+- [ ] Confirm that backup is stored offline and encrypted, and that it is
+  never committed.
 
 ---
 
