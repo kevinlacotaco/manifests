@@ -468,9 +468,9 @@ Current baseline (at the time of writing):
 ```text
 24 kustomizations build
 11 chart-backed Applications render
-161 Helm-rendered resources: 157 valid, 0 invalid, 0 errors, 4 skipped
-138 Kustomize-rendered resources: 138 valid, 0 invalid, 0 skipped
-56 standalone resources: 56 valid, 0 skipped
+157 Helm-rendered resources: 153 valid, 0 invalid, 0 errors, 4 skipped
+141 Kustomize-rendered resources: 141 valid, 0 invalid, 0 skipped
+57 standalone resources: 57 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -711,11 +711,11 @@ plaintext secret with the new controller certificate.
 | Application | Namespace | Source | Notes |
 | --- | --- | --- | --- |
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
-| `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload |
-| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081 |
+| `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload; pinned image and probes |
+| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; an older orphaned `argocd-*` install still needs cleanup |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
-| `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy |
+| `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
 | `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP; alert rules |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
 | `rabbitmq-operator` | `rabbitmq-system` | Git path `config/installation` | Operator `v2.12.0`, image pinned to `2.12.0` |
@@ -794,6 +794,29 @@ Mealie keeps its media on `synology-nfs-subdir` because it is shared
 ReadWriteMany data, and runs as UID/GID 911; the NFS export must allow that UID.
 ntfy uses `synology-iscsi` because SQLite on NFS is unsafe. Verify a non-root
 write from a test pod before relying on NFS for a new application.
+
+### Capacity
+
+The cluster is a single node with roughly 15.4Gi of allocatable memory. Most
+workloads now declare requests and limits so scheduling is predictable and a
+runaway pod cannot consume the node.
+
+Loki's chart defaults include two memcached caches that requested about 11Gi of
+memory while using only tens of MiB. They are disabled in
+`applications/observability/monitoring/loki.yaml` because the homelab runs
+SingleBinary Loki with filesystem/TSDB storage. Re-enable them only if Loki is
+split into read/write/backend components or ingestion grows enough to need a
+shared cache.
+
+The rendered workload requests total about 4Gi of memory and 1.3 CPU. The
+RabbitMQ operator and broker are managed outside the rendered Helm output; with
+their requests included, the node is roughly 5.5Gi committed, leaving room for
+bursts and future applications. Check actual pressure with:
+
+```sh
+kubectl top node
+kubectl get pods -A -o custom-columns='NS:.metadata.namespace,POD:.metadata.name,CPU:.spec.containers[*].resources.requests.cpu,MEM:.spec.containers[*].resources.requests.memory'
+```
 
 ---
 
@@ -927,23 +950,30 @@ fixed.
 
 ### Hardening
 
-- [ ] Pin the remaining floating image tag: AdGuard `latest`.
-- [ ] Add liveness and readiness probes to AdGuard Home.
+- [x] Pin AdGuard Home to `adguard/adguardhome:v0.107.80` instead of `latest`.
+- [x] Add startup, liveness, and readiness probes to AdGuard Home.
+- [x] Set AdGuard's Deployment strategy to `Recreate`; the PVC is single-writer.
 - [x] Replace deprecated `commonLabels` with `labels` in the kustomizations.
-- [ ] Add resource requests and limits where they are missing.
-- [ ] Fix Grafana's `synology-iscsi` volume. It is crash-looping with
-  `input/output error` opening its SQLite database and has thousands of
-  restarts.
+- [x] Add resource requests and limits across the platform, monitoring, and
+  application workloads.
+- [x] Disable Loki's default memcached caches; they requested about 11Gi on a
+  single-node deployment that uses filesystem/TSDB storage.
+- [ ] Decide whether Grafana's SQLite volume needs a longer-term fix. It is
+  currently healthy, but earlier iSCSI I/O errors caused thousands of restarts.
 - [x] Add a log shipper (Grafana Alloy) so Loki receives application logs.
 - [x] Add Prometheus alert rules for node memory, pod restarts, Argo CD sync
   state, and PVC usage.
-- [ ] Wire Alertmanager to a real receiver (ntfy, email, or Uptime Kuma).
-  Alerts currently evaluate but are not delivered.
+- [x] Wire Alertmanager to the ntfy `alerts` topic. A test alert was delivered.
 - [x] Provision Grafana datasources and dashboards as code.
-- [ ] Verify the Grafana datasources, the homelab dashboard, and Loki log
-  ingestion after the next sync.
+- [x] Verify the Grafana datasources, the homelab dashboard, and Loki log
+  ingestion after sync.
 - [ ] Add `CreateNamespace` sync options where a child app targets a namespace
   Argo CD does not create.
+- [ ] Remove the orphaned old Argo CD `argocd-*` workloads from the `argocd`
+  namespace. Do not run `helm uninstall argocd`; the old and new installations
+  may share configuration and secrets.
+- [ ] Remove the orphaned `sealed-secrets-controller` deployment and service in
+  `kube-system`, leaving the active `sealed-secrets` controller in place.
 
 ### Validation and CI
 

@@ -12,6 +12,13 @@ spec:
     helm:
       values: |
         alertmanager:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
           config:
             enabled: true
             global:
@@ -42,9 +49,53 @@ spec:
               secretName: alertmanager-ntfy
               readOnly: true
 
+        configmapReload:
+          prometheus:
+            resources:
+              requests:
+                cpu: 5m
+                memory: 32Mi
+              limits:
+                cpu: 50m
+                memory: 64Mi
+
         server:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
           service:
             type: ClusterIP
+
+        kube-state-metrics:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 48Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+        prometheus-node-exporter:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+        prometheus-pushgateway:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
 
         serverFiles:
           alerting_rules.yml:

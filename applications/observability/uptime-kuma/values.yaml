@@ -6,6 +6,14 @@ controllers:
           repository: louislam/uptime-kuma
           tag: 1.23.16
 
+        resources:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+
         probes:
           liveness:
             enabled: true

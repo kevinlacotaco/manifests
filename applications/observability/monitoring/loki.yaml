@@ -37,12 +37,54 @@ spec:
                   prefix: index_
                   period: 24h
 
+        # This is a single-node homelab. The chart's default memcached caches
+        # request roughly 11Gi of memory while only using a few MiB. Loki works
+        # without them and the filesystem/TSDB backend is the source of truth.
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+
+        sidecar:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
+
         singleBinary:
           replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
           persistence:
             enabled: true
             size: 20Gi
             storageClass: synology-iscsi
+
+        gateway:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+        lokiCanary:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 48Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
 
         read:
           replicas: 0

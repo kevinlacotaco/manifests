@@ -28,6 +28,14 @@ spec:
           accessModes: ReadWriteMany
           reclaimPolicy: Retain
 
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+
   destination:
     server: https://kubernetes.default.svc
     namespace: nfs-provisioner

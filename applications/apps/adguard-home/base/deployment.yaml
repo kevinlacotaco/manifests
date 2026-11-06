@@ -5,6 +5,11 @@ metadata:
   namespace: networking
 spec:
   replicas: 1
+  # The PVC is ReadWriteOnce. Recreate avoids a rolling update deadlock where
+  # the old pod still holds the volume.
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: adguard-home
@@ -62,7 +67,8 @@ spec:
 
       containers:
         - name: adguard-home
-          image: adguard/adguardhome:latest
+          image: adguard/adguardhome:v0.107.80
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 53
               protocol: UDP
@@ -70,6 +76,30 @@ spec:
               protocol: TCP
             - containerPort: 3000
               name: web
+
+          startupProbe:
+            httpGet:
+              path: /
+              port: web
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: web
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: web
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
 
           volumeMounts:
             - name: config
