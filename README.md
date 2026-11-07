@@ -712,7 +712,7 @@ plaintext secret with the new controller certificate.
 | --- | --- | --- | --- |
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
 | `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload; pinned image and probes |
-| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; an older orphaned `argocd-*` install still needs cleanup |
+| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
@@ -940,7 +940,7 @@ fixed.
 - [x] Remove the orphaned Bitnami `messaging/rabbitmq` StatefulSet and its old
   8Gi NFS PVC after confirming they hold no data.
 - [x] Delete the Released RabbitMQ NFS PV.
-- [ ] Remove the empty NAS folders:
+- [x] Confirm the retired NAS folders are gone:
   - `/volume1/k8s-nfs/ntfy-ntfy-ntfy-data-pvc-e417e1f1-97ac-4c31-8182-d89a95dddad7`
   - `/volume1/k8s-nfs/messaging-data-rabbitmq-0-pvc-dc751ff6-5697-451b-8960-7650503554ab`
 - [x] Verify the pinned `rabbitmq-cluster-operator` `v2.12.0` reconciles the
@@ -972,14 +972,15 @@ fixed.
 - [x] Remove the orphaned old Argo CD `argocd-*` workloads from the `argocd`
   namespace. The old controller was already scaled to zero; its Deployments,
   StatefulSet, Services, and Ingress were then deleted. Shared configuration,
-  secrets, ServiceAccounts, and RBAC were left in place.
+  secrets, and shared service accounts were left in place; duplicate old RBAC
+  was removed in the next item.
 - [x] Remove the orphaned `sealed-secrets-controller` Deployment and Services
   in `kube-system`, leaving the active `sealed-secrets` controller in place.
-- [ ] Audit the remaining old Helm release metadata and duplicate RBAC. The
-  inert `argocd` release records and old `argocd-*` RBAC still exist, as do the
-  old `sealed-secrets` revision 1 records and `sealed-secrets-controller` RBAC.
-  Do not run `helm uninstall`, and do not delete the shared
-  `ClusterRole secrets-unsealer`.
+- [x] Remove the old Helm release metadata and duplicate RBAC. The inert
+  `argocd` and `sealed-secrets` release records and the old `argocd-*` and
+  `sealed-secrets-controller` RBAC were deleted after confirming the active
+  `argo-argocd-*` and `sealed-secrets` RBAC cover the shared service accounts.
+  The shared `ClusterRole secrets-unsealer` and the active controller remain.
 
 ### Validation and CI
 
@@ -998,8 +999,9 @@ fixed.
 - [ ] Seal the remaining plaintext secrets and delete the working copies.
 - [x] Back up the Sealed Secrets controller keyring; the local backup is
   `cluster-sealed-secrets-master.key`.
-- [ ] Confirm that backup is stored offline and encrypted, and that it is
-  never committed.
+- [ ] Encrypt the keyring backup and store it offline. The local file is still
+  plaintext; use `gpg --symmetric --cipher-algo AES256` and remove the plaintext
+  copy after verifying the encrypted copy. Never commit either file.
 
 ---
 
