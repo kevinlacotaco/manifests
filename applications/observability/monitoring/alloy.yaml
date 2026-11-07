@@ -99,13 +99,17 @@ spec:
               }
 
               loki.source.file "pods" {
-                targets       = local.file_match.pods.targets
-                tail_from_end = true
-                forward_to    = [loki.process.pods.receiver]
+                targets    = local.file_match.pods.targets
+                forward_to = [loki.process.pods.receiver]
               }
 
               loki.process "pods" {
                 stage.cri {}
+
+                stage.drop {
+                  older_than          = "1h"
+                  drop_counter_reason = "too old"
+                }
 
                 forward_to = [loki.write.default.receiver]
               }
