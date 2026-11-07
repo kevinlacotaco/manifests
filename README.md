@@ -969,11 +969,17 @@ fixed.
   ingestion after sync.
 - [ ] Add `CreateNamespace` sync options where a child app targets a namespace
   Argo CD does not create.
-- [ ] Remove the orphaned old Argo CD `argocd-*` workloads from the `argocd`
-  namespace. Do not run `helm uninstall argocd`; the old and new installations
-  may share configuration and secrets.
-- [ ] Remove the orphaned `sealed-secrets-controller` deployment and service in
-  `kube-system`, leaving the active `sealed-secrets` controller in place.
+- [x] Remove the orphaned old Argo CD `argocd-*` workloads from the `argocd`
+  namespace. The old controller was already scaled to zero; its Deployments,
+  StatefulSet, Services, and Ingress were then deleted. Shared configuration,
+  secrets, ServiceAccounts, and RBAC were left in place.
+- [x] Remove the orphaned `sealed-secrets-controller` Deployment and Services
+  in `kube-system`, leaving the active `sealed-secrets` controller in place.
+- [ ] Audit the remaining old Helm release metadata and duplicate RBAC. The
+  inert `argocd` release records and old `argocd-*` RBAC still exist, as do the
+  old `sealed-secrets` revision 1 records and `sealed-secrets-controller` RBAC.
+  Do not run `helm uninstall`, and do not delete the shared
+  `ClusterRole secrets-unsealer`.
 
 ### Validation and CI
 
