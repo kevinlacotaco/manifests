@@ -34,6 +34,19 @@ spec:
                 limits:
                   cpu: 200m
                   memory: 256Mi
+        # The root app owns the rabbitmq-system Namespace so it can carry the
+        # Pod Security Admission labels. Upstream also ships the Namespace;
+        # delete it here to avoid two Applications managing the same object.
+        - target:
+            version: v1
+            kind: Namespace
+            name: rabbitmq-system
+          patch: |-
+            $patch: delete
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: rabbitmq-system
 
   destination:
     server: https://kubernetes.default.svc
