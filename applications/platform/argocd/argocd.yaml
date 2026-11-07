@@ -53,6 +53,16 @@ spec:
               memory: 512Mi
           metrics:
             enabled: true
+          rbac:
+            - apiGroups:
+                - ""
+              resources:
+                - secrets
+                - configmaps
+              verbs:
+                - get
+                - list
+                - watch
         applicationSet:
           resources:
             requests:
