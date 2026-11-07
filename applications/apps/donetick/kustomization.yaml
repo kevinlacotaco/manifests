@@ -5,5 +5,7 @@ kind: Kustomization
 # the namespace and the sealed secret that the chart consumes.
 resources:
   - namespace.yaml
+  - guardrails.yaml
+  - networkpolicy.yaml
   - donetick-sealed-secret.yaml
   - application.yaml

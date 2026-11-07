@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - guardrails.yaml
   - postgres-networkpolicy.yaml
   - postgres-sealed-secret.yaml
   - postgres-app-sealed-secret.yaml

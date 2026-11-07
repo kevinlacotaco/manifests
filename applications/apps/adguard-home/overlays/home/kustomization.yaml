@@ -8,3 +8,4 @@ labels:
 resources:
   - ../../base
   - sealed-secret.yaml
+  - guardrails.yaml

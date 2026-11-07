@@ -8,4 +8,5 @@ labels:
 
 resources:
   - namespace.yaml
+  - guardrails.yaml
   - nfs-subdir-external-provisioner.yaml

@@ -3,5 +3,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - guardrails.yaml
+  - networkpolicy.yaml
   - pvc-data-iscsi.yaml
   - application.yaml

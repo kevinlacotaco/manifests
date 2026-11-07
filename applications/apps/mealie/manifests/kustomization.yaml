@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - guardrails.yaml
+  - networkpolicy.yaml
   - mealie-db-sealed-secret.yaml
   - deployment.yaml
   - service.yaml

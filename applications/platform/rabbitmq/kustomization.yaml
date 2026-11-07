@@ -8,5 +8,7 @@ labels:
 
 resources:
   - namespace.yaml
+  - namespace-rabbitmq-system.yaml
+  - guardrails.yaml
   - rabbitmq-operator.yaml
   - rabbitmq.yaml

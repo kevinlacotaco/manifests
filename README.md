@@ -469,8 +469,8 @@ Current baseline (at the time of writing):
 24 kustomizations build
 11 chart-backed Applications render
 157 Helm-rendered resources: 153 valid, 0 invalid, 0 errors, 4 skipped
-141 Kustomize-rendered resources: 141 valid, 0 invalid, 0 skipped
-57 standalone resources: 57 valid, 0 skipped
+194 Kustomize-rendered resources: 194 valid, 0 invalid, 0 skipped
+80 standalone resources: 80 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -956,6 +956,17 @@ fixed.
 - [x] Replace deprecated `commonLabels` with `labels` in the kustomizations.
 - [x] Add resource requests and limits across the platform, monitoring, and
   application workloads.
+- [x] Add Pod Security Admission labels. Application and platform namespaces
+  enforce `baseline` with `restricted` audit/warn; `monitoring` and
+  `synology-csi` enforce `privileged` because their node agents need host
+  paths and host networking.
+- [x] Add `LimitRange` defaults/maxima and namespace `ResourceQuota`s to the
+  application and platform namespaces. `monitoring` has a `LimitRange` only.
+- [x] Add default-deny ingress plus explicit allow policies for `mealie`,
+  `donetick`, and `ntfy`. Each allows Traefik/kube-system, monitoring,
+  same-namespace traffic, and kubelet probes from the node IP.
+- [ ] Add default-deny egress policies. Egress is still open for the guarded
+  namespaces.
 - [x] Disable Loki's default memcached caches; they requested about 11Gi on a
   single-node deployment that uses filesystem/TSDB storage.
 - [ ] Decide whether Grafana's SQLite volume needs a longer-term fix. It is
