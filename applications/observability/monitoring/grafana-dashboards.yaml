@@ -567,3 +567,395 @@ data:
       "uid": "application-overview",
       "version": 1
     }
+  application-detail.json: |-
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "id": 1,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "options": {
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "expr": "argocd_app_info{dest_namespace=~\"$namespace\"}",
+              "refId": "A",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ],
+          "title": "Argo CD applications",
+          "type": "table"
+        },
+        {
+          "id": 2,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "options": {
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace, pod, phase) (kube_pod_status_phase{namespace=~\"$namespace\",pod=~\"$pod\"} == 1)",
+              "refId": "A",
+              "legendFormat": "{{namespace}}/{{pod}} {{phase}}",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ],
+          "title": "Pods by phase",
+          "type": "table"
+        },
+        {
+          "id": 3,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "options": {
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\",pod=~\"$pod\"}[15m])) > 0",
+              "refId": "A",
+              "legendFormat": "{{namespace}}/{{pod}}",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ],
+          "title": "Pod restarts (15m increase)",
+          "type": "table"
+        },
+        {
+          "id": 4,
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "options": {
+            "showTime": true,
+            "wrapLogMessage": true,
+            "sortOrder": "Descending"
+          },
+          "targets": [
+            {
+              "expr": "{namespace=~\"$namespace\",pod=~\"$pod\"}",
+              "refId": "A"
+            }
+          ],
+          "title": "Logs for selected namespace and pod",
+          "type": "logs"
+        },
+        {
+          "id": 5,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 8,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",pod=~\"$pod\",container!=\"\",container!=\"POD\"}[5m]))",
+              "refId": "A",
+              "legendFormat": "{{namespace}}/{{pod}} usage"
+            },
+            {
+              "expr": "sum by (namespace, pod) (kube_pod_container_resource_requests{namespace=~\"$namespace\",pod=~\"$pod\",resource=\"cpu\"})",
+              "refId": "B",
+              "legendFormat": "{{namespace}}/{{pod}} request"
+            }
+          ],
+          "title": "CPU usage vs requests",
+          "type": "timeseries"
+        },
+        {
+          "id": 6,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 8,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace, pod) (container_memory_working_set_bytes{namespace=~\"$namespace\",pod=~\"$pod\",container!=\"\",container!=\"POD\"})",
+              "refId": "A",
+              "legendFormat": "{{namespace}}/{{pod}} usage"
+            },
+            {
+              "expr": "sum by (namespace, pod) (kube_pod_container_resource_requests{namespace=~\"$namespace\",pod=~\"$pod\",resource=\"memory\"})",
+              "refId": "B",
+              "legendFormat": "{{namespace}}/{{pod}} request"
+            }
+          ],
+          "title": "Memory working set vs requests",
+          "type": "timeseries"
+        },
+        {
+          "id": 7,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 8,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 24
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace, pod) (rate(container_network_receive_bytes_total{namespace=~\"$namespace\",pod=~\"$pod\"}[5m]))",
+              "refId": "A",
+              "legendFormat": "{{namespace}}/{{pod}} receive"
+            },
+            {
+              "expr": "sum by (namespace, pod) (rate(container_network_transmit_bytes_total{namespace=~\"$namespace\",pod=~\"$pod\"}[5m]))",
+              "refId": "B",
+              "legendFormat": "{{namespace}}/{{pod}} transmit"
+            }
+          ],
+          "title": "Network receive / transmit",
+          "type": "timeseries"
+        },
+        {
+          "id": 8,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 8,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 24
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "kubelet_volume_stats_used_bytes{namespace=~\"$namespace\"}",
+              "refId": "A",
+              "legendFormat": "{{namespace}}/{{persistentvolumeclaim}} used"
+            },
+            {
+              "expr": "kubelet_volume_stats_capacity_bytes{namespace=~\"$namespace\"}",
+              "refId": "B",
+              "legendFormat": "{{namespace}}/{{persistentvolumeclaim}} capacity"
+            }
+          ],
+          "title": "Persistent volume usage",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": [
+        "homelab",
+        "applications"
+      ],
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "label": "Namespace",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "definition": "label_values(kube_pod_info, namespace)",
+            "query": "label_values(kube_pod_info, namespace)",
+            "includeAll": true,
+            "multi": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "refresh": 1,
+            "sort": 1
+          },
+          {
+            "name": "pod",
+            "label": "Pod",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "definition": "label_values(kube_pod_info{namespace=~\"$namespace\"}, pod)",
+            "query": "label_values(kube_pod_info{namespace=~\"$namespace\"}, pod)",
+            "includeAll": true,
+            "multi": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "refresh": 1,
+            "sort": 1
+          }
+        ]
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Application Detail",
+      "uid": "application-detail",
+      "version": 1
+    }
