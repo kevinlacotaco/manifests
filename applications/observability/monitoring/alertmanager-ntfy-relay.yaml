@@ -48,7 +48,7 @@ data:
 
         if alert.get("startsAt"):
             lines.append(f"**Started:** {alert['startsAt']}")
-        if alert.get("endsAt"):
+        if status == "resolved" and alert.get("endsAt") and not alert["endsAt"].startswith("0001-"):
             lines.append(f"**Ended:** {alert['endsAt']}")
         if alert.get("generatorURL"):
             lines.append(f"[Source]({alert['generatorURL']})")
