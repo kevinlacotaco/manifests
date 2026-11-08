@@ -21,6 +21,8 @@ spec:
       namespace: mealie
     - server: https://kubernetes.default.svc
       namespace: ntfy
+    - server: https://kubernetes.default.svc
+      namespace: speedtest-tracker
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
