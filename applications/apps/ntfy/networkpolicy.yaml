@@ -29,6 +29,13 @@ spec:
                   - monitoring
         # Pods in this namespace.
         - podSelector: {}
+        # Speedtest Tracker webhooks publish to ntfy.
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: speedtest-tracker
+          podSelector:
+            matchLabels:
+              app: speedtest-tracker
         # Kubelet health probes originate from the node.
         - ipBlock:
             cidr: 192.168.68.71/32
