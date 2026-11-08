@@ -10,5 +10,9 @@ resources:
   - namespace.yaml
   - namespace-rabbitmq-system.yaml
   - guardrails.yaml
+  - networkpolicy.yaml
+  - rabbitmq-mqtt-auth-sealed-secret.yaml
+  - rabbitmq-mqtt-user-job.yaml
+  - mqtt-ingressroute.yaml
   - rabbitmq-operator.yaml
   - rabbitmq.yaml

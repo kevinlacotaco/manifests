@@ -36,3 +36,9 @@ spec:
           default: true
         exposedPort: 3000
         protocol: TCP
+      mqtt:
+        port: 1883
+        expose:
+          default: true
+        exposedPort: 1883
+        protocol: TCP

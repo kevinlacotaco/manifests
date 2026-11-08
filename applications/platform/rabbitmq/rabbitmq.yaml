@@ -14,9 +14,24 @@ spec:
     storage: 20Gi
 
   rabbitmq:
+    additionalPlugins:
+      - rabbitmq_mqtt
     additionalConfig: |
       log.console.level = info
       disk_free_limit.absolute = 2GB
+      mqtt.listeners.tcp.default = 1883
+      mqtt.allow_anonymous = false
+      mqtt.vhost = /
+      mqtt.exchange = amq.topic
+
+  override:
+    service:
+      spec:
+        ports:
+          - name: mqtt
+            port: 1883
+            targetPort: 1883
+            protocol: TCP
 
   resources:
     requests:

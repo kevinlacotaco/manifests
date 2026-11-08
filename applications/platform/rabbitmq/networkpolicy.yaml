@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rabbitmq
+  namespace: messaging
+spec:
+  # The messaging namespace currently contains only the RabbitMQ StatefulSet.
+  # An empty selector avoids Kustomize's includeSelectors rewriting the
+  # selector with labels the operator-managed pods do not carry.
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # AMQP, clustering, management, and Prometheus scraping.
+    - ports:
+        - port: 4369
+          protocol: TCP
+        - port: 5672
+          protocol: TCP
+        - port: 5671
+          protocol: TCP
+        - port: 25672
+          protocol: TCP
+        - port: 15672
+          protocol: TCP
+        - port: 15692
+          protocol: TCP
+    # MQTT is reachable only through the Traefik TCP entrypoint.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: 1883
+          protocol: TCP
+  egress:
+    - {}

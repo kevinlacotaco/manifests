@@ -469,8 +469,8 @@ Current baseline (at the time of writing):
 24 kustomizations build
 11 chart-backed Applications render
 157 Helm-rendered resources: 153 valid, 0 invalid, 0 errors, 4 skipped
-194 Kustomize-rendered resources: 194 valid, 0 invalid, 0 skipped
-80 standalone resources: 80 valid, 0 skipped
+206 Kustomize-rendered resources: 206 valid, 0 invalid, 0 skipped
+84 standalone resources: 84 valid, 0 skipped
 kube-linter: no lint errors
 ```
 
@@ -618,6 +618,23 @@ kubectl -n messaging port-forward svc/rabbitmq 15672:15672
 
 Service names can differ by chart version. Run `kubectl -n <namespace> get svc`
 first.
+
+### RabbitMQ MQTT
+
+RabbitMQ exposes MQTT on `192.168.68.71:1883` through Traefik. The dedicated
+non-admin user is `mqttuser`; its password is stored in the sealed
+`messaging/rabbitmq-mqtt-auth` Secret:
+
+```sh
+kubectl -n messaging get secret rabbitmq-mqtt-auth \
+  -o jsonpath='{.data.username}' | base64 -d; echo
+kubectl -n messaging get secret rabbitmq-mqtt-auth \
+  -o jsonpath='{.data.password}' | base64 -d; echo
+```
+
+The `rabbitmq-mqtt-user` PostSync Job recreates the user and its vhost
+permissions after each sync. Change the password by re-sealing the Secret,
+then re-running the sync.
 
 ### Helm
 
@@ -767,6 +784,8 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 | Mealie | `https://mealie.example.com` (placeholder) |
 | Donetick | `https://donetick.example.com` (placeholder) |
 | ntfy | `https://ntfy.lakotko.synology.me` |
+| RabbitMQ MQTT | `mqtt://192.168.68.71:1883` |
+| RabbitMQ management | `http://localhost:15672` after `kubectl -n messaging port-forward svc/rabbitmq 15672:15672` |
 | AdGuard web | `http://192.168.68.71:31628` |
 | AdGuard DNS (UDP) | `192.168.68.71:30915` |
 | AdGuard DNS (TCP) | `192.168.68.71:30916` |

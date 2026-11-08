@@ -1,0 +1,85 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rabbitmq-mqtt-user
+  namespace: messaging
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 6
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-mqtt-user
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 102
+        fsGroup: 102
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: create-user
+          image: curlimages/curl:8.12.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: MANAGEMENT_URL
+              value: http://rabbitmq.messaging.svc.cluster.local:15672
+            - name: ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-default-user
+                  key: username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-default-user
+                  key: password
+            - name: MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-mqtt-auth
+                  key: username
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-mqtt-auth
+                  key: password
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              until curl -fsS -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
+                "${MANAGEMENT_URL}/api/overview" >/dev/null 2>&1; do
+                echo "waiting for RabbitMQ management API"
+                sleep 2
+              done
+
+              curl -fsS -u "${ADMIN_USER}:${ADMIN_PASSWORD}" -X PUT \
+                -H 'content-type: application/json' \
+                --data "{\"password\":\"${MQTT_PASSWORD}\",\"tags\":\"\"}" \
+                "${MANAGEMENT_URL}/api/users/${MQTT_USER}"
+
+              curl -fsS -u "${ADMIN_USER}:${ADMIN_PASSWORD}" -X PUT \
+                -H 'content-type: application/json' \
+                --data '{"configure":".*","write":".*","read":".*"}' \
+                "${MANAGEMENT_URL}/api/permissions/%2F/${MQTT_USER}"
+
+              echo "MQTT user ${MQTT_USER} is ready"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
