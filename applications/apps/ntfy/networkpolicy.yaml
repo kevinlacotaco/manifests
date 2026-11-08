@@ -33,9 +33,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: speedtest-tracker
-          podSelector:
-            matchLabels:
-              app: speedtest-tracker
+          podSelector: {}
         # Kubelet health probes originate from the node.
         - ipBlock:
             cidr: 192.168.68.71/32
