@@ -1,0 +1,249 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-ntfy-relay
+  namespace: monitoring
+data:
+  server.py: |
+    import json
+    import os
+    import urllib.request
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    TOKEN_FILE = os.environ.get("TOKEN_FILE", "/etc/ntfy/token")
+    NTFY_URL = os.environ.get("NTFY_URL", "http://ntfy-ntfy.ntfy.svc.cluster.local/")
+    TOPIC = os.environ.get("NTFY_TOPIC", "alerts")
+
+    PRIORITY = {"critical": 5, "warning": 4, "info": 3}
+    TAGS = {
+        "critical": ["rotating_light"],
+        "warning": ["warning"],
+        "info": ["information_source"],
+    }
+
+    with open(TOKEN_FILE, encoding="utf-8") as token_file:
+        TOKEN = token_file.read().strip()
+
+    def format_alert(alert):
+        labels = alert.get("labels") or {}
+        annotations = alert.get("annotations") or {}
+        lines = [f"**{annotations.get('summary') or labels.get('alertname', 'Alert')}**"]
+
+        description = annotations.get("description")
+        if description:
+            lines.append(description)
+
+        for key, display in (
+            ("namespace", "Namespace"),
+            ("pod", "Pod"),
+            ("instance", "Instance"),
+            ("job", "Job"),
+            ("node", "Node"),
+            ("persistentvolumeclaim", "PVC"),
+            ("component", "Component"),
+        ):
+            value = labels.get(key)
+            if value:
+                lines.append(f"**{display}:** `{value}`")
+
+        if alert.get("startsAt"):
+            lines.append(f"**Started:** {alert['startsAt']}")
+        if alert.get("endsAt"):
+            lines.append(f"**Ended:** {alert['endsAt']}")
+        if alert.get("generatorURL"):
+            lines.append(f"[Source]({alert['generatorURL']})")
+
+        runbook = annotations.get("runbook_url") or labels.get("runbook_url")
+        if runbook:
+            lines.append(f"[Runbook]({runbook})")
+
+        return "\n".join(lines)
+
+    def build_message(payload):
+        alerts = payload.get("alerts") or []
+        status = payload.get("status", "firing")
+        severities = [((alert.get("labels") or {}).get("severity") or "warning") for alert in alerts]
+
+        if "critical" in severities:
+            severity = "critical"
+        elif "warning" in severities:
+            severity = "warning"
+        else:
+            severity = "info"
+
+        if status == "resolved":
+            prefix = "RESOLVED"
+            priority = 2
+            tags = ["white_check_mark"]
+        else:
+            prefix = severity.upper()
+            priority = PRIORITY.get(severity, 3)
+            tags = TAGS.get(severity, ["warning"])
+
+        if len(alerts) == 1:
+            title = f"{prefix}: {(alerts[0].get('labels') or {}).get('alertname', 'Alert')}"
+        else:
+            title = f"{prefix}: {len(alerts)} alerts"
+
+        body = "\n\n---\n\n".join(format_alert(alert) for alert in alerts[:10])
+        if len(alerts) > 10:
+            body += f"\n\n…and {len(alerts) - 10} more alerts"
+
+        return {
+            "topic": TOPIC,
+            "title": title,
+            "message": body,
+            "priority": priority,
+            "tags": tags,
+            "markdown": True,
+        }
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, fmt, *args):
+            print(fmt % args, flush=True)
+
+        def do_GET(self):
+            if self.path == "/healthz":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"ok")
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def do_POST(self):
+            if self.path.split("?", 1)[0] != "/webhook":
+                self.send_response(404)
+                self.end_headers()
+                return
+
+            length = int(self.headers.get("content-length", "0"))
+            raw = self.rfile.read(length)
+            try:
+                payload = json.loads(raw)
+                message = build_message(payload)
+                request = urllib.request.Request(
+                    NTFY_URL,
+                    data=json.dumps(message).encode(),
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {TOKEN}",
+                    },
+                    method="POST",
+                )
+                with urllib.request.urlopen(request, timeout=10) as response:
+                    response.read()
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"published")
+            except Exception as error:
+                print(f"relay error: {error}", flush=True)
+                self.send_response(502)
+                self.end_headers()
+                self.wfile.write(str(error).encode())
+
+    if __name__ == "__main__":
+        ThreadingHTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-ntfy-relay
+  namespace: monitoring
+  labels:
+    app: alertmanager-ntfy-relay
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: alertmanager-ntfy-relay
+  template:
+    metadata:
+      labels:
+        app: alertmanager-ntfy-relay
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: relay
+          image: python:3.13-alpine
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: NTFY_URL
+              value: http://ntfy-ntfy.ntfy.svc.cluster.local/
+            - name: NTFY_TOPIC
+              value: alerts
+            - name: TOKEN_FILE
+              value: /etc/ntfy/token
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: script
+              mountPath: /app
+              readOnly: true
+            - name: token
+              mountPath: /etc/ntfy
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: script
+          configMap:
+            name: alertmanager-ntfy-relay
+        - name: token
+          secret:
+            secretName: alertmanager-ntfy
+            items:
+              - key: token
+                path: token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-ntfy-relay
+  namespace: monitoring
+  labels:
+    app: alertmanager-ntfy-relay
+spec:
+  type: ClusterIP
+  selector:
+    app: alertmanager-ntfy-relay
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP

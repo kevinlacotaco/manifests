@@ -9,6 +9,7 @@ labels:
 resources:
   - grafana-admin-sealed-secret.yaml
   - alertmanager-ntfy-sealed-secret.yaml
+  - alertmanager-ntfy-relay.yaml
   - guardrails.yaml
   - grafana.yaml
   - grafana-ingress.yaml
