@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: speedtest-tracker
+  namespace: speedtest-tracker
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: speedtest.lakotko.synology.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: speedtest-tracker
+                port:
+                  name: http
