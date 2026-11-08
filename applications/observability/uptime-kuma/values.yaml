@@ -86,6 +86,10 @@ controllers:
             SELECT 'ntfy ingress', 1, 1, 60, 'http', 2000, 0, 60, 'ntfy through Traefik ingress', 'https://ntfy.lakotko.synology.me/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'ntfy ingress')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Speedtest Tracker', 1, 1, 60, 'http', 2000, 0, 60, 'Speedtest Tracker internal HTTP', 'http://speedtest-tracker.speedtest-tracker.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Speedtest Tracker')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             COMMIT;
             SQL
         resources:
