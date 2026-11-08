@@ -24,17 +24,57 @@ spec:
             global:
               resolve_timeout: 5m
             route:
-              receiver: ntfy
+              receiver: ntfy-warning
               group_by:
                 - alertname
                 - namespace
+                - severity
               group_wait: 10s
               group_interval: 5m
               repeat_interval: 4h
+              routes:
+                - matchers:
+                    - severity="critical"
+                  receiver: ntfy-critical
+                  repeat_interval: 1h
+                - matchers:
+                    - severity="info"
+                  receiver: ntfy-info
+                  repeat_interval: 12h
+            inhibit_rules:
+              - source_matchers:
+                  - alertname="PodCrashLooping"
+                target_matchers:
+                  - alertname="PodNotReady"
+                equal:
+                  - namespace
+                  - pod
+              - source_matchers:
+                  - alertname="RabbitMQDown"
+                target_matchers:
+                  - component="rabbitmq"
+                equal:
+                  - instance
             receivers:
-              - name: ntfy
+              - name: ntfy-critical
                 webhook_configs:
-                  - url: http://ntfy-ntfy.ntfy.svc.cluster.local/alerts
+                  - url: http://ntfy-ntfy.ntfy.svc.cluster.local/alerts?priority=max&tags=rotating_light&title=Critical%20homelab%20alert
+                    send_resolved: true
+                    http_config:
+                      authorization:
+                        type: Bearer
+                        credentials_file: /etc/alertmanager/secrets/token
+              - name: ntfy-warning
+                webhook_configs:
+                  - url: http://ntfy-ntfy.ntfy.svc.cluster.local/alerts?priority=high&tags=warning&title=Homelab%20alert
+                    send_resolved: true
+                    http_config:
+                      authorization:
+                        type: Bearer
+                        credentials_file: /etc/alertmanager/secrets/token
+              - name: ntfy-info
+                webhook_configs:
+                  - url: http://ntfy-ntfy.ntfy.svc.cluster.local/alerts?priority=default&tags=information_source&title=Homelab%20information
                     send_resolved: true
                     http_config:
                       authorization:
@@ -100,39 +140,337 @@ spec:
         serverFiles:
           alerting_rules.yml:
             groups:
-              - name: homelab
+              - name: homelab-node
                 rules:
+                  - alert: NodeNotReady
+                    expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: node
+                    annotations:
+                      summary: Node {{ $labels.node }} is NotReady
+                      description: The node has reported NotReady for more than 5 minutes.
+
                   - alert: NodeMemoryHigh
                     expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
                     for: 10m
                     labels:
                       severity: warning
+                      component: node
                     annotations:
                       summary: Node {{ $labels.instance }} memory is above 85%
+                      description: Memory usage has been above 85% for 10 minutes.
 
+                  - alert: NodeCPUHigh
+                    expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: node
+                    annotations:
+                      summary: Node {{ $labels.instance }} CPU is above 90%
+                      description: CPU usage has been above 90% for 15 minutes.
+
+                  - alert: NodeLoadHigh
+                    expr: node_load1 / count by (instance) (node_cpu_seconds_total{mode="idle"}) > 2
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: node
+                    annotations:
+                      summary: Node {{ $labels.instance }} load is high
+                      description: One-minute load average is more than twice the CPU count.
+
+                  - alert: NodeFilesystemFillingUp
+                    expr: node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"} * 100 < 15
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: node
+                    annotations:
+                      summary: Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} is below 15% free
+                      description: The filesystem has less than 15% free space.
+
+                  - alert: NodeFilesystemReadOnly
+                    expr: node_filesystem_readonly{fstype!~"tmpfs|overlay|squashfs|iso9660"} == 1
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: node
+                    annotations:
+                      summary: Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} is read-only
+                      description: A writable filesystem has been mounted read-only for 5 minutes.
+
+                  - alert: NodeClockSkew
+                    expr: abs(node_time_seconds - time()) > 300
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: node
+                    annotations:
+                      summary: Node {{ $labels.instance }} clock is skewed
+                      description: Node time differs from Prometheus by more than 5 minutes.
+
+              - name: homelab-workloads
+                rules:
                   - alert: PodCrashLooping
                     expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
                     for: 5m
                     labels:
                       severity: warning
+                      component: workload
                     annotations:
                       summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting
+                      description: Container {{ $labels.container }} restarted more than 3 times in 15 minutes.
 
-                  - alert: ArgoAppOutOfSync
-                    expr: argocd_app_info{sync_status!="Synced"} == 1
-                    for: 15m
+                  - alert: PodNotReady
+                    expr: kube_pod_status_ready{condition="false"} == 1
+                    for: 10m
                     labels:
                       severity: warning
+                      component: workload
                     annotations:
-                      summary: Argo CD app {{ $labels.name }} is {{ $labels.sync_status }}
+                      summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready
+                      description: The pod has been not ready for 10 minutes.
 
+                  - alert: PodPending
+                    expr: kube_pod_status_phase{phase="Pending"} == 1
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: workload
+                    annotations:
+                      summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is pending
+                      description: The pod has been pending for 10 minutes.
+
+                  - alert: ContainerWaiting
+                    expr: kube_pod_container_status_waiting_reason{reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError"} > 0
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: workload
+                    annotations:
+                      summary: Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} is waiting
+                      description: Container is waiting with reason {{ $labels.reason }}.
+
+                  - alert: DeploymentUnavailable
+                    expr: kube_deployment_status_replicas_unavailable > 0
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: workload
+                    annotations:
+                      summary: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas
+                      description: One or more replicas have been unavailable for 10 minutes.
+
+                  - alert: DaemonSetUnavailable
+                    expr: kube_daemonset_status_number_unavailable > 0
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: workload
+                    annotations:
+                      summary: DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} has unavailable pods
+                      description: One or more daemonset pods have been unavailable for 10 minutes.
+
+                  - alert: JobFailed
+                    expr: kube_job_status_failed > 0
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: workload
+                    annotations:
+                      summary: Job {{ $labels.namespace }}/{{ $labels.job_name }} failed
+                      description: The job has failed.
+
+              - name: homelab-storage
+                rules:
                   - alert: PersistentVolumeFillingUp
                     expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 15
                     for: 15m
                     labels:
                       severity: warning
+                      component: storage
                     annotations:
-                      summary: PVC {{ $labels.persistentvolumeclaim }} is below 15% free
+                      summary: PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is below 15% free
+                      description: The persistent volume claim has less than 15% free space.
+
+                  - alert: PersistentVolumeFillingUpCritical
+                    expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 5
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: storage
+                    annotations:
+                      summary: PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is below 5% free
+                      description: The persistent volume claim has less than 5% free space.
+
+                  - alert: PersistentVolumeClaimPending
+                    expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: storage
+                    annotations:
+                      summary: PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending
+                      description: The persistent volume claim has been pending for 15 minutes.
+
+              - name: homelab-argocd
+                rules:
+                  - alert: ArgoAppOutOfSync
+                    expr: argocd_app_info{sync_status!="Synced"} == 1
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: argocd
+                    annotations:
+                      summary: Argo CD app {{ $labels.name }} is {{ $labels.sync_status }}
+                      description: The application has been out of sync for 15 minutes.
+
+                  - alert: ArgoAppDegraded
+                    expr: argocd_app_info{health_status!="Healthy"} == 1
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: argocd
+                    annotations:
+                      summary: Argo CD app {{ $labels.name }} is {{ $labels.health_status }}
+                      description: The application has been unhealthy for 15 minutes.
+
+                  - alert: ArgoAppSyncFailed
+                    expr: increase(argocd_app_sync_total{phase=~"Error|Failed"}[15m]) > 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: argocd
+                    annotations:
+                      summary: Argo CD sync failed for {{ $labels.name }}
+                      description: A sync operation failed in the last 15 minutes.
+
+                  - alert: ArgoGitFetchFailures
+                    expr: increase(argocd_git_fetch_fail_total[15m]) > 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: argocd
+                    annotations:
+                      summary: Argo CD Git fetch failures
+                      description: Argo CD failed to fetch a Git repository in the last 15 minutes.
+
+                  - alert: ArgoClusterConnectionFailed
+                    expr: argocd_cluster_connection_status == 0
+                    for: 10m
+                    labels:
+                      severity: critical
+                      component: argocd
+                    annotations:
+                      summary: Argo CD cannot reach cluster {{ $labels.name }}
+                      description: The cluster connection has been failing for 10 minutes.
+
+              - name: homelab-monitoring
+                rules:
+                  - alert: PrometheusTargetDown
+                    expr: up == 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: monitoring
+                    annotations:
+                      summary: Prometheus target {{ $labels.job }} is down
+                      description: Target {{ $labels.instance }} has been down for 5 minutes.
+
+                  - alert: AlertmanagerDown
+                    expr: up{job=~".*alertmanager.*"} == 0
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: monitoring
+                    annotations:
+                      summary: Alertmanager is down
+                      description: Prometheus cannot scrape Alertmanager.
+
+                  - alert: PrometheusRuleEvaluationFailures
+                    expr: increase(prometheus_rule_evaluation_failures_total[15m]) > 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: monitoring
+                    annotations:
+                      summary: Prometheus rule evaluation failures
+                      description: One or more Prometheus rules failed to evaluate in the last 15 minutes.
+
+                  - alert: PrometheusTSDBHighSeries
+                    expr: prometheus_tsdb_head_series > 100000
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: monitoring
+                    annotations:
+                      summary: Prometheus TSDB has more than 100k series
+                      description: Series cardinality may be growing unexpectedly.
+
+              - name: homelab-rabbitmq
+                rules:
+                  - alert: RabbitMQDown
+                    expr: up{job="rabbitmq"} == 0
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: rabbitmq
+                    annotations:
+                      summary: RabbitMQ is down
+                      description: Prometheus cannot scrape RabbitMQ for 5 minutes.
+
+                  - alert: RabbitMQMemoryHigh
+                    expr: rabbitmq_process_resident_memory_bytes / rabbitmq_resident_memory_limit_bytes > 0.85
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: rabbitmq
+                    annotations:
+                      summary: RabbitMQ memory is above 85% of its limit
+                      description: RabbitMQ is close to its memory high watermark.
+
+                  - alert: RabbitMQDiskLow
+                    expr: rabbitmq_disk_space_available_bytes < 1.5 * rabbitmq_disk_space_available_limit_bytes
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: rabbitmq
+                    annotations:
+                      summary: RabbitMQ disk space is low
+                      description: Available disk space is less than 1.5 times the configured free-space limit.
+
+                  - alert: RabbitMQQueueBacklog
+                    expr: rabbitmq_queue_messages_ready > 1000
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: rabbitmq
+                    annotations:
+                      summary: RabbitMQ queue {{ $labels.queue }} has a backlog
+                      description: More than 1000 messages have been ready for 15 minutes.
+
+                  - alert: RabbitMQFileDescriptorsHigh
+                    expr: rabbitmq_process_open_fds / rabbitmq_process_max_fds > 0.8
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: rabbitmq
+                    annotations:
+                      summary: RabbitMQ file descriptor usage is high
+                      description: RabbitMQ is using more than 80% of its file descriptor limit.
+
+                  - alert: RabbitMQAlarm
+                    expr: rabbitmq_alarms_memory_used_watermark == 1 or rabbitmq_alarms_free_disk_space_watermark == 1
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: rabbitmq
+                    annotations:
+                      summary: RabbitMQ has an active resource alarm
+                      description: RabbitMQ is blocking publishers due to memory or disk pressure.
 
         extraScrapeConfigs: |
           - job_name: grafana
