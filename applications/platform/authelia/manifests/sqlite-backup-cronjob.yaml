@@ -48,11 +48,14 @@ spec:
                   sqlite3 /data/db.sqlite3 ".timeout 30000" ".backup '$out'"
                   check=$(sqlite3 "$out" "PRAGMA integrity_check;")
                   [ "$check" = "ok" ] || { echo "integrity check failed: $check" >&2; exit 1; }
-                  cp /data/users_database.yml /backup-share/staging/authelia/users_database.yml
+                  cp /users/users_database.yml /backup-share/staging/authelia/users_database.yml
                   ls -lh "$out" /backup-share/staging/authelia/users_database.yml
               volumeMounts:
                 - name: config
                   mountPath: /data
+                - name: users
+                  mountPath: /users
+                  readOnly: true
                 - name: backup-share
                   mountPath: /backup-share
                 - name: tmp
@@ -68,6 +71,10 @@ spec:
             - name: config
               persistentVolumeClaim:
                 claimName: authelia-config
+            - name: users
+              secret:
+                secretName: authelia-users
+                defaultMode: 420
             - name: backup-share
               nfs:
                 server: 192.168.68.138
