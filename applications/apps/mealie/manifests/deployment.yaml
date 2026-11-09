@@ -67,6 +67,18 @@ spec:
             - name: BASE_URL
               value: https://meals.lakotko.synology.me
 
+            # Authelia forward-auth sets Remote-User after the user passes
+            # authentication. Mealie is only reachable from Traefik (see the
+            # NetworkPolicy), so trusting that header avoids a second login.
+            - name: REVERSE_PROXY_AUTH_ENABLED
+              value: "true"
+
+            - name: REVERSE_PROXY_AUTH_HEADER
+              value: Remote-User
+
+            - name: REVERSE_PROXY_AUTH_SIGNUP_ENABLED
+              value: "true"
+
           volumeMounts:
             - name: data
               mountPath: /app/data
