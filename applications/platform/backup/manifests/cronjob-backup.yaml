@@ -71,21 +71,11 @@ spec:
                   set -eu
                   mkdir -p /backup
 
-                  # Wait until PostgreSQL accepts connections. Do not use
-                  # `pg_isready -t` here: the postgres:18-alpine image returns
-                  # "no attempt" for that invocation, so a loop around it never
-                  # actually tests connectivity.
-                  attempt=1
-                  until pg_isready -q -h "$PGHOST" -p "$PGPORT"; do
-                    if [ "$attempt" -ge 30 ]; then
-                      echo "PostgreSQL did not become ready after 30 attempts" >&2
-                      exit 1
-                    fi
-                    echo "waiting for PostgreSQL (attempt $attempt/30)"
-                    attempt=$((attempt + 1))
-                    sleep 2
-                  done
-
+                  # `pg_isready` in the postgres:18-alpine image reports
+                  # "no attempt" (exit 3) even when psql/pg_dump connect
+                  # successfully, so it is not a usable readiness gate here.
+                  # Retry the actual dump instead: the first TCP connection
+                  # right after pod startup can be refused.
                   dump() {
                     name=$1
                     user=$2
