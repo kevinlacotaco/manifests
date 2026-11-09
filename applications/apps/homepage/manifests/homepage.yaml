@@ -207,6 +207,8 @@ spec:
             - name: config
               mountPath: /app/config
               readOnly: true
+            - name: logs
+              mountPath: /app/config/logs
           readinessProbe:
             httpGet:
               path: /
@@ -231,6 +233,8 @@ spec:
         - name: config
           configMap:
             name: homepage-config
+        - name: logs
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
