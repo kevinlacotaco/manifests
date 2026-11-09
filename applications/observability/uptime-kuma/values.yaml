@@ -14,11 +14,17 @@ controllers:
         image:
           repository: louislam/uptime-kuma
           tag: 1.23.16
+        env:
+          - name: NTFY_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: alertmanager-ntfy
+                key: token
         command:
           - /bin/sh
           - -ec
           - |
-            sqlite3 /app/data/kuma.db <<'SQL'
+            sqlite3 /app/data/kuma.db <<SQL
             .timeout 30000
             .bail on
             BEGIN;
@@ -93,10 +99,10 @@ controllers:
             DELETE FROM monitor_notification WHERE notification_id IN (SELECT id FROM notification WHERE name IN ('ntfy', 'platform', 'apps'));
             DELETE FROM notification WHERE name IN ('ntfy', 'platform', 'apps');
             INSERT INTO notification (name, active, user_id, is_default, config)
-            SELECT 'platform', 1, 1, 1, '{"type":"ntfy","name":"platform","active":true,"isDefault":true,"ntfyAuthenticationMethod":"accessToken","ntfyserverurl":"http://ntfy-ntfy.ntfy.svc.cluster.local/","ntfytopic":"platform","ntfyPriority":4,"ntfyaccesstoken":"tk_9lhkumg9xi113raqikslr2hbnpqkv"}'
+            SELECT 'platform', 1, 1, 1, '{"type":"ntfy","name":"platform","active":true,"isDefault":true,"ntfyAuthenticationMethod":"accessToken","ntfyserverurl":"http://ntfy-ntfy.ntfy.svc.cluster.local/","ntfytopic":"platform","ntfyPriority":4,"ntfyaccesstoken":"${NTFY_TOKEN}"}'
             WHERE NOT EXISTS (SELECT 1 FROM notification WHERE name = 'platform');
             INSERT INTO notification (name, active, user_id, is_default, config)
-            SELECT 'apps', 1, 1, 1, '{"type":"ntfy","name":"apps","active":true,"isDefault":true,"ntfyAuthenticationMethod":"accessToken","ntfyserverurl":"http://ntfy-ntfy.ntfy.svc.cluster.local/","ntfytopic":"apps","ntfyPriority":4,"ntfyaccesstoken":"tk_9lhkumg9xi113raqikslr2hbnpqkv"}'
+            SELECT 'apps', 1, 1, 1, '{"type":"ntfy","name":"apps","active":true,"isDefault":true,"ntfyAuthenticationMethod":"accessToken","ntfyserverurl":"http://ntfy-ntfy.ntfy.svc.cluster.local/","ntfytopic":"apps","ntfyPriority":4,"ntfyaccesstoken":"${NTFY_TOKEN}"}'
             WHERE NOT EXISTS (SELECT 1 FROM notification WHERE name = 'apps');
             INSERT INTO monitor_notification (monitor_id, notification_id)
             SELECT m.id, n.id FROM monitor m, notification n

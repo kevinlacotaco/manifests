@@ -9,6 +9,7 @@ VENV="${VENV_DIR:-$ROOT/.venv}"
 KUBECONFORM_VERSION="${KUBECONFORM_VERSION:-v0.8.0}"
 KUBE_LINTER_VERSION="${KUBE_LINTER_VERSION:-0.8.3}"
 YAMLLINT_VERSION="${YAMLLINT_VERSION:-1.38.0}"
+GITLEAKS_VERSION="${GITLEAKS_VERSION:-8.30.1}"
 
 os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 arch="$(uname -m)"
@@ -56,6 +57,24 @@ if [ ! -x "$BIN/kube-linter" ]; then
     "https://github.com/stackrox/kube-linter/releases/download/v${KUBE_LINTER_VERSION}/${asset}" \
     kube-linter \
     "$BIN/kube-linter"
+fi
+
+if [ ! -x "$BIN/gitleaks" ]; then
+  case "$os-$arch" in
+    linux-amd64) asset="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" ;;
+    linux-arm64) asset="gitleaks_${GITLEAKS_VERSION}_linux_arm64.tar.gz" ;;
+    darwin-amd64) asset="gitleaks_${GITLEAKS_VERSION}_darwin_x64.tar.gz" ;;
+    darwin-arm64) asset="gitleaks_${GITLEAKS_VERSION}_darwin_arm64.tar.gz" ;;
+    *)
+      echo "no gitleaks build for $os-$arch" >&2
+      exit 1
+      ;;
+  esac
+  echo "installing gitleaks $GITLEAKS_VERSION"
+  fetch_tar \
+    "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${asset}" \
+    gitleaks \
+    "$BIN/gitleaks"
 fi
 
 if [ ! -x "$VENV/bin/yamllint" ]; then

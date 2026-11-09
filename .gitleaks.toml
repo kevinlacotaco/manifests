@@ -11,4 +11,8 @@ paths = [
   '''(^|/)sealed-secret\.ya?ml$''',
   '''(^|/).*-sealed-secret\.ya?ml$''',
   '''(^|/).*-sealedsecret\.ya?ml$''',
+  '''^cluster-sealed-secrets-master\.key$''',
+  '''^\.tmp/''',
+  '''^\.venv/''',
+  '''^\.bin/''',
 ]
