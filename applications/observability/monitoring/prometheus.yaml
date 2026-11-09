@@ -407,8 +407,8 @@ spec:
                       severity: warning
                       component: monitoring
                     annotations:
-                      summary: Prometheus TSDB has more than 100k series
-                      description: Series cardinality may be growing unexpectedly.
+                      summary: Prometheus TSDB has more than 200k series
+                      description: Series cardinality has exceeded 200k for 30 minutes.
 
               - name: homelab-rabbitmq
                 rules:
