@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - adguard-home
+  - homepage
   - donetick
   - mealie
   - ntfy

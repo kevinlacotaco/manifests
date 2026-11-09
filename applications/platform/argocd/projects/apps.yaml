@@ -23,6 +23,8 @@ spec:
       namespace: ntfy
     - server: https://kubernetes.default.svc
       namespace: speedtest-tracker
+    - server: https://kubernetes.default.svc
+      namespace: homepage
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

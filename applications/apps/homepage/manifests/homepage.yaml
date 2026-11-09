@@ -1,0 +1,266 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homepage
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: homepage
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 25m
+        memory: 32Mi
+      default:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "2"
+        memory: 2Gi
+      min:
+        cpu: 10m
+        memory: 16Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: namespace-quota
+  namespace: homepage
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "20"
+    persistentvolumeclaims: "8"
+    requests.storage: 100Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: homepage
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-ingress
+  namespace: homepage
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - kube-system
+                  - monitoring
+        - podSelector: {}
+        - ipBlock:
+            cidr: 192.168.68.71/32
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: homepage
+data:
+  settings.yaml: |
+    title: Home
+    description: Homelab dashboard
+    headerStyle: clean
+    statusStyle: dot
+    hideVersion: true
+    layout:
+      Edge:
+        style: row
+        columns: 4
+      Observability:
+        style: row
+        columns: 4
+      Applications:
+        style: row
+        columns: 4
+      Storage:
+        style: row
+        columns: 4
+  services.yaml: |
+    - Edge:
+        - Argo CD:
+            href: http://192.168.68.71:8081
+            description: GitOps
+            icon: argocd.png
+        - Traefik:
+            href: http://192.168.68.71:8080/dashboard/
+            description: Ingress
+            icon: traefik.png
+        - AdGuard Home:
+            href: http://192.168.68.71:31628
+            description: DNS
+            icon: adguard-home.png
+    - Observability:
+        - Grafana:
+            href: http://192.168.68.71:3000
+            icon: grafana.png
+        - Uptime Kuma:
+            href: https://kuma.lakotko.synology.me
+            icon: uptime-kuma.png
+        - ntfy:
+            href: https://ntfy.lakotko.synology.me
+            icon: ntfy.png
+        - Speedtest Tracker:
+            href: https://speedtest.lakotko.synology.me
+            icon: speedtest-tracker.png
+    - Applications:
+        - Mealie:
+            href: https://mealie.example.com
+            description: Set real hostname
+            icon: mealie.png
+        - Donetick:
+            href: https://donetick.example.com
+            description: Set real hostname
+            icon: donetick.png
+    - Storage:
+        - Synology:
+            href: http://192.168.68.138:5000
+            icon: synology.png
+  bookmarks.yaml: |
+    - Documentation:
+        - Homepage:
+            - abbr: HP
+              href: https://gethomepage.dev
+        - Kubernetes:
+            - abbr: K8s
+              href: https://kubernetes.io/docs
+        - Argo CD:
+            - abbr: AR
+              href: https://argo-cd.readthedocs.io
+  widgets.yaml: |
+    []
+  docker.yaml: |
+    {}
+  kubernetes.yaml: |
+    mode: disabled
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homepage
+  namespace: homepage
+  labels:
+    app: homepage
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: homepage
+  template:
+    metadata:
+      labels:
+        app: homepage
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: homepage
+          image: ghcr.io/gethomepage/homepage:v2.7.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: HOMEPAGE_CONFIG_DIR
+              value: /app/config
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "*"
+            - name: TZ
+              value: America/New_York
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: config
+          configMap:
+            name: homepage-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  selector:
+    app: homepage
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: home.lakotko.synology.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  name: http
