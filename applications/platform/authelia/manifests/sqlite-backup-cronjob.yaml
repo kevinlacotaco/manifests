@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: authelia-sqlite-backup
+  namespace: auth
+spec:
+  schedule: "20 1 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        metadata:
+          labels:
+            app: authelia-sqlite-backup
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            fsGroup: 0
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sqlite-backup
+              image: louislam/uptime-kuma:1.23.16
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+                  mkdir -p /backup-share/staging/sqlite /backup-share/staging/authelia
+                  out=/backup-share/staging/sqlite/authelia.db
+                  rm -f "$out"
+                  sqlite3 /data/db.sqlite3 ".timeout 30000" ".backup '$out'"
+                  check=$(sqlite3 "$out" "PRAGMA integrity_check;")
+                  [ "$check" = "ok" ] || { echo "integrity check failed: $check" >&2; exit 1; }
+                  cp /data/users_database.yml /backup-share/staging/authelia/users_database.yml
+                  ls -lh "$out" /backup-share/staging/authelia/users_database.yml
+              volumeMounts:
+                - name: config
+                  mountPath: /data
+                - name: backup-share
+                  mountPath: /backup-share
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: authelia-config
+            - name: backup-share
+              nfs:
+                server: 192.168.68.138
+                path: /volume1/k8s-backups
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi

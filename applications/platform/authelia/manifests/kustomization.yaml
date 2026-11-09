@@ -8,6 +8,7 @@ resources:
   - pvc.yaml
   - configmap.yaml
   - deployment.yaml
+  - sqlite-backup-cronjob.yaml
   - service.yaml
   - ingress.yaml
   - middleware.yaml
