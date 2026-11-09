@@ -5,10 +5,15 @@ metadata:
   namespace: networking
 spec:
   replicas: 1
-  # The PVC is ReadWriteOnce. Recreate avoids a rolling update deadlock where
-  # the old pod still holds the volume.
+  # Keep the old pod serving while the new pod becomes ready. The RWO volume
+  # can be mounted by both pods on the same node; on multi-node, maxUnavailable
+  # 0 makes the rollout wait rather than dropping DNS.
+  minReadySeconds: 10
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   revisionHistoryLimit: 3
   selector:
     matchLabels:

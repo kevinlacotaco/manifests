@@ -17,6 +17,10 @@ defaultPodOptions:
 controllers:
   donetick:
     type: deployment
+    strategy: RollingUpdate
+    rollingUpdate:
+      surge: 1
+      unavailable: "0%"
 
     containers:
       app:

@@ -6,10 +6,14 @@ metadata:
 spec:
   replicas: 1
 
-  # Recreate avoids overlapping pods during upgrades. The media volume is RWX,
-  # but Mealie runs migrations on startup, so a single pod is safer.
+  # Keep the old pod serving while the new pod becomes ready. The media volume
+  # is RWX, so both pods can mount it during a rollout.
+  minReadySeconds: 10
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
 
   selector:
     matchLabels:
