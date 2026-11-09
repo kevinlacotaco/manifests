@@ -215,7 +215,7 @@ spec:
               - name: homelab-workloads
                 rules:
                   - alert: PodCrashLooping
-                    expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+                    expr: increase(kube_pod_container_status_restarts_total[15m]) > 3 and on(namespace, pod) kube_pod_status_phase{phase="Running"} == 1
                     for: 5m
                     labels:
                       severity: warning
@@ -225,7 +225,7 @@ spec:
                       description: Container {{ $labels.container }} restarted more than 3 times in 15 minutes.
 
                   - alert: PodNotReady
-                    expr: kube_pod_status_ready{condition="false"} == 1
+                    expr: kube_pod_status_ready{condition="false"} == 1 and on(namespace, pod) kube_pod_status_phase{phase=~"Pending|Running|Unknown"} == 1
                     for: 10m
                     labels:
                       severity: warning
@@ -401,8 +401,8 @@ spec:
                       description: One or more Prometheus rules failed to evaluate in the last 15 minutes.
 
                   - alert: PrometheusTSDBHighSeries
-                    expr: prometheus_tsdb_head_series > 100000
-                    for: 15m
+                    expr: prometheus_tsdb_head_series > 200000
+                    for: 30m
                     labels:
                       severity: warning
                       component: monitoring

@@ -90,6 +90,13 @@ controllers:
             SELECT 'Speedtest Tracker', 1, 1, 60, 'http', 2000, 0, 60, 'Speedtest Tracker internal HTTP', 'http://speedtest-tracker.speedtest-tracker.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Speedtest Tracker')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO notification (name, active, user_id, is_default, config)
+            SELECT 'ntfy', 1, 1, 1, '{"type":"ntfy","name":"ntfy","active":true,"isDefault":true,"ntfyAuthenticationMethod":"accessToken","ntfyserverurl":"http://ntfy-ntfy.ntfy.svc.cluster.local/","ntfytopic":"alerts","ntfyPriority":4,"ntfyaccesstoken":"tk_9lhkumg9xi113raqikslr2hbnpqkv"}'
+            WHERE NOT EXISTS (SELECT 1 FROM notification WHERE name = 'ntfy');
+            INSERT INTO monitor_notification (monitor_id, notification_id)
+            SELECT m.id, n.id FROM monitor m, notification n
+            WHERE n.name = 'ntfy'
+              AND NOT EXISTS (SELECT 1 FROM monitor_notification mn WHERE mn.monitor_id = m.id AND mn.notification_id = n.id);
             COMMIT;
             SQL
         resources:
