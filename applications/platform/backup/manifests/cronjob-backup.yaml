@@ -1,0 +1,169 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kopia-backup
+  namespace: backup
+spec:
+  schedule: "0 2 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 21600
+      template:
+        metadata:
+          labels:
+            app: kopia-backup
+            app.kubernetes.io/name: kopia
+            requires-db: postgres
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          # Stable hostname keeps the Kopia source id consistent across Jobs.
+          hostname: kopia-backup
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1033
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: postgres-dumps
+              image: postgres:18.6-alpine
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: PGHOST
+                  value: postgres-headless-service.database.svc.cluster.local
+                - name: PGPORT
+                  value: "5432"
+                - name: PGCONNECT_TIMEOUT
+                  value: "10"
+                - name: HOME
+                  value: /tmp
+                - name: TMPDIR
+                  value: /tmp
+                - name: MEALIE_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-db-secrets
+                      key: mealie-db-password
+                - name: DONETICK_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-db-secrets
+                      key: donetick-db-password
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+                  mkdir -p /backup
+                  PGPASSWORD="$MEALIE_DB_PASSWORD" pg_dump \
+                    -h "$PGHOST" -p "$PGPORT" -U mealie -d mealie \
+                    --format=custom --file=/backup/mealie.dump
+                  PGPASSWORD="$DONETICK_DB_PASSWORD" pg_dump \
+                    -h "$PGHOST" -p "$PGPORT" -U donetick -d donetick \
+                    --format=custom --file=/backup/donetick.dump
+                  ls -lh /backup
+              volumeMounts:
+                - name: dumps
+                  mountPath: /backup
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+          containers:
+            - name: kopia
+              image: kopia/kopia:0.23.1
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: USER
+                  value: kopia
+                - name: TMPDIR
+                  value: /tmp
+                - name: KOPIA_CONFIG_PATH
+                  value: /tmp/kopia-config/repository.config
+                - name: KOPIA_LOG_DIR
+                  value: /tmp/kopia-logs
+                - name: KOPIA_CACHE_DIRECTORY
+                  value: /tmp/kopia-cache
+                - name: KOPIA_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: kopia-repo
+                      key: password
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+                  test -d /repo
+                  test -d /media
+                  test -d /backup
+                  kopia repository connect filesystem --path=/repo \
+                    || kopia repository create filesystem --path=/repo
+                  kopia policy set --global \
+                    --keep-latest=10 \
+                    --keep-daily=7 \
+                    --keep-weekly=4 \
+                    --keep-monthly=6 \
+                    --keep-annual=1
+                  kopia snapshot create /media
+                  kopia snapshot create /backup
+                  kopia maintenance run
+              volumeMounts:
+                - name: repo
+                  mountPath: /repo
+                - name: mealie-media
+                  mountPath: /media
+                  readOnly: true
+                - name: dumps
+                  mountPath: /backup
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+          volumes:
+            - name: repo
+              persistentVolumeClaim:
+                claimName: kopia-repo
+            - name: mealie-media
+              persistentVolumeClaim:
+                claimName: mealie-media-readonly
+                readOnly: true
+            - name: dumps
+              emptyDir:
+                sizeLimit: 10Gi
+            - name: tmp
+              emptyDir:
+                sizeLimit: 5Gi

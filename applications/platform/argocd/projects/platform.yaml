@@ -32,6 +32,8 @@ spec:
       namespace: database
     - server: https://kubernetes.default.svc
       namespace: auth
+    - server: https://kubernetes.default.svc
+      namespace: backup
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

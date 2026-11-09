@@ -1,0 +1,88 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kopia-maintenance
+  namespace: backup
+spec:
+  schedule: "0 12 * * 0"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 7200
+      template:
+        metadata:
+          labels:
+            app: kopia-maintenance
+            app.kubernetes.io/name: kopia
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1033
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: kopia
+              image: kopia/kopia:0.23.1
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: USER
+                  value: kopia
+                - name: TMPDIR
+                  value: /tmp
+                - name: KOPIA_CONFIG_PATH
+                  value: /tmp/kopia-config/repository.config
+                - name: KOPIA_LOG_DIR
+                  value: /tmp/kopia-logs
+                - name: KOPIA_CACHE_DIRECTORY
+                  value: /tmp/kopia-cache
+                - name: KOPIA_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: kopia-repo
+                      key: password
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+                  test -d /repo
+                  kopia repository connect filesystem --path=/repo \
+                    || kopia repository create filesystem --path=/repo
+                  kopia maintenance run --full
+              volumeMounts:
+                - name: repo
+                  mountPath: /repo
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+          volumes:
+            - name: repo
+              persistentVolumeClaim:
+                claimName: kopia-repo
+            - name: tmp
+              emptyDir:
+                sizeLimit: 2Gi

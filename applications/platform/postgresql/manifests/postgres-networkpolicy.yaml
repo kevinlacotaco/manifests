@@ -25,6 +25,7 @@ spec:
                 values:
                   - mealie
                   - donetick
+                  - backup
           podSelector:
             matchLabels:
               requires-db: postgres

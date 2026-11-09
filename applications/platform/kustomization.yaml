@@ -12,3 +12,4 @@ resources:
   - synology-iscsi-storageclass
   - traefik
   - authelia
+  - backup

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kopia-repo
+  namespace: backup
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: backup-kopia-repo
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 100Gi

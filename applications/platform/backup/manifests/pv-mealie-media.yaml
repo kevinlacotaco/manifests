@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backup-mealie-media
+  labels:
+    app.kubernetes.io/name: kopia
+    app.kubernetes.io/component: source
+  annotations:
+    backup.lakotko.synology.me/source: mealie-media
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: backup
+    name: mealie-media-readonly
+  nfs:
+    server: 192.168.68.138
+    # This is the NFS subdirectory backing Mealies Retain PV. If the Mealie
+    # PVC is ever recreated, update this path to the new subdirectory.
+    path: /volume1/k8s-nfs/mealie-mealie-media-pvc-a7c51094-a76e-441f-9565-06cf36ebbf08
+    readOnly: true
+  mountOptions:
+    - vers=4.1

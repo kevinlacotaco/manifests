@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backup
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: platform
+  source:
+    repoURL: git@github.com:kevinlacotaco/manifests.git
+    targetRevision: main
+    path: applications/platform/backup/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backup
+  # The PV binder adds these fields after the static PVs are applied. They are
+  # not part of the desired state and would otherwise keep the app OutOfSync.
+  ignoreDifferences:
+    - group: ""
+      kind: PersistentVolume
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+        - /metadata/finalizers
+        - /spec/claimRef/uid
+        - /spec/claimRef/resourceVersion
+    - group: ""
+      kind: PersistentVolumeClaim
+      jsonPointers:
+        - /metadata/annotations/argocd.argoproj.io~1tracking-id
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
