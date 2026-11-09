@@ -23,71 +23,71 @@ controllers:
             .bail on
             BEGIN;
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Argo CD', 1, 1, 60, 'http', 2000, 0, 60, 'Argo CD API and UI', 'http://argo-argocd-server.argocd.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Argo CD', 1, 1, 60, 'http', 2000, 2, 60, 'Argo CD API and UI', 'http://argo-argocd-server.argocd.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Argo CD')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Grafana', 1, 1, 60, 'http', 2000, 0, 60, 'Grafana health endpoint', 'http://grafana.monitoring.svc.cluster.local/api/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Grafana', 1, 1, 60, 'http', 2000, 2, 60, 'Grafana health endpoint', 'http://grafana.monitoring.svc.cluster.local/api/health', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Grafana')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Prometheus', 1, 1, 60, 'http', 2000, 0, 60, 'Prometheus health endpoint', 'http://prometheus-server.monitoring.svc.cluster.local/-/healthy', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Prometheus', 1, 1, 60, 'http', 2000, 2, 60, 'Prometheus health endpoint', 'http://prometheus-server.monitoring.svc.cluster.local/-/healthy', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Prometheus')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Alertmanager', 1, 1, 60, 'http', 2000, 0, 60, 'Alertmanager health endpoint', 'http://prometheus-alertmanager.monitoring.svc.cluster.local:9093/-/healthy', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Alertmanager', 1, 1, 60, 'http', 2000, 2, 60, 'Alertmanager health endpoint', 'http://prometheus-alertmanager.monitoring.svc.cluster.local:9093/-/healthy', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Alertmanager')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Loki', 1, 1, 60, 'http', 2000, 0, 60, 'Loki readiness endpoint', 'http://loki.monitoring.svc.cluster.local:3100/ready', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Loki', 1, 1, 60, 'http', 2000, 2, 60, 'Loki readiness endpoint', 'http://loki.monitoring.svc.cluster.local:3100/ready', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Loki')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Uptime Kuma', 1, 1, 60, 'http', 2000, 0, 60, 'Uptime Kuma web UI', 'http://uptime-kuma.monitoring.svc.cluster.local:3001/', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Uptime Kuma', 1, 1, 60, 'http', 2000, 2, 60, 'Uptime Kuma web UI', 'http://uptime-kuma.monitoring.svc.cluster.local:3001/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Uptime Kuma')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Mealie', 1, 1, 60, 'http', 2000, 0, 60, 'Mealie application', 'http://mealie.mealie.svc.cluster.local:9000/api/app/about', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Mealie', 1, 1, 60, 'http', 2000, 2, 60, 'Mealie application', 'http://mealie.mealie.svc.cluster.local:9000/api/app/about', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Mealie')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Donetick', 1, 1, 60, 'http', 2000, 0, 60, 'Donetick application', 'http://donetick.donetick.svc.cluster.local:2021/', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Donetick', 1, 1, 60, 'http', 2000, 2, 60, 'Donetick application', 'http://donetick.donetick.svc.cluster.local:2021/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Donetick')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'ntfy', 1, 1, 60, 'http', 2000, 0, 60, 'ntfy health endpoint', 'http://ntfy-ntfy.ntfy.svc.cluster.local/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'ntfy', 1, 1, 60, 'http', 2000, 2, 60, 'ntfy health endpoint', 'http://ntfy-ntfy.ntfy.svc.cluster.local/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'ntfy')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'AdGuard Home', 1, 1, 60, 'http', 2000, 0, 60, 'AdGuard Home web UI', 'http://adguard-home.networking.svc.cluster.local:3001/', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'AdGuard Home', 1, 1, 60, 'http', 2000, 2, 60, 'AdGuard Home web UI', 'http://adguard-home.networking.svc.cluster.local:3001/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'AdGuard Home')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port)
-            SELECT 'Kubernetes API', 1, 1, 60, 'port', 2000, 0, 60, 'Kubernetes API TCP listener', 'kubernetes.default.svc', 443
+            SELECT 'Kubernetes API', 1, 1, 60, 'port', 2000, 2, 60, 'Kubernetes API TCP listener', 'kubernetes.default.svc', 443
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Kubernetes API')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port)
-            SELECT 'PostgreSQL', 1, 1, 60, 'port', 2000, 0, 60, 'PostgreSQL TCP listener', 'postgres-headless-service.database.svc.cluster.local', 5432
+            SELECT 'PostgreSQL', 1, 1, 60, 'port', 2000, 2, 60, 'PostgreSQL TCP listener', 'postgres-headless-service.database.svc.cluster.local', 5432
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'PostgreSQL')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port)
-            SELECT 'RabbitMQ AMQP', 1, 1, 60, 'port', 2000, 0, 60, 'RabbitMQ AMQP TCP listener', 'rabbitmq.messaging.svc.cluster.local', 5672
+            SELECT 'RabbitMQ AMQP', 1, 1, 60, 'port', 2000, 2, 60, 'RabbitMQ AMQP TCP listener', 'rabbitmq.messaging.svc.cluster.local', 5672
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'RabbitMQ AMQP')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port)
-            SELECT 'Traefik', 1, 1, 60, 'port', 2000, 0, 60, 'Traefik TCP listener', 'traefik.kube-system.svc.cluster.local', 8080
+            SELECT 'Traefik', 1, 1, 60, 'port', 2000, 2, 60, 'Traefik TCP listener', 'traefik.kube-system.svc.cluster.local', 8080
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Traefik')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Kuma ingress', 1, 1, 60, 'http', 2000, 0, 60, 'Uptime Kuma through Traefik ingress', 'https://kuma.lakotko.synology.me/', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Kuma ingress', 1, 1, 60, 'http', 2000, 2, 60, 'Uptime Kuma through Traefik ingress', 'https://kuma.lakotko.synology.me/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Kuma ingress')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'ntfy ingress', 1, 1, 60, 'http', 2000, 0, 60, 'ntfy through Traefik ingress', 'https://ntfy.lakotko.synology.me/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'ntfy ingress', 1, 1, 60, 'http', 2000, 2, 60, 'ntfy through Traefik ingress', 'https://ntfy.lakotko.synology.me/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'ntfy ingress')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
-            SELECT 'Speedtest Tracker', 1, 1, 60, 'http', 2000, 0, 60, 'Speedtest Tracker internal HTTP', 'http://speedtest-tracker.speedtest-tracker.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
+            SELECT 'Speedtest Tracker', 1, 1, 60, 'http', 2000, 2, 60, 'Speedtest Tracker internal HTTP', 'http://speedtest-tracker.speedtest-tracker.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Speedtest Tracker')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO notification (name, active, user_id, is_default, config)
@@ -97,6 +97,7 @@ controllers:
             SELECT m.id, n.id FROM monitor m, notification n
             WHERE n.name = 'ntfy'
               AND NOT EXISTS (SELECT 1 FROM monitor_notification mn WHERE mn.monitor_id = m.id AND mn.notification_id = n.id);
+            UPDATE monitor SET maxretries = 2, retry_interval = 60;
             COMMIT;
             SQL
         resources:
