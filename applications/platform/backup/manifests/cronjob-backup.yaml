@@ -70,12 +70,47 @@ spec:
                 - |
                   set -eu
                   mkdir -p /backup
-                  PGPASSWORD="$MEALIE_DB_PASSWORD" pg_dump \
-                    -h "$PGHOST" -p "$PGPORT" -U mealie -d mealie \
-                    --format=custom --file=/backup/mealie.dump
-                  PGPASSWORD="$DONETICK_DB_PASSWORD" pg_dump \
-                    -h "$PGHOST" -p "$PGPORT" -U donetick -d donetick \
-                    --format=custom --file=/backup/donetick.dump
+
+                  # Wait until PostgreSQL accepts connections. Do not use
+                  # `pg_isready -t` here: the postgres:18-alpine image returns
+                  # "no attempt" for that invocation, so a loop around it never
+                  # actually tests connectivity.
+                  attempt=1
+                  until pg_isready -q -h "$PGHOST" -p "$PGPORT"; do
+                    if [ "$attempt" -ge 30 ]; then
+                      echo "PostgreSQL did not become ready after 30 attempts" >&2
+                      exit 1
+                    fi
+                    echo "waiting for PostgreSQL (attempt $attempt/30)"
+                    attempt=$((attempt + 1))
+                    sleep 2
+                  done
+
+                  dump() {
+                    name=$1
+                    user=$2
+                    db=$3
+                    password=$4
+                    out="/backup/${name}.dump"
+                    attempt=1
+                    while [ "$attempt" -le 30 ]; do
+                      rm -f "$out"
+                      if PGPASSWORD="$password" pg_dump \
+                        -h "$PGHOST" -p "$PGPORT" -U "$user" -d "$db" \
+                        --format=custom --file="$out"; then
+                        echo "dumped ${db} on attempt ${attempt}"
+                        return 0
+                      fi
+                      echo "pg_dump for ${db} failed on attempt ${attempt}; retrying"
+                      attempt=$((attempt + 1))
+                      sleep 2
+                    done
+                    echo "pg_dump for ${db} failed after 30 attempts" >&2
+                    return 1
+                  }
+
+                  dump mealie mealie mealie "$MEALIE_DB_PASSWORD"
+                  dump donetick donetick donetick "$DONETICK_DB_PASSWORD"
                   ls -lh /backup
               volumeMounts:
                 - name: dumps
