@@ -64,8 +64,11 @@ spec:
                 - |
                   set -eu
                   test -d /repo
-                  kopia repository connect filesystem --path=/repo \
-                    || kopia repository create filesystem --path=/repo
+                  # Keep the Kopia repo out of the share root so Synology's
+                  # root-owned #recycle directory is never traversed.
+                  mkdir -p /repo/kopia
+                  kopia repository connect filesystem --path=/repo/kopia \
+                    || kopia repository create filesystem --path=/repo/kopia
                   kopia maintenance run --full
               volumeMounts:
                 - name: repo
