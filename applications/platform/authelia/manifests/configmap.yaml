@@ -28,6 +28,9 @@ data:
 
     access_control:
       default_policy: one_factor
+      rules:
+        - domain: meals.lakotko.synology.me
+          policy: two_factor
 
     session:
       name: authelia_session
