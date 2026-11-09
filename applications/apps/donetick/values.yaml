@@ -49,7 +49,7 @@ controllers:
                 name: donetick-secret
                 key: JWT_SECRET
 
-          DT_SERVER_PUBLIC_HOST: https://donetick.example.com
+          DT_SERVER_PUBLIC_HOST: https://tasks.lakotko.synology.me
           DT_SERVER_SERVE_FRONTEND: "true"
 
         securityContext:
@@ -88,7 +88,7 @@ ingress:
     className: traefik
 
     hosts:
-      - host: donetick.example.com
+      - host: tasks.lakotko.synology.me
         paths:
           - path: /
             pathType: Prefix

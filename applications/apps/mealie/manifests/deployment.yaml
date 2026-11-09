@@ -61,7 +61,7 @@ spec:
                   key: POSTGRES_PASSWORD
 
             - name: BASE_URL
-              value: https://mealie.example.com
+              value: https://meals.lakotko.synology.me
 
           volumeMounts:
             - name: data

@@ -129,12 +129,12 @@ data:
             icon: speedtest-tracker.png
     - Applications:
         - Mealie:
-            href: https://mealie.example.com
-            description: Set real hostname
+            href: https://meals.lakotko.synology.me
+            description: Family recipes
             icon: mealie.png
         - Donetick:
-            href: https://donetick.example.com
-            description: Set real hostname
+            href: https://tasks.lakotko.synology.me
+            description: Chores and tasks
             icon: donetick.png
     - Storage:
         - Synology:

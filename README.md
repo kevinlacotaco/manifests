@@ -781,8 +781,9 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 | Argo CD | `http://boulder.local:8081` |
 | Grafana | `http://boulder.local:3000` |
 | Uptime Kuma | `https://kuma.lakotko.synology.me` |
-| Mealie | `https://mealie.example.com` (placeholder) |
-| Donetick | `https://donetick.example.com` (placeholder) |
+| Mealie | `https://meals.lakotko.synology.me` |
+| Donetick | `https://tasks.lakotko.synology.me` |
+| Homepage | `https://home.lakotko.synology.me` |
 | ntfy | `https://ntfy.lakotko.synology.me` |
 | RabbitMQ MQTT | `mqtt://192.168.68.71:1883` |
 | RabbitMQ management | `http://localhost:15672` after `kubectl -n messaging port-forward svc/rabbitmq 15672:15672` |
@@ -948,8 +949,9 @@ fixed.
 - [x] Verify Mealie can write to `mealie-media` as UID/GID 911.
 - [x] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
 - [x] Delete the Released ntfy NFS PV.
-- [ ] Set real hostnames. `mealie`, `donetick`, and `ntfy` still use
-  `*.example.com`.
+- [x] Set real hostnames: `meals.lakotko.synology.me` for Mealie,
+  `tasks.lakotko.synology.me` for Donetick, and
+  `ntfy.lakotko.synology.me` for ntfy.
 - [x] Remove the stale duplicate
   `applications/apps/adguard-home/overlays/home/application.yaml`.
 - [x] Fix the Argo CD IngressRoute service name to `argo-argocd-server`, which
