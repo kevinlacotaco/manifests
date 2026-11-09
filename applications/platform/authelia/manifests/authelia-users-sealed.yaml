@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: authelia-users
+  namespace: auth
+spec:
+  encryptedData:
+    users_database.yml: AgAG1HOUYd3jOP2s770RVxD6gxkjUhcFkq3up76f0k0P6qkd5cuJI2ACVlZHnoBIf4iSn2k9VsQeHEvXYNC1tvVpNVWTmFe/2DTvtkcrFZXteJaEL2W9/ev7jPJV6bW7xykMyCOWKkDL9QBoFmd+PvneyxDvqZvlH/z2fi0VGE8gL4zlV6lUkwTkgq5KEnjVM5zpjhpe98MA+6o1Mypb+vpeb8BoJWwUMFYoZGM0lx24Fzpw1yY5eSBWBbi/gA4xJ9/LwUqEfoe2DpEn8VxD7aQwgzCjeZ9kdbQDJw8gUwFyrcK14n5v651INoJ8zkpuENuSFI/0KGKgu25iA/nSgKC+mYiyvGBHKLVor8d1HD74Pe50uHCCczQwjm/KXZG+z9z6eWwufcg17OWwvzSClYMJmEY43b8ZF5iFrxrs4cLEmj+5IupgHTOY68YOgPSiQQaWK5mJ41LgxP1/CaZqYZ3dT5Y8n51tjN7TYnYlwZJqv59b+eqFiAQ2ivbe3NXWIWhii5go0sQmtiukzF4PVucDgPpy9RE+IPJoEnLTzU5bx+wcp3C1PomgGQLN9g1ykQBCWXcxr/g8TfWXHG6v1E2l/EIBSkNlpQXGc3U4jje5e8Ti55Iti8pUTiyMY+e2Ih1EvWPBOv5QZ6yWakVLgxUJNQS5geUlrausli31JP3X3Vk/NtA8angU6aUkeTiesD4HojFyilCzVdsxiUytxzB2vrhBgBQLOFxsJXsA2mWpszrsbgDLFsh5wOfLXiMET7dzsOCoSUzm0GGsr4DT9sUqqyp/HF1r7aJtcGhXf023TL5rP3nDfepiOs7S44yoGSGCb0IbQmQxwi/CuzudncVXG7wcbW0xsI089jPv7PQP1UPua/XUw3cBDgsPo2r6jVpTJhkKaWdJvZbY2bYi3K3MQ/JjbxKgiS+1lLS3o+QyA1ggNBEDj4/3DSWHUh0B8GVz0Ihj/Y5h+/mmx3MB74Q00jOiDgKzYpON
+  template:
+    metadata:
+      name: authelia-users
+      namespace: auth
+    type: Opaque

@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authelia
+  namespace: auth
+  labels:
+    app: authelia
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: authelia
+  template:
+    metadata:
+      labels:
+        app: authelia
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: authelia
+        image: authelia/authelia:4.39.28
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - name: http
+          containerPort: 9091
+          protocol: TCP
+        env:
+        - name: AUTHELIA_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: jwt-secret
+        - name: AUTHELIA_SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: session-secret
+        - name: AUTHELIA_STORAGE_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: storage-encryption-key
+        - name: AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: reset-password-jwt-secret
+        - name: TZ
+          value: America/New_York
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: configuration
+          mountPath: /config/configuration.yml
+          subPath: configuration.yml
+          readOnly: true
+        - name: users
+          mountPath: /config/users_database.yml
+          subPath: users_database.yml
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 20
+          failureThreshold: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: authelia-config
+      - name: configuration
+        configMap:
+          name: authelia-config
+      - name: users
+        secret:
+          secretName: authelia-users

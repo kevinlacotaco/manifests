@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: authelia
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: platform
+  source:
+    repoURL: git@github.com:kevinlacotaco/manifests.git
+    targetRevision: main
+    path: applications/platform/authelia/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: auth
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

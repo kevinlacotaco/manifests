@@ -30,6 +30,8 @@ spec:
       namespace: messaging
     - server: https://kubernetes.default.svc
       namespace: database
+    - server: https://kubernetes.default.svc
+      namespace: auth
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

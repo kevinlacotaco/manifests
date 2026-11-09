@@ -11,3 +11,4 @@ resources:
   - synology-csi
   - synology-iscsi-storageclass
   - traefik
+  - authelia

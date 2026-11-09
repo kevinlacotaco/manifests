@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-config
+  namespace: auth
+data:
+  configuration.yml: "theme: dark\ndefault_redirection_url: https://auth.lakotko.synology.me\n\
+    \nserver:\n  address: tcp://0.0.0.0:9091\n  endpoints:\n    authz:\n      forward-auth:\n\
+    \        implementation: Traefik\n\nlog:\n  level: info\n\ntotp:\n  issuer: lakotko\n\
+    \  period: 30\n  skew: 1\n\nauthentication_backend:\n  file:\n    path: /config/users_database.yml\n\
+    \naccess_control:\n  default_policy: deny\n\nsession:\n  name: authelia_session\n\
+    \  expiration: 1h\n  inactivity: 5m\n  cookies:\n    - domain: lakotko.synology.me\n\
+    \      authelia_url: https://auth.lakotko.synology.me\n      default_redirection_url:\
+    \ https://auth.lakotko.synology.me\n\nstorage:\n  local:\n    path: /config/db.sqlite3\n\
+    \nnotifier:\n  filesystem:\n    filename: /config/notifications.txt\n"
