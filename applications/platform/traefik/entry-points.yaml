@@ -14,6 +14,7 @@ spec:
         memory: 256Mi
     additionalArguments:
       - "--api.insecure=true"
+      - "--entryPoints.web.forwardedHeaders.insecure=true"
       - "--entryPoints.web.forwardedHeaders.trustedIPs=192.168.68.138/32"
     ingressRoute:
       dashboard:
