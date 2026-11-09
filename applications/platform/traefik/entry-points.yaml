@@ -14,8 +14,9 @@ spec:
         memory: 256Mi
     additionalArguments:
       - "--api.insecure=true"
-      - "--entryPoints.web.forwardedHeaders.insecure=true"
-      - "--entryPoints.web.forwardedHeaders.trustedIPs=192.168.68.138/32"
+      # k3s servicelb (klipper-lb) masquerades LoadBalancer traffic, so Traefik sees
+      # the svclb pod IP rather than the Synology source. Trust the cluster pod CIDR.
+      - "--entryPoints.web.forwardedHeaders.trustedIPs=10.42.0.0/16,192.168.68.138/32"
     ingressRoute:
       dashboard:
         enabled: true
