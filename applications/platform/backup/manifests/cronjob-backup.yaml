@@ -156,10 +156,12 @@ spec:
                   test -d /media
                   test -d /backup
 
-                  # The SQLite CronJobs run at 01:20, 01:30, and 01:40. Fail
-                  # before snapshotting if any database copy is missing, empty,
-                  # or stale, so a broken dump never produces a green backup.
+                  # The SQLite CronJobs run at 01:10, 01:20, 01:30, and 01:40.
+                  # Fail before snapshotting if any database copy is missing,
+                  # empty, or stale, so a broken dump never produces a green
+                  # backup.
                   for f in \
+                    /repo/staging/sqlite/grafana.db \
                     /repo/staging/sqlite/authelia.db \
                     /repo/staging/sqlite/uptime-kuma.db \
                     /repo/staging/sqlite/speedtest-tracker.db; do
