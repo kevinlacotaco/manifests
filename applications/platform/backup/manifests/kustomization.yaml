@@ -11,5 +11,6 @@ resources:
   - pvc-mealie-media.yaml
   - kopia-repo-sealed-secret.yaml
   - backup-db-secrets-sealed.yaml
+  - uptime-kuma-push-sealed-secret.yaml
   - cronjob-backup.yaml
   - cronjob-maintenance.yaml

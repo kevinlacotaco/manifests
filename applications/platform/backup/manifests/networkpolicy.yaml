@@ -41,6 +41,14 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+    # Uptime Kuma push heartbeat for the backup job.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3001
     # NFS mount traffic to the Synology backup and Mealie media exports.
     - to:
         - ipBlock:
