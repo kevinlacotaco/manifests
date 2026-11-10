@@ -29,7 +29,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: sqlite-backup
-              image: louislam/uptime-kuma:1.23.16
+              image: louislam/uptime-kuma:1.23.17
               imagePullPolicy: IfNotPresent
               securityContext:
                 allowPrivilegeEscalation: false

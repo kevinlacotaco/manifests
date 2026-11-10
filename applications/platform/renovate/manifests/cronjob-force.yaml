@@ -31,7 +31,7 @@ spec:
               type: RuntimeDefault
           initContainers:
           - name: token-generator
-            image: alpine:3.20
+            image: alpine:3.24
             imagePullPolicy: IfNotPresent
             securityContext:
               runAsUser: 0
@@ -82,7 +82,7 @@ spec:
                 memory: 256Mi
           containers:
           - name: renovate
-            image: renovate/renovate:44.225.0
+            image: renovate/renovate:44.226.2
             imagePullPolicy: IfNotPresent
             securityContext:
               runAsNonRoot: true

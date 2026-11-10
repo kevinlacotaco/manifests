@@ -11,7 +11,7 @@ spec:
   sources:
     - repoURL: https://christian-schlichtherle.github.io/synology-csi-chart
       chart: synology-csi
-      targetRevision: 0.10.1
+      targetRevision: 0.11.4
       helm:
         values: |
           clientInfoSecret:
