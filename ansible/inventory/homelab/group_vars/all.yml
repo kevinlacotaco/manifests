@@ -1,0 +1,65 @@
+---
+ansible_user: kevin
+ansible_become: true
+
+homelab_domain: home.arpa
+homelab_dns_servers:
+  - 192.168.68.71
+homelab_dns_fallback: 1.1.1.1
+
+homelab_storage:
+  nas_hostname: nas.home.arpa
+  nas_ip: 192.168.68.138
+  nfs_enabled: true
+  nfs_version: "4.1"
+  iscsi_enabled: true
+  nfs_exports:
+    k8s_nfs: /volume1/k8s-nfs
+    k8s_backups: /volume1/k8s-backups
+
+homelab_packages:
+  common:
+    - curl
+    - wget
+    - git
+    - jq
+    - unzip
+    - ca-certificates
+    - gnupg
+    - rsync
+    - vim
+    - tmux
+    - bash-completion
+  diagnostics:
+    - usbutils
+    - dnsutils
+    - iproute2
+    - iputils-ping
+    - ethtool
+    - tcpdump
+    - mtr-tiny
+    - lsof
+    - htop
+    - iotop
+    - sysstat
+    - smartmontools
+  storage:
+    - nfs-common
+    - open-iscsi
+  hardware:
+    - usbutils
+    - libusb-1.0-0
+  bluetooth:
+    - bluez
+    - rfkill
+  radio:
+    - rtl-sdr
+
+yq_version: "v4.44.3"
+yq_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
+node_capabilities:
+  usb: false
+  zigbee: false
+  rtl433: false
+  bluetooth: false

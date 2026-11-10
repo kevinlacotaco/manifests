@@ -1,0 +1,40 @@
+---
+- name: Check storage connectivity
+  hosts: k3s
+  become: true
+  tasks:
+    - name: Resolve NAS name
+      ansible.builtin.command: "getent hosts {{ homelab_storage.nas_hostname }}"
+      register: nas_dns
+      changed_when: false
+      failed_when: false
+
+    - name: Show NAS resolution
+      ansible.builtin.debug:
+        var: nas_dns.stdout
+
+    - name: Check NFS port
+      ansible.builtin.wait_for:
+        host: "{{ homelab_storage.nas_ip }}"
+        port: 2049
+        timeout: 5
+      when: homelab_storage.nfs_enabled | bool
+
+    - name: Check iSCSI port
+      ansible.builtin.wait_for:
+        host: "{{ homelab_storage.nas_ip }}"
+        port: 3260
+        timeout: 5
+      when: homelab_storage.iscsi_enabled | bool
+
+    - name: Check iscsid
+      ansible.builtin.command: systemctl is-active iscsid
+      register: iscsid_status
+      changed_when: false
+      failed_when: false
+      when: homelab_storage.iscsi_enabled | bool
+
+    - name: Show iscsid status
+      ansible.builtin.debug:
+        var: iscsid_status.stdout
+      when: homelab_storage.iscsi_enabled | bool

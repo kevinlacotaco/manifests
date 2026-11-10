@@ -1,0 +1,10 @@
+---
+- name: Apply homelab Kubernetes node baseline
+  hosts: k3s
+  become: true
+  roles:
+    - common
+    - networking
+    - k3s_prerequisites
+    - storage
+    - hardware

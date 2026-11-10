@@ -1,0 +1,22 @@
+---
+node_capabilities:
+  usb: true
+  zigbee: true
+  rtl433: true
+  bluetooth: true
+
+node_hardware:
+  usb:
+    enabled: true
+  zigbee:
+    device: /dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_3846e91f24a6ed11ab23f1a32981d5c7-if00-port0
+    vendor_id: "10c4"
+    product_id: "ea60"
+  rtl433:
+    vendor_id: "0bda"
+    product_id: "2838"
+    frequency: 433920000
+  bluetooth:
+    vendor_id: "20f4"
+    product_id: "110b"
+    controller: hci0

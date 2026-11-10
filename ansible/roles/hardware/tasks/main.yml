@@ -1,0 +1,29 @@
+---
+- name: Install USB packages
+  ansible.builtin.apt:
+    name: "{{ homelab_packages.hardware }}"
+    state: present
+  when: node_capabilities.usb | default(false) | bool
+
+- name: Install Bluetooth packages
+  ansible.builtin.apt:
+    name: "{{ homelab_packages.bluetooth }}"
+    state: present
+  when: node_capabilities.bluetooth | default(false) | bool
+
+- name: Install SDR packages
+  ansible.builtin.apt:
+    name: "{{ homelab_packages.radio }}"
+    state: present
+  when: node_capabilities.rtl433 | default(false) | bool
+
+- name: Check Zigbee device
+  ansible.builtin.stat:
+    path: "{{ node_hardware.zigbee.device }}"
+  register: zigbee_device
+  when: node_capabilities.zigbee | default(false) | bool
+
+- name: Report Zigbee device
+  ansible.builtin.debug:
+    var: zigbee_device.stat
+  when: node_capabilities.zigbee | default(false) | bool

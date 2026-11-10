@@ -1,0 +1,44 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Add local hostname to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s+'
+    line: "127.0.1.1 {{ inventory_hostname }}.{{ homelab_domain }} {{ inventory_hostname }}"
+
+- name: Add NAS to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^{{ homelab_storage.nas_ip | regex_escape }}\\s+"
+    line: "{{ homelab_storage.nas_ip }} {{ homelab_storage.nas_hostname }} nas"
+
+- name: Ensure systemd-resolved is installed
+  ansible.builtin.apt:
+    name: systemd-resolved
+    state: present
+
+- name: Enable systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    enabled: true
+    state: started
+
+- name: Ensure resolved.conf.d exists
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Configure homelab DNS
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/99-homelab.conf
+    mode: "0644"
+    content: |
+      [Resolve]
+      DNS={{ homelab_dns_servers | join(' ') }}
+      FallbackDNS={{ homelab_dns_fallback }}
+      Domains={{ homelab_domain }} ~.
+  notify: Restart systemd-resolved
