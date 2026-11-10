@@ -12,9 +12,6 @@ data:
       upstream_dns:
         - https://dns.quad9.net/dns-query
         - https://cloudflare-dns.com/dns-query
-      bootstrap_dns:
-        - 9.9.9.9
-        - 1.1.1.1
       upstream_mode: load_balance
       enable_dnssec: true
 
