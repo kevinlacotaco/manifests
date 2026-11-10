@@ -91,6 +91,9 @@ ingress:
 
     className: traefik
 
+    annotations:
+      traefik.ingress.kubernetes.io/router.middlewares: auth-authelia-forwardauth@kubernetescrd
+
     hosts:
       - host: tasks.lakotko.synology.me
         paths:

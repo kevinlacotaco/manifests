@@ -31,6 +31,8 @@ data:
       rules:
         - domain: meals.lakotko.synology.me
           policy: two_factor
+        - domain: tasks.lakotko.synology.me
+          policy: two_factor
 
     session:
       name: authelia_session
