@@ -10,8 +10,27 @@ data:
         - 0.0.0.0
       port: 53
       upstream_dns:
+        - https://dns.quad9.net/dns-query
+        - https://cloudflare-dns.com/dns-query
+      bootstrap_dns:
+        - 9.9.9.9
         - 1.1.1.1
-        - 8.8.8.8
+      upstream_mode: load_balance
+      enable_dnssec: true
+
+    filters:
+      - id: 1
+        enabled: true
+        url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt
+        name: AdGuard DNS filter
+      - id: 2
+        enabled: true
+        url: https://big.oisd.nl/
+        name: OISD Full
+      - id: 3
+        enabled: true
+        url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt
+        name: HaGeZi Pro
 
     filtering:
       protection_enabled: true
