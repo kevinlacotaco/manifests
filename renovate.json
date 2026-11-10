@@ -45,11 +45,14 @@
   ],
   "packageRules": [
     {
+      "matchManagers": [
+        "github-actions"
+      ],
       "matchUpdateTypes": [
         "minor",
         "patch"
       ],
-      "groupName": "minor and patch dependencies"
+      "groupName": "GitHub Actions minor and patch"
     },
     {
       "matchUpdateTypes": [
