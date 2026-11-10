@@ -14,3 +14,4 @@ resources:
   - authelia
   - backup
   - renovate
+  - cert-manager

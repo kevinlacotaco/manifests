@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# The root app-of-apps only needs the Application object. The child
+# Application installs the cert-manager Helm chart.
+resources:
+  - application.yaml

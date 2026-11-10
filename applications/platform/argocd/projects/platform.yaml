@@ -10,6 +10,7 @@ spec:
   description: Cluster infrastructure and shared services
   sourceRepos:
     - git@github.com:kevinlacotaco/manifests.git
+    - https://charts.jetstack.io
     - https://argoproj.github.io/argo-helm
     - https://bitnami.github.io/sealed-secrets
     - https://christian-schlichtherle.github.io/synology-csi-chart
@@ -36,6 +37,8 @@ spec:
       namespace: backup
     - server: https://kubernetes.default.svc
       namespace: renovate
+    - server: https://kubernetes.default.svc
+      namespace: cert-manager
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
