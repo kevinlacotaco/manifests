@@ -6,4 +6,5 @@ resources:
   - guardrails.yaml
   - networkpolicy.yaml
   - cronjob.yaml
+  - cronjob-force.yaml
   - renovate-github-app-sealed-secret.yaml
