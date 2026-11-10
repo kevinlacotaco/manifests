@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: renovate
+  namespace: renovate
+spec:
+  schedule: "0 3 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  # Enable after the renovate-token Secret is sealed in this namespace.
+  suspend: true
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: renovate
+            app.kubernetes.io/name: renovate
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: renovate
+              image: renovate/renovate:44.225.0
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: RENOVATE_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: renovate-token
+                      key: token
+                - name: RENOVATE_PLATFORM
+                  value: github
+                - name: RENOVATE_REPOSITORIES
+                  value: kevinlacotaco/manifests
+                - name: RENOVATE_AUTODISCOVER
+                  value: "false"
+                - name: RENOVATE_ONBOARDING
+                  value: "false"
+                - name: LOG_LEVEL
+                  value: info
+                - name: TZ
+                  value: America/New_York
+                - name: HOME
+                  value: /tmp
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 2Gi

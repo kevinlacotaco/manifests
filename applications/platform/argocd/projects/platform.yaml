@@ -34,6 +34,8 @@ spec:
       namespace: auth
     - server: https://kubernetes.default.svc
       namespace: backup
+    - server: https://kubernetes.default.svc
+      namespace: renovate
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

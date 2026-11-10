@@ -1,0 +1,76 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "schedule:weekly",
+    ":dependencyDashboard"
+  ],
+  "timezone": "America/New_York",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "labels": [
+    "dependencies"
+  ],
+  "kubernetes": {
+    "fileMatch": [
+      "^applications/.*\\.ya?ml$"
+    ]
+  },
+  "helm-values": {
+    "fileMatch": [
+      "^applications/.*values\\.ya?ml$"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^applications/.*\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "repoURL:\\s*(?<registryUrl>https?://[^\\s]+)\\s*\\n\\s*chart:\\s*(?<depName>[^\\s]+)\\s*\\n\\s*targetRevision:\\s*(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "helm"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^applications/.*\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "image:\\s*(?<depName>[^\\s:]+/[^\\s:]+):(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "minor and patch dependencies"
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "major dependencies",
+      "dependencyDashboardApproval": true
+    },
+    {
+      "matchFileNames": [
+        "**/*sealed*.yaml",
+        "**/sealed-secret.yaml"
+      ],
+      "enabled": false
+    }
+  ],
+  "ignorePaths": [
+    "docs/**",
+    ".tmp/**",
+    "**/*sealed*.yaml",
+    "**/sealed-secret.yaml",
+    "cluster-sealed-secrets-master.key"
+  ]
+}
