@@ -9,8 +9,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Confirm Donetick TOTP login and remove any direct Synology bypass.
 - [ ] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
 - [ ] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
-- [ ] Verify Postgres `fsGroup` on the CSI volume.
-- [ ] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
+- [x] Verify Postgres `fsGroup` on the CSI volume.
+- [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
 - [ ] Store Kopia repo password and Renovate GitHub App private key offline; remove plaintext working copies.
 - [ ] Run restore tests for Postgres, Authelia, SQLite backups, and Kopia; add offsite replication.
 
