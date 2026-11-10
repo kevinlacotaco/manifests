@@ -9,11 +9,12 @@ spec:
   # can be mounted by both pods on the same node; on multi-node, maxUnavailable
   # 0 makes the rollout wait rather than dropping DNS.
   minReadySeconds: 10
+  # AdGuard Home keeps its session database on a single-writer SQLite
+  # volume. Recreate makes the old pod release the database before the new
+  # pod starts; RollingUpdate leaves both pods running and the new pod
+  # times out opening sessions.db.
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+    type: Recreate
   revisionHistoryLimit: 3
   selector:
     matchLabels:
