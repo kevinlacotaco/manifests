@@ -729,6 +729,7 @@ plaintext secret with the new controller certificate.
 | --- | --- | --- | --- |
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
 | `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload; pinned image and probes |
+| `authelia` | `auth` | Git path `applications/platform/authelia/manifests` | 2 replicas; Postgres storage; Redis sessions; OIDC provider |
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
@@ -755,8 +756,10 @@ Additional resources not represented as child Applications:
 | `traefik` HelmChartConfig | `kube-system` | Extra entry points and dashboard |
 | `coredns-custom` ConfigMap | `kube-system` | `hoist.local` -> `192.168.68.138` |
 | `postgres` StatefulSet | `database` | Managed by the `postgresql` child Application |
-| `postgres-init-apps` Job | `database` | Creates the `mealie`, `donetick`, `paperless`, and `speedtest` roles/databases |
+| `postgres-init-apps` Job | `database` | Creates the `mealie`, `donetick`, `paperless`, `speedtest`, and `authelia` roles/databases |
 | `postgres-app-secrets` | `database` | Sealed app DB passwords used by the init Job |
+| `authelia-db` | `auth` | Sealed Authelia Postgres password |
+| `authelia-redis` Deployment/Service | `auth` | Valkey session store for Authelia HA |
 | `mealie-db` | `mealie` | Sealed Mealie DB password |
 | `donetick-secret` | `donetick` | Sealed Donetick DB password and JWT secret |
 | `paperless-secrets` | `paperless` | Sealed Paperless DB/app/OIDC credentials |
@@ -768,7 +771,7 @@ Additional resources not represented as child Applications:
 ### PostgreSQL databases
 
 The `postgresql` child Application runs a single `postgres` StatefulSet in the
-`database` namespace. The `postgres-init-apps` PostSync Job creates four
+`database` namespace. The `postgres-init-apps` PostSync Job creates five
 application roles/databases idempotently:
 
 | Role/database | Password source | Consumer |
@@ -777,9 +780,24 @@ application roles/databases idempotently:
 | `donetick` | `donetick-secret` Secret in `donetick` | Donetick |
 | `paperless` | `paperless-secrets` Secret in `paperless` | Paperless-ngx |
 | `speedtest` | `speedtest-db` Secret in `speedtest-tracker` | Speedtest Tracker |
+| `authelia` | `authelia-db` Secret in `auth` | Authelia |
 
 The Job also reads `postgres-app-secrets` in `database`, which contains the same
 passwords. Keep the two SealedSecrets in sync if you rotate a password.
+
+### Authelia HA
+
+Authelia runs two replicas in `auth` with shared state:
+
+- PostgreSQL storage (`storage.postgres`) in the `authelia` database.
+- Redis/Valkey sessions (`session.redis`) via `authelia-redis` in `auth`.
+- Shared `authelia-secrets` values: session secret, storage encryption key,
+  reset-password JWT secret, OIDC HMAC, and JWKS.
+- `RollingUpdate` with `maxSurge: 1` and `maxUnavailable: 0`.
+
+The old `authelia-config` PVC and `authelia-sqlite-backup` CronJob are retained
+only as a rollback path. Authelia no longer mounts that PVC. The Postgres dump
+is included in the central backup CronJob.
 
 ### Paperless-ngx OIDC
 
@@ -850,15 +868,16 @@ Current SQLite-backed workloads:
 
 | Workload | Strategy | Notes |
 | --- | --- | --- |
-| `authelia` | `Recreate` | `db.sqlite3` on `synology-iscsi` |
 | `adguard-home` | `Recreate` | session DB on `synology-iscsi` |
 | `grafana` | `Recreate` | `grafana.db` on `synology-iscsi` |
 | `ntfy` | `Recreate` | chart default; SQLite on `synology-iscsi` |
 | `uptime-kuma` | `Recreate` | `kuma.db` on `synology-iscsi` |
 | `speedtest-tracker` | `Recreate` | now Postgres; kept for the legacy PVC |
 
-Postgres-backed apps (`mealie`, `donetick`, `paperless`) may use rolling
-updates when their shared data volumes are ReadWriteMany.
+Postgres-backed apps (`mealie`, `donetick`, `paperless`, `speedtest-tracker`,
+and now `authelia`) may use rolling updates when their shared data volumes are
+ReadWriteMany or their state is external. Authelia's legacy SQLite PVC is no
+longer mounted by the Deployment.
 
 ### Capacity
 
