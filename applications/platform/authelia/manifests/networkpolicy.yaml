@@ -48,7 +48,9 @@ metadata:
   name: allow-auth-egress
   namespace: auth
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app: authelia
   policyTypes:
   - Egress
   egress:
@@ -64,6 +66,20 @@ spec:
       port: 53
     - protocol: TCP
       port: 53
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: database
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: authelia-redis
+    ports:
+    - protocol: TCP
+      port: 6379
   - to:
     - ipBlock:
         cidr: 0.0.0.0/0

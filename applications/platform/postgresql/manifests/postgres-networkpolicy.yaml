@@ -28,6 +28,7 @@ spec:
                   - paperless
                   - backup
                   - speedtest-tracker
+                  - auth
           podSelector:
             matchLabels:
               requires-db: postgres

@@ -74,6 +74,11 @@ spec:
                     secretKeyRef:
                       name: backup-db-secrets
                       key: speedtest-db-password
+                - name: AUTHELIA_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-db-secrets
+                      key: authelia-db-password
               command:
                 - /bin/sh
                 - -ec
@@ -113,6 +118,7 @@ spec:
                   dump donetick donetick donetick "$DONETICK_DB_PASSWORD"
                   dump paperless paperless paperless "$PAPERLESS_DB_PASSWORD"
                   dump speedtest speedtest speedtest "$SPEEDTEST_DB_PASSWORD"
+                  dump authelia authelia authelia "$AUTHELIA_DB_PASSWORD"
                   ls -lh /backup
               volumeMounts:
                 - name: dumps
