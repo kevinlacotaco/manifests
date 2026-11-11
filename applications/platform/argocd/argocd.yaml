@@ -37,10 +37,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 192Mi
+              memory: 256Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: "1"
+              memory: 2Gi
           metrics:
             enabled: true
         repoServer:
