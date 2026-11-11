@@ -67,6 +67,11 @@ spec:
         - protocol: TCP
           port: 53
     - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: database
