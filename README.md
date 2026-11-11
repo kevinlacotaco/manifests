@@ -839,6 +839,27 @@ ReadWriteMany data, and runs as UID/GID 911; the NFS export must allow that UID.
 ntfy uses `synology-iscsi` because SQLite on NFS is unsafe. Verify a non-root
 write from a test pod before relying on NFS for a new application.
 
+### SQLite single-writer workloads
+
+Any application that keeps SQLite on a ReadWriteOnce volume must use the
+`Recreate` Deployment strategy, not `RollingUpdate`. On a single node both the
+old and new pods can mount the same RWO volume, and concurrent SQLite writers
+can corrupt the database.
+
+Current SQLite-backed workloads:
+
+| Workload | Strategy | Notes |
+| --- | --- | --- |
+| `authelia` | `Recreate` | `db.sqlite3` on `synology-iscsi` |
+| `adguard-home` | `Recreate` | session DB on `synology-iscsi` |
+| `grafana` | `Recreate` | `grafana.db` on `synology-iscsi` |
+| `ntfy` | `Recreate` | chart default; SQLite on `synology-iscsi` |
+| `uptime-kuma` | `Recreate` | `kuma.db` on `synology-iscsi` |
+| `speedtest-tracker` | `Recreate` | now Postgres; kept for the legacy PVC |
+
+Postgres-backed apps (`mealie`, `donetick`, `paperless`) may use rolling
+updates when their shared data volumes are ReadWriteMany.
+
 ### Capacity
 
 The cluster is a single node with roughly 15.4Gi of allocatable memory. Most
