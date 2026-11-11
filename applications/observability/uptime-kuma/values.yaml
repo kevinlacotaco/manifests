@@ -4,10 +4,9 @@ global:
 
 controllers:
   main:
-    strategy: RollingUpdate
-    rollingUpdate:
-      surge: 1
-      unavailable: "0%"
+    # Uptime Kuma stores its state in SQLite. Never run two pods against the
+    # same RWO volume, even briefly: concurrent SQLite writers corrupt the DB.
+    strategy: Recreate
 
     initContainers:
       seed-monitors:
