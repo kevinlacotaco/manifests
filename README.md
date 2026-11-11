@@ -733,6 +733,8 @@ plaintext secret with the new controller certificate.
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
+| `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; CRDs installed |
+| `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
 | `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP; alert rules |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
@@ -767,6 +769,27 @@ Additional resources not represented as child Applications:
 | `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
 | `paperless` Deployment/PVC/Service | `paperless` | Managed by the `paperless` child Application |
 | `speedtest-tracker` Deployment/PVC/Service | `speedtest-tracker` | Managed by the `speedtest-tracker` child Application |
+
+### Kyverno audit policies
+
+Kyverno runs in `Audit` mode; the policies report violations but do not block
+workloads. The initial policy set covers:
+
+- `disallow-latest-tag`: images must have an explicit tag other than `latest`.
+- `disallow-privileged`: no privileged containers, `hostPath`, `hostNetwork`,
+  `hostPID`, or `hostIPC`.
+- `require-resource-limits`: every container must set CPU and memory limits.
+
+Inspect them with `kubectl get clusterpolicy` and the results with
+`kubectl get policyreport -A`. The first audit found violations in
+cert-manager, Donetick, monitoring, RabbitMQ, the NFS provisioner, and the
+Synology CSI driver. Fix the workloads or add narrow `PolicyException`
+resources before changing `validationFailureAction` to `Enforce`.
+
+The policies currently use the `kyverno.io/v1` `ClusterPolicy` API, which
+Kyverno 1.19 marks deprecated. Plan a migration to the CEL-based
+`policies.kyverno.io` `ValidatingPolicy` API before a future Kyverno major
+release.
 
 ### PostgreSQL databases
 

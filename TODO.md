@@ -14,6 +14,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
 - [ ] Store Kopia repo password and Renovate GitHub App private key offline; remove plaintext working copies.
 - [ ] Run restore tests for Postgres, Authelia, SQLite backups, and Kopia; add offsite replication.
+- [ ] Review Kyverno Audit findings, fix them or add narrow `PolicyException` resources, then move the policies from `Audit` to `Enforce`.
+- [ ] Migrate the Kyverno `ClusterPolicy` resources to the CEL-based `ValidatingPolicy` API.
 
 ## P1 — Identity and network gaps
 
@@ -41,6 +43,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## Recently completed
 
+- Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.
+- Argo CD application-controller memory limit raised to 2Gi after repeated OOMKills stalled sync operations.
 - Authelia OIDC provider live; Paperless-ngx deployed with Postgres, Valkey, and NFS storage.
 - Authelia protects Mealie and Donetick with two-factor.
 - Authelia moved to Postgres storage with Redis sessions and two replicas; TOTP data migrated, legacy SQLite PVC retained for rollback.
