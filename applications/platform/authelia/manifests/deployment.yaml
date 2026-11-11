@@ -31,6 +31,8 @@ spec:
       - name: authelia
         image: authelia/authelia:4.39.28
         imagePullPolicy: IfNotPresent
+        args:
+        - --config.experimental.filters=template
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -58,8 +60,6 @@ spec:
               key: reset-password-jwt-secret
         - name: TZ
           value: America/New_York
-        - name: AUTHELIA_CONFIG_FILTERS
-          value: template
         volumeMounts:
         - name: config
           mountPath: /config
