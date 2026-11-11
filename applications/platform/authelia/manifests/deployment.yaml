@@ -32,6 +32,8 @@ spec:
         image: authelia/authelia:4.39.28
         imagePullPolicy: IfNotPresent
         args:
+        - --config
+        - /config/configuration.yml
         - --config.experimental.filters=template
         securityContext:
           allowPrivilegeEscalation: false
