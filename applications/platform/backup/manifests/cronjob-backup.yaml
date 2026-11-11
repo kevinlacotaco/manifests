@@ -193,6 +193,7 @@ spec:
                     --keep-monthly=6 \
                     --keep-annual=1
                   kopia snapshot create /media
+                  kopia snapshot create /paperless-media
                   kopia snapshot create /backup
                   kopia snapshot create /repo/staging --tags type:sqlite
                   kopia maintenance run
@@ -205,6 +206,9 @@ spec:
                   mountPath: /repo
                 - name: mealie-media
                   mountPath: /media
+                  readOnly: true
+                - name: paperless-media
+                  mountPath: /paperless-media
                   readOnly: true
                 - name: dumps
                   mountPath: /backup
@@ -224,6 +228,10 @@ spec:
             - name: mealie-media
               persistentVolumeClaim:
                 claimName: mealie-media-readonly
+                readOnly: true
+            - name: paperless-media
+              persistentVolumeClaim:
+                claimName: paperless-media-readonly
                 readOnly: true
             - name: dumps
               emptyDir:

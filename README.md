@@ -741,6 +741,7 @@ plaintext secret with the new controller certificate.
 | `uptime-kuma` | `monitoring` | Helm `app-template` `3.7.2` | 5Gi iSCSI |
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
 | `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
+| `paperless` | `paperless` | Git path `applications/apps/paperless/manifests` | Wired in; Postgres `paperless` DB; Authelia OIDC |
 | `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-iscsi` |
 | `postgresql` | `database` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
@@ -753,25 +754,43 @@ Additional resources not represented as child Applications:
 | `traefik` HelmChartConfig | `kube-system` | Extra entry points and dashboard |
 | `coredns-custom` ConfigMap | `kube-system` | `hoist.local` -> `192.168.68.138` |
 | `postgres` StatefulSet | `database` | Managed by the `postgresql` child Application |
-| `postgres-init-apps` Job | `database` | Creates the `mealie` and `donetick` roles/databases |
+| `postgres-init-apps` Job | `database` | Creates the `mealie`, `donetick`, and `paperless` roles/databases |
 | `postgres-app-secrets` | `database` | Sealed app DB passwords used by the init Job |
 | `mealie-db` | `mealie` | Sealed Mealie DB password |
 | `donetick-secret` | `donetick` | Sealed Donetick DB password and JWT secret |
+| `paperless-secrets` | `paperless` | Sealed Paperless DB/app/OIDC credentials |
 | `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
+| `paperless` Deployment/PVC/Service | `paperless` | Managed by the `paperless` child Application |
 
 ### PostgreSQL databases
 
 The `postgresql` child Application runs a single `postgres` StatefulSet in the
-`database` namespace. The `postgres-init-apps` PostSync Job creates two
+`database` namespace. The `postgres-init-apps` PostSync Job creates three
 application roles/databases idempotently:
 
 | Role/database | Password source | Consumer |
 | --- | --- | --- |
 | `mealie` | `mealie-db` Secret in `mealie` | Mealie |
 | `donetick` | `donetick-secret` Secret in `donetick` | Donetick |
+| `paperless` | `paperless-secrets` Secret in `paperless` | Paperless-ngx |
 
 The Job also reads `postgres-app-secrets` in `database`, which contains the same
 passwords. Keep the two SealedSecrets in sync if you rotate a password.
+
+### Paperless-ngx OIDC
+
+Paperless-ngx uses the Authelia OIDC provider directly; there is no
+forward-auth middleware on its Ingress. The Authelia client is
+`paperless-ngx` with callback
+`https://paperless.lakotko.synology.me/accounts/oidc/authelia/login/callback/`
+and scopes `openid`, `profile`, `email`, and `groups`.
+
+Users in Authelia's `admins` group are promoted to Paperless superuser on
+login. The local `paperless-admin` account remains as break-glass access; its
+password is in the `paperless-secrets` SealedSecret. The Synology reverse proxy
+must forward `paperless.lakotko.synology.me` to Traefik at
+`http://192.168.68.71:80` and preserve the Host header, like the Mealie and
+Donetick rules.
 
 ### Endpoints and ports
 
@@ -783,6 +802,7 @@ passwords. Keep the two SealedSecrets in sync if you rotate a password.
 | Uptime Kuma | `https://kuma.lakotko.synology.me` |
 | Mealie | `https://meals.lakotko.synology.me` |
 | Donetick | `https://tasks.lakotko.synology.me` |
+| Paperless-ngx | `https://paperless.lakotko.synology.me` |
 | Homepage | `https://home.lakotko.synology.me` |
 | ntfy | `https://ntfy.lakotko.synology.me` |
 | RabbitMQ MQTT | `mqtt://192.168.68.71:1883` |

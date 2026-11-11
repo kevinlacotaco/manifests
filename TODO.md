@@ -7,6 +7,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Protect Mealie with Authelia two-factor.
 - [x] Protect Donetick with Authelia two-factor (external 302 verified).
 - [ ] Confirm Donetick TOTP login and remove any direct Synology bypass.
+- [ ] Add the Synology reverse proxy rule for `paperless.lakotko.synology.me` to Traefik and verify the external OIDC login end to end.
 - [ ] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
 - [ ] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
 - [x] Verify Postgres `fsGroup` on the CSI volume.
@@ -17,6 +18,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 ## P1 — Identity and network gaps
 
 - [ ] Decide whether Uptime Kuma should be behind Authelia or kept internal.
+- [x] Enable the Authelia OIDC provider and use it for Paperless-ngx.
 - [ ] Decide on Authelia OIDC/SSO for Mealie/Argo CD.
 - [ ] Tighten egress for `monitoring` and `argocd`; review `ntfy` egress and Traefik `trustedIPs` pod CIDR.
 - [ ] Add a second AdGuard instance or MetalLB VIP before router DHCP cutover.
@@ -39,6 +41,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## Recently completed
 
+- Authelia OIDC provider live; Paperless-ngx deployed with Postgres, Valkey, and NFS storage.
 - Authelia protects Mealie and Donetick with two-factor.
 - Authelia SQLite/users DB, Uptime Kuma, Speedtest, Grafana SQLite, Postgres dumps, and Mealie media are in Kopia.
 - Uptime Kuma monitors Authelia, Kopia backups, and AdGuard DNS.

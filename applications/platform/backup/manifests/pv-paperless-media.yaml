@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backup-paperless-media
+  labels:
+    app.kubernetes.io/name: kopia
+    app.kubernetes.io/component: source
+  annotations:
+    backup.lakotko.synology.me/source: paperless-media
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: backup
+    name: paperless-media-readonly
+  nfs:
+    server: 192.168.68.138
+    # This is the NFS subdirectory backing Paperless' Retain PV. If the
+    # Paperless PVC is ever recreated, update this path to the new subdirectory.
+    path: /volume1/k8s-nfs/paperless-paperless-media-pvc-16105b48-24b8-4eb4-a310-a303b2111d30
+    readOnly: true
+  mountOptions:
+    - vers=4.1

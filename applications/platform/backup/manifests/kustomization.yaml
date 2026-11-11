@@ -9,6 +9,8 @@ resources:
   - pvc-repo.yaml
   - pv-mealie-media.yaml
   - pvc-mealie-media.yaml
+  - pv-paperless-media.yaml
+  - pvc-paperless-media.yaml
   - kopia-repo-sealed-secret.yaml
   - backup-db-secrets-sealed.yaml
   - uptime-kuma-push-sealed-secret.yaml
