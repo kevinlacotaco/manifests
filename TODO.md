@@ -43,7 +43,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 - Authelia OIDC provider live; Paperless-ngx deployed with Postgres, Valkey, and NFS storage.
 - Authelia protects Mealie and Donetick with two-factor.
-- Authelia SQLite/users DB, Uptime Kuma, Speedtest, Grafana SQLite, Postgres dumps, and Mealie media are in Kopia.
+- Authelia SQLite/users DB, Uptime Kuma, Speedtest, Grafana SQLite, Postgres dumps, and Mealie/Paperless media are in Kopia.
 - Uptime Kuma monitors Authelia, Kopia backups, and AdGuard DNS.
 - Default-deny egress for mealie, donetick, ntfy, speedtest-tracker, auth, and adguard-home.
 - Sealed Secrets keyring encrypted offline; no plaintext secrets in the repo.

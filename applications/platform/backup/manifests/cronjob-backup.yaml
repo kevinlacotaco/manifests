@@ -160,6 +160,7 @@ spec:
                   set -eu
                   test -d /repo
                   test -d /media
+                  test -d /paperless-media
                   test -d /backup
 
                   # The SQLite CronJobs run at 01:10, 01:20, 01:30, and 01:40.
