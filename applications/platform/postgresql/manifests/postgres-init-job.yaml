@@ -66,6 +66,11 @@ spec:
                 secretKeyRef:
                   name: postgres-app-secrets
                   key: paperless-db-password
+            - name: SPEEDTEST_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: speedtest-db-password
           command:
             - /bin/sh
             - -ec
@@ -78,7 +83,8 @@ spec:
               psql -v ON_ERROR_STOP=1 \
                 -v mealie_password="$MEALIE_DB_PASSWORD" \
                 -v donetick_password="$DONETICK_DB_PASSWORD" \
-                -v paperless_password="$PAPERLESS_DB_PASSWORD" <<'SQL'
+                -v paperless_password="$PAPERLESS_DB_PASSWORD" \
+                -v speedtest_password="$SPEEDTEST_DB_PASSWORD" <<'SQL'
               SELECT format('CREATE ROLE mealie LOGIN PASSWORD %L', :'mealie_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mealie')\gexec
               ALTER ROLE mealie WITH LOGIN PASSWORD :'mealie_password';
@@ -91,12 +97,18 @@ spec:
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'paperless')\gexec
               ALTER ROLE paperless WITH LOGIN PASSWORD :'paperless_password';
 
+              SELECT format('CREATE ROLE speedtest LOGIN PASSWORD %L', :'speedtest_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'speedtest')\gexec
+              ALTER ROLE speedtest WITH LOGIN PASSWORD :'speedtest_password';
+
               SELECT 'CREATE DATABASE mealie OWNER mealie'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'mealie')\gexec
               SELECT 'CREATE DATABASE donetick OWNER donetick'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'donetick')\gexec
               SELECT 'CREATE DATABASE paperless OWNER paperless'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'paperless')\gexec
+              SELECT 'CREATE DATABASE speedtest OWNER speedtest'
+              WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'speedtest')\gexec
 
               \c mealie
               ALTER SCHEMA public OWNER TO mealie;
@@ -109,6 +121,10 @@ spec:
               \c paperless
               ALTER SCHEMA public OWNER TO paperless;
               GRANT ALL ON SCHEMA public TO paperless;
+
+              \c speedtest
+              ALTER SCHEMA public OWNER TO speedtest;
+              GRANT ALL ON SCHEMA public TO speedtest;
               SQL
           resources:
             requests:

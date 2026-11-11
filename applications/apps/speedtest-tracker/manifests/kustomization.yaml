@@ -6,8 +6,9 @@ resources:
   - guardrails.yaml
   - networkpolicy.yaml
   - sealed-secret.yaml
+  - speedtest-db-sealed-secret.yaml
   - pvc.yaml
+  - pvc-v2.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
-  - sqlite-backup-cronjob.yaml

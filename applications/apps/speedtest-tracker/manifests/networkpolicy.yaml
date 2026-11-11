@@ -67,6 +67,13 @@ spec:
     - protocol: TCP
       port: 53
   - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: database
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
     - ipBlock:
         cidr: 192.168.68.138/32
     ports:

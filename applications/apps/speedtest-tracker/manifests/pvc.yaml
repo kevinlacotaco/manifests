@@ -3,6 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: speedtest-tracker-config
   namespace: speedtest-tracker
+  annotations:
+    # Corrupt LUN retained for manual inspection; do not let Argo delete it.
+    argocd.argoproj.io/sync-options: Prune=false
 spec:
   accessModes:
     - ReadWriteOnce

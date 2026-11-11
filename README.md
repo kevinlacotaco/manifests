@@ -742,6 +742,7 @@ plaintext secret with the new controller certificate.
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
 | `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
 | `paperless` | `paperless` | Git path `applications/apps/paperless/manifests` | Wired in; Postgres `paperless` DB; Authelia OIDC |
+| `speedtest-tracker` | `speedtest-tracker` | Git path `applications/apps/speedtest-tracker/manifests` | Wired in; Postgres `speedtest` DB; Apprise sidecar |
 | `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-iscsi` |
 | `postgresql` | `database` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
@@ -754,18 +755,20 @@ Additional resources not represented as child Applications:
 | `traefik` HelmChartConfig | `kube-system` | Extra entry points and dashboard |
 | `coredns-custom` ConfigMap | `kube-system` | `hoist.local` -> `192.168.68.138` |
 | `postgres` StatefulSet | `database` | Managed by the `postgresql` child Application |
-| `postgres-init-apps` Job | `database` | Creates the `mealie`, `donetick`, and `paperless` roles/databases |
+| `postgres-init-apps` Job | `database` | Creates the `mealie`, `donetick`, `paperless`, and `speedtest` roles/databases |
 | `postgres-app-secrets` | `database` | Sealed app DB passwords used by the init Job |
 | `mealie-db` | `mealie` | Sealed Mealie DB password |
 | `donetick-secret` | `donetick` | Sealed Donetick DB password and JWT secret |
 | `paperless-secrets` | `paperless` | Sealed Paperless DB/app/OIDC credentials |
+| `speedtest-db` | `speedtest-tracker` | Sealed Speedtest DB password |
 | `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
 | `paperless` Deployment/PVC/Service | `paperless` | Managed by the `paperless` child Application |
+| `speedtest-tracker` Deployment/PVC/Service | `speedtest-tracker` | Managed by the `speedtest-tracker` child Application |
 
 ### PostgreSQL databases
 
 The `postgresql` child Application runs a single `postgres` StatefulSet in the
-`database` namespace. The `postgres-init-apps` PostSync Job creates three
+`database` namespace. The `postgres-init-apps` PostSync Job creates four
 application roles/databases idempotently:
 
 | Role/database | Password source | Consumer |
@@ -773,6 +776,7 @@ application roles/databases idempotently:
 | `mealie` | `mealie-db` Secret in `mealie` | Mealie |
 | `donetick` | `donetick-secret` Secret in `donetick` | Donetick |
 | `paperless` | `paperless-secrets` Secret in `paperless` | Paperless-ngx |
+| `speedtest` | `speedtest-db` Secret in `speedtest-tracker` | Speedtest Tracker |
 
 The Job also reads `postgres-app-secrets` in `database`, which contains the same
 passwords. Keep the two SealedSecrets in sync if you rotate a password.

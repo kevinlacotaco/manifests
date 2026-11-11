@@ -27,6 +27,7 @@ spec:
                   - donetick
                   - paperless
                   - backup
+                  - speedtest-tracker
           podSelector:
             matchLabels:
               requires-db: postgres
