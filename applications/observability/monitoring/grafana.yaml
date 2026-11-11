@@ -11,6 +11,12 @@ spec:
     chart: grafana
     helm:
       values: |
+        # Grafana stores its state in SQLite on a single-writer RWO volume.
+        # RollingUpdate can run old and new pods on the same node against the
+        # same database; Recreate guarantees the old writer exits first.
+        deploymentStrategy:
+          type: Recreate
+
         admin:
           existingSecret: grafana-admin-credentials
           userKey: admin-user
