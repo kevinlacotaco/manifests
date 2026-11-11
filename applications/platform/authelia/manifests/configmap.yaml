@@ -10,11 +10,12 @@ data:
     \  file:\n    path: /config/users_database.yml\n\naccess_control:\n  default_policy:\
     \ one_factor\n  rules:\n    - domain: meals.lakotko.synology.me\n      policy:\
     \ two_factor\n    - domain: tasks.lakotko.synology.me\n      policy: two_factor\n\
-    \nidentity_providers:\n  oidc:\n    hmac_secret: {{ secret \"/config/secrets/oidc/hmac-secret\"\
-    \ | msquote }}\n    jwks:\n      - key: {{ secret \"/config/secrets/oidc/jwks-key\"\
-    \ | mindent 10 \"|\" | msquote }}\n        algorithm: RS256\n        use: sig\n\
-    \    clients:\n      - client_id: paperless-ngx\n        client_name: Paperless-ngx\n\
-    \        client_secret: '$pbkdf2-sha512$310000$hTto45JLdudQmHS6qGBw3g$Sj2xy17oaiVJ5RyFxoStK0Qsrrey4JT7I30v11VNC8MvFLA/Hl/RNkXqs9T034N3/qiTsDiXy8Zp4UBRPMQO9Q'\n\
+    \    - domain: paperless.lakotko.synology.me\n      policy: two_factor\n\nidentity_providers:\n\
+    \  oidc:\n    hmac_secret: {{ secret \"/config/secrets/oidc/hmac-secret\" | msquote\
+    \ }}\n    jwks:\n      - key: {{ secret \"/config/secrets/oidc/jwks-key\" | mindent\
+    \ 10 \"|\" | msquote }}\n        algorithm: RS256\n        use: sig\n    clients:\n\
+    \      - client_id: paperless-ngx\n        client_name: Paperless-ngx\n      \
+    \  client_secret: '$pbkdf2-sha512$310000$hTto45JLdudQmHS6qGBw3g$Sj2xy17oaiVJ5RyFxoStK0Qsrrey4JT7I30v11VNC8MvFLA/Hl/RNkXqs9T034N3/qiTsDiXy8Zp4UBRPMQO9Q'\n\
     \        public: false\n        redirect_uris:\n          - https://paperless.lakotko.synology.me/accounts/oidc/authelia/login/callback/\n\
     \        scopes:\n          - openid\n          - profile\n          - email\n\
     \          - groups\n        authorization_policy: two_factor\n        token_endpoint_auth_method:\

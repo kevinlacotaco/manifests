@@ -6,5 +6,6 @@ resources:
   - homepage
   - donetick
   - mealie
+  - paperless
   - ntfy
   - speedtest-tracker

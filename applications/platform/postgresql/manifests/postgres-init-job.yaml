@@ -61,6 +61,11 @@ spec:
                 secretKeyRef:
                   name: postgres-app-secrets
                   key: donetick-db-password
+            - name: PAPERLESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: paperless-db-password
           command:
             - /bin/sh
             - -ec
@@ -72,7 +77,8 @@ spec:
 
               psql -v ON_ERROR_STOP=1 \
                 -v mealie_password="$MEALIE_DB_PASSWORD" \
-                -v donetick_password="$DONETICK_DB_PASSWORD" <<'SQL'
+                -v donetick_password="$DONETICK_DB_PASSWORD" \
+                -v paperless_password="$PAPERLESS_DB_PASSWORD" <<'SQL'
               SELECT format('CREATE ROLE mealie LOGIN PASSWORD %L', :'mealie_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mealie')\gexec
               ALTER ROLE mealie WITH LOGIN PASSWORD :'mealie_password';
@@ -81,10 +87,16 @@ spec:
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'donetick')\gexec
               ALTER ROLE donetick WITH LOGIN PASSWORD :'donetick_password';
 
+              SELECT format('CREATE ROLE paperless LOGIN PASSWORD %L', :'paperless_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'paperless')\gexec
+              ALTER ROLE paperless WITH LOGIN PASSWORD :'paperless_password';
+
               SELECT 'CREATE DATABASE mealie OWNER mealie'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'mealie')\gexec
               SELECT 'CREATE DATABASE donetick OWNER donetick'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'donetick')\gexec
+              SELECT 'CREATE DATABASE paperless OWNER paperless'
+              WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'paperless')\gexec
 
               \c mealie
               ALTER SCHEMA public OWNER TO mealie;
@@ -93,6 +105,10 @@ spec:
               \c donetick
               ALTER SCHEMA public OWNER TO donetick;
               GRANT ALL ON SCHEMA public TO donetick;
+
+              \c paperless
+              ALTER SCHEMA public OWNER TO paperless;
+              GRANT ALL ON SCHEMA public TO paperless;
               SQL
           resources:
             requests:

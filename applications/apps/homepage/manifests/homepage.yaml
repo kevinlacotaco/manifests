@@ -136,6 +136,10 @@ data:
             href: https://tasks.lakotko.synology.me
             description: Chores and tasks
             icon: donetick.png
+        - Paperless-ngx:
+            href: https://paperless.lakotko.synology.me
+            description: Document archive
+            icon: paperless-ngx.png
     - Storage:
         - Synology:
             href: http://192.168.68.138:5000

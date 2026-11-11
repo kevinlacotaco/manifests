@@ -64,6 +64,11 @@ spec:
                     secretKeyRef:
                       name: backup-db-secrets
                       key: donetick-db-password
+                - name: PAPERLESS_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-db-secrets
+                      key: paperless-db-password
               command:
                 - /bin/sh
                 - -ec
@@ -101,6 +106,7 @@ spec:
 
                   dump mealie mealie mealie "$MEALIE_DB_PASSWORD"
                   dump donetick donetick donetick "$DONETICK_DB_PASSWORD"
+                  dump paperless paperless paperless "$PAPERLESS_DB_PASSWORD"
                   ls -lh /backup
               volumeMounts:
                 - name: dumps

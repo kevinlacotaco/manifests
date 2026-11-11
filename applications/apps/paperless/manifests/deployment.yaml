@@ -1,0 +1,165 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperless
+  namespace: paperless
+spec:
+  replicas: 1
+
+  # The media/data volumes are RWX NFS, so keep the old pod serving while the
+  # new pod starts.
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app: paperless
+
+  template:
+    metadata:
+      labels:
+        app: paperless
+        requires-db: postgres
+
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: paperless
+          image: ghcr.io/paperless-ngx/paperless-ngx:3.4.2
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8000
+
+          env:
+            - name: PAPERLESS_URL
+              value: https://paperless.lakotko.synology.me
+
+            - name: PAPERLESS_TIME_ZONE
+              value: America/New_York
+
+            - name: PAPERLESS_OCR_LANGUAGE
+              value: eng
+
+            - name: PAPERLESS_WEBSERVER_WORKERS
+              value: "1"
+
+            - name: PAPERLESS_REDIS
+              value: redis://paperless-redis.paperless.svc.cluster.local:6379
+
+            - name: PAPERLESS_DBENGINE
+              value: postgresql
+
+            - name: PAPERLESS_DBHOST
+              value: postgres-headless-service.database.svc.cluster.local
+
+            - name: PAPERLESS_DBPORT
+              value: "5432"
+
+            - name: PAPERLESS_DBNAME
+              value: paperless
+
+            - name: PAPERLESS_DBUSER
+              value: paperless
+
+            - name: PAPERLESS_DBPASS
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-secrets
+                  key: POSTGRES_PASSWORD
+
+            - name: PAPERLESS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-secrets
+                  key: PAPERLESS_SECRET_KEY
+
+            # Break-glass local superuser. Normal logins go through Authelia.
+            - name: PAPERLESS_ADMIN_USER
+              value: paperless-admin
+
+            - name: PAPERLESS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-secrets
+                  key: PAPERLESS_ADMIN_PASSWORD
+
+            - name: PAPERLESS_APPS
+              value: allauth.socialaccount.providers.openid_connect
+
+            - name: PAPERLESS_SOCIALACCOUNT_PROVIDERS
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-secrets
+                  key: PAPERLESS_SOCIALACCOUNT_PROVIDERS
+
+            - name: PAPERLESS_SOCIAL_AUTO_SIGNUP
+              value: "true"
+
+            - name: PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS
+              value: "true"
+
+            # Authelia puts users in the `admins` group. Paperless promotes
+            # those users to superuser on login, so the first OIDC login is an
+            # admin without manual intervention.
+            - name: PAPERLESS_SOCIAL_ACCOUNT_SYNC_SUPERUSER_GROUP
+              value: admins
+
+          volumeMounts:
+            - name: media
+              mountPath: /usr/src/paperless/media
+            - name: data
+              mountPath: /usr/src/paperless/data
+            - name: consume
+              mountPath: /usr/src/paperless/consume
+            - name: export
+              mountPath: /usr/src/paperless/export
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: paperless-media
+        - name: data
+          persistentVolumeClaim:
+            claimName: paperless-data
+        - name: consume
+          persistentVolumeClaim:
+            claimName: paperless-consume
+        - name: export
+          persistentVolumeClaim:
+            claimName: paperless-export
