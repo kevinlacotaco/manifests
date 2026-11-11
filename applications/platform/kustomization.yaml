@@ -16,3 +16,5 @@ resources:
   - renovate
   - cert-manager
   - cert-manager-test
+  - kyverno-policies
+  - kyverno

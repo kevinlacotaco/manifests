@@ -16,6 +16,7 @@ spec:
     - https://christian-schlichtherle.github.io/synology-csi-chart
     - https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
     - https://github.com/rabbitmq/cluster-operator
+    - https://kyverno.github.io/kyverno/
   destinations:
     - server: https://kubernetes.default.svc
       namespace: argocd
@@ -41,6 +42,8 @@ spec:
       namespace: cert-manager
     - server: https://kubernetes.default.svc
       namespace: cert-manager-test
+    - server: https://kubernetes.default.svc
+      namespace: kyverno
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
