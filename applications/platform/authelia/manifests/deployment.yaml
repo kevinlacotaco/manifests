@@ -6,10 +6,13 @@ metadata:
   labels:
     app: authelia
 spec:
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 3
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: authelia
@@ -17,6 +20,7 @@ spec:
     metadata:
       labels:
         app: authelia
+        requires-db: postgres
     spec:
       enableServiceLinks: false
       securityContext:
@@ -63,8 +67,6 @@ spec:
         - name: TZ
           value: America/New_York
         volumeMounts:
-        - name: config
-          mountPath: /config
         - name: configuration
           mountPath: /config/configuration.yml
           subPath: configuration.yml
@@ -75,6 +77,9 @@ spec:
           readOnly: true
         - name: oidc
           mountPath: /config/secrets/oidc
+          readOnly: true
+        - name: db
+          mountPath: /config/secrets/authelia-db
           readOnly: true
         readinessProbe:
           httpGet:
@@ -97,9 +102,6 @@ spec:
             cpu: 500m
             memory: 512Mi
       volumes:
-      - name: config
-        persistentVolumeClaim:
-          claimName: authelia-config
       - name: configuration
         configMap:
           name: authelia-config
@@ -109,4 +111,8 @@ spec:
       - name: oidc
         secret:
           secretName: authelia-oidc
+          defaultMode: 292
+      - name: db
+        secret:
+          secretName: authelia-db
           defaultMode: 292

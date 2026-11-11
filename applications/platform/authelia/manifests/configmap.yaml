@@ -22,5 +22,7 @@ data:
     \ client_secret_basic\n        userinfo_signed_response_alg: none\n        consent_mode:\
     \ implicit\n\nsession:\n  name: authelia_session\n  expiration: 1h\n  inactivity:\
     \ 5m\n  cookies:\n    - domain: lakotko.synology.me\n      authelia_url: https://auth.lakotko.synology.me\n\
-    \nstorage:\n  local:\n    path: /config/db.sqlite3\n\nnotifier:\n  filesystem:\n\
-    \    filename: /config/notifications.txt\n"
+    \  redis:\n    host: authelia-redis\n    port: 6379\n\nstorage:\n  postgres:\n\
+    \    address: tcp://postgres-headless-service.database.svc.cluster.local:5432\n\
+    \    database: authelia\n    username: authelia\n    password: {{ secret \"/config/secrets/authelia-db/POSTGRES_PASSWORD\"\
+    \ | msquote }}\n\nnotifier:\n  filesystem:\n    filename: /tmp/notifications.txt\n"
