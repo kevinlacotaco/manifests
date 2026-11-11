@@ -58,6 +58,8 @@ spec:
               key: reset-password-jwt-secret
         - name: TZ
           value: America/New_York
+        - name: AUTHELIA_CONFIG_FILTERS
+          value: template
         volumeMounts:
         - name: config
           mountPath: /config
@@ -68,6 +70,9 @@ spec:
         - name: users
           mountPath: /config/users_database.yml
           subPath: users_database.yml
+          readOnly: true
+        - name: oidc
+          mountPath: /config/secrets/oidc
           readOnly: true
         readinessProbe:
           httpGet:
@@ -99,3 +104,7 @@ spec:
       - name: users
         secret:
           secretName: authelia-users
+      - name: oidc
+        secret:
+          secretName: authelia-oidc
+          defaultMode: 292
