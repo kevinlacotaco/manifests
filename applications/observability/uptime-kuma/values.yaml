@@ -71,6 +71,8 @@ controllers:
             SELECT 'Paperless', 1, 1, 60, 'http', 2000, 2, 60, 'Paperless-ngx application', 'http://paperless-web.paperless.svc.cluster.local:8000/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Paperless')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            UPDATE monitor SET url = 'http://paperless-web.paperless.svc.cluster.local:8000/'
+            WHERE name = 'Paperless';
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
             SELECT 'ntfy', 1, 1, 60, 'http', 2000, 2, 60, 'ntfy health endpoint', 'http://ntfy-ntfy.ntfy.svc.cluster.local/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'ntfy')
