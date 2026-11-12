@@ -1,11 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Keep these on metadata only. Including them in selectors breaks
+# NetworkPolicies for child apps, whose pods do not receive these labels.
 labels:
   - pairs:
       app.kubernetes.io/managed-by: argocd
       git.argocd.argoproj.io/repo: manifests
-    includeSelectors: true
+    includeSelectors: false
 
 resources:
   - applications.yaml

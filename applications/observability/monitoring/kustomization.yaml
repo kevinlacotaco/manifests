@@ -1,10 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Keep these labels on metadata only. Including them in selectors breaks
+# NetworkPolicies that target pods created by child Applications, because
+# those pods do not receive this kustomization's labels.
 labels:
   - pairs:
       infrastructure.io/component: observability
-    includeSelectors: true
+    includeSelectors: false
 
 resources:
   - grafana-admin-sealed-secret.yaml
