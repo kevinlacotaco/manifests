@@ -12,3 +12,5 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - speedtest-ntfy-sealed-secret.yaml
+  - cronjob-summary.yaml

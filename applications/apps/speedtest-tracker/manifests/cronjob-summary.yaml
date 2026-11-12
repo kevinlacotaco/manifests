@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: speedtest-summary
+  namespace: speedtest-tracker
+  labels:
+    app: speedtest-summary
+spec:
+  # Every five hours, 15 minutes after the hourly speed test.
+  schedule: "15 */5 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 120
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: speedtest-summary
+            requires-db: postgres
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70
+            runAsGroup: 70
+            fsGroup: 70
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: summary
+              image: postgres:18.6-alpine
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: PGHOST
+                  value: postgres-headless-service.database.svc.cluster.local
+                - name: PGPORT
+                  value: "5432"
+                - name: PGDATABASE
+                  value: speedtest
+                - name: PGUSER
+                  value: speedtest
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: speedtest-db
+                      key: POSTGRES_PASSWORD
+                - name: NTFY_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: speedtest-ntfy
+                      key: token
+                - name: TZ
+                  value: America/New_York
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+                  MSG="$(psql -v ON_ERROR_STOP=1 -Atc "SELECT format('Speedtest %s - down %s Mbps, up %s Mbps, ping %s ms (healthy=%s, id=%s)', to_char(created_at, 'YYYY-MM-DD HH24:MI'), round(download / 1000000.0, 1), round(upload / 1000000.0, 1), round(ping::numeric, 1), COALESCE(healthy::text, 'unknown'), id) FROM results WHERE status = 'completed' AND healthy IS TRUE ORDER BY created_at DESC, id DESC LIMIT 1;")"
+                  if [ -z "$MSG" ]; then
+                    echo "no healthy completed results"
+                    exit 0
+                  fi
+                  echo "$MSG"
+                  wget -qO- \
+                    --header="Authorization: Bearer ${NTFY_TOKEN}" \
+                    --header="Title: Speedtest summary" \
+                    --header="Tags: speedtest" \
+                    --header="Priority: default" \
+                    --header="Content-Type: text/plain" \
+                    --header="Click: https://speedtest.lakotko.synology.me" \
+                    --post-data="$MSG" \
+                    "http://ntfy-ntfy.ntfy.svc.cluster.local/speedtest" >/dev/null
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi

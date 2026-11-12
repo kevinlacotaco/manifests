@@ -88,6 +88,8 @@ spec:
     ports:
     - protocol: TCP
       port: 80
+    - protocol: TCP
+      port: 2586
   - to:
     - ipBlock:
         cidr: 0.0.0.0/0
