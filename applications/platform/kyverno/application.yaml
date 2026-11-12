@@ -23,6 +23,10 @@ spec:
           replicas: 1
         reportsController:
           replicas: 1
+        features:
+          policyExceptions:
+            enabled: true
+            namespace: kyverno
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno

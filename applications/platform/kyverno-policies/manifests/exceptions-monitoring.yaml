@@ -2,7 +2,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: allow-node-exporter-host-access
-  namespace: monitoring
+  namespace: kyverno
 spec:
   background: true
   exceptions:
@@ -15,6 +15,8 @@ spec:
   match:
     any:
       - resources:
+          namespaces:
+            - monitoring
           kinds:
             - DaemonSet
             - Pod
@@ -27,7 +29,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: allow-alloy-hostpath
-  namespace: monitoring
+  namespace: kyverno
 spec:
   background: true
   exceptions:
@@ -38,6 +40,8 @@ spec:
   match:
     any:
       - resources:
+          namespaces:
+            - monitoring
           kinds:
             - DaemonSet
             - Pod
