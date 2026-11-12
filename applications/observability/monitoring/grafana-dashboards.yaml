@@ -959,3 +959,168 @@ data:
       "uid": "application-detail",
       "version": 1
     }
+  synology-nas.json: |-
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "targets": [
+            {
+              "expr": "synology_cpu_utilization_percent{job=\"synology-snmp\"}",
+              "legendFormat": "CPU"
+            }
+          ],
+          "title": "Synology CPU usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "id": 2,
+          "targets": [
+            {
+              "expr": "synology_memory_utilization_percent{job=\"synology-snmp\"}",
+              "legendFormat": "Memory"
+            }
+          ],
+          "title": "Synology memory usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "celsius",
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 8
+          },
+          "id": 3,
+          "targets": [
+            {
+              "expr": "synology_temperature_celsius{job=\"synology-snmp\"}",
+              "legendFormat": "Temperature"
+            }
+          ],
+          "title": "Synology temperature",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 8
+          },
+          "id": 4,
+          "targets": [
+            {
+              "expr": "synology_system_status{job=\"synology-snmp\"}",
+              "legendFormat": "System status"
+            }
+          ],
+          "title": "Synology system status",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 8
+          },
+          "id": 5,
+          "targets": [
+            {
+              "expr": "synology_thermal_status{job=\"synology-snmp\"}",
+              "legendFormat": "Thermal status"
+            }
+          ],
+          "title": "Synology thermal status",
+          "type": "stat"
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": [
+        "synology",
+        "snmp"
+      ],
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Synology NAS",
+      "uid": "synology-nas",
+      "version": 1
+    }
