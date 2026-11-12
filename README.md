@@ -745,7 +745,7 @@ plaintext secret with the new controller certificate.
 | `donetick` | `donetick` | Helm `app-template` `3.7.2` | Wired in; Postgres `donetick` DB |
 | `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
 | `paperless` | `paperless` | Git path `applications/apps/paperless/manifests` | Wired in; Postgres `paperless` DB; Authelia OIDC |
-| `speedtest-tracker` | `speedtest-tracker` | Git path `applications/apps/speedtest-tracker/manifests` | Wired in; Postgres `speedtest` DB; Apprise sidecar |
+| `speedtest-tracker` | `speedtest-tracker` | Git path `applications/apps/speedtest-tracker/manifests` | Wired in; Postgres `speedtest` DB; Apprise sidecar; ntfy URL uses `?format=markdown` |
 | `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-iscsi` |
 | `postgresql` | `database` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
@@ -769,6 +769,17 @@ Additional resources not represented as child Applications:
 | `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
 | `paperless` Deployment/PVC/Service | `paperless` | Managed by the `paperless` child Application |
 | `speedtest-tracker` Deployment/PVC/Service | `speedtest-tracker` | Managed by the `speedtest-tracker` child Application |
+
+The Speedtest Apprise channel URL must include `?format=markdown`:
+
+```text
+ntfy://<token>@ntfy-ntfy.ntfy.svc.cluster.local/speedtest?format=markdown
+```
+
+Speedtest Tracker sends Markdown for threshold and completed notifications. The
+Apprise API accepts that format but does not pass it to the ntfy plugin, so
+without the query parameter ntfy receives the body as plain text and shows the
+literal `**` and `###` markers.
 
 ### Kyverno audit policies
 
