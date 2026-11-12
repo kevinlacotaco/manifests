@@ -5,6 +5,11 @@ metadata:
   namespace: mealie
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: auth-authelia-forwardauth@kubernetescrd
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Mealie"
+    gethomepage.dev/group: "Applications"
+    gethomepage.dev/icon: "mealie.png"
+    gethomepage.dev/href: "https://meals.lakotko.synology.me"
 spec:
   ingressClassName: traefik
   rules:

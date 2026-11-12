@@ -190,6 +190,13 @@ ingress:
     enabled: true
     className: traefik
 
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: Uptime Kuma
+      gethomepage.dev/group: Observability
+      gethomepage.dev/icon: uptime-kuma.png
+      gethomepage.dev/href: https://kuma.lakotko.synology.me
+
     hosts:
       - host: kuma.lakotko.synology.me
         paths:

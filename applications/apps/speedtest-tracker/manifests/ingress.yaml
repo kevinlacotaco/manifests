@@ -3,6 +3,12 @@ kind: Ingress
 metadata:
   name: speedtest-tracker
   namespace: speedtest-tracker
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Speedtest Tracker"
+    gethomepage.dev/group: "Observability"
+    gethomepage.dev/icon: "speedtest-tracker.png"
+    gethomepage.dev/href: "https://speedtest.lakotko.synology.me"
 spec:
   ingressClassName: traefik
   rules:

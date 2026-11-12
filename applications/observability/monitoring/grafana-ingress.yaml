@@ -3,6 +3,12 @@ kind: IngressRoute
 metadata:
   name: grafana-ingress
   namespace: monitoring
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Grafana"
+    gethomepage.dev/group: "Observability"
+    gethomepage.dev/icon: "grafana.png"
+    gethomepage.dev/href: "http://boulder.local:3000"
 spec:
   entryPoints:
     - grafana

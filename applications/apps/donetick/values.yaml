@@ -94,6 +94,11 @@ ingress:
 
     annotations:
       traefik.ingress.kubernetes.io/router.middlewares: auth-authelia-forwardauth@kubernetescrd
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: Donetick
+      gethomepage.dev/group: Applications
+      gethomepage.dev/icon: donetick.png
+      gethomepage.dev/href: https://tasks.lakotko.synology.me
 
     hosts:
       - host: tasks.lakotko.synology.me

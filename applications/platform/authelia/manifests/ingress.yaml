@@ -3,6 +3,12 @@ kind: Ingress
 metadata:
   name: authelia
   namespace: auth
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Authelia"
+    gethomepage.dev/group: "Edge"
+    gethomepage.dev/icon: "authelia.png"
+    gethomepage.dev/href: "https://auth.lakotko.synology.me"
 spec:
   ingressClassName: traefik
   rules:

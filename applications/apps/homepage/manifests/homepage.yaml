@@ -102,47 +102,14 @@ data:
         columns: 4
   services.yaml: |
     - Edge:
-        - Argo CD:
-            href: http://192.168.68.71:8081
-            description: GitOps
-            icon: argocd.png
-        - Traefik:
-            href: http://192.168.68.71:8080/dashboard/
-            description: Ingress
-            icon: traefik.png
         - AdGuard Home:
             href: http://192.168.68.71:31628
-            description: DNS
+            description: DNS and ad blocking
             icon: adguard-home.png
-    - Observability:
-        - Grafana:
-            href: http://192.168.68.71:3000
-            icon: grafana.png
-        - Uptime Kuma:
-            href: https://kuma.lakotko.synology.me
-            icon: uptime-kuma.png
-        - ntfy:
-            href: https://ntfy.lakotko.synology.me
-            icon: ntfy.png
-        - Speedtest Tracker:
-            href: https://speedtest.lakotko.synology.me
-            icon: speedtest-tracker.png
-    - Applications:
-        - Mealie:
-            href: https://meals.lakotko.synology.me
-            description: Family recipes
-            icon: mealie.png
-        - Donetick:
-            href: https://tasks.lakotko.synology.me
-            description: Chores and tasks
-            icon: donetick.png
-        - Paperless-ngx:
-            href: https://paperless.lakotko.synology.me
-            description: Document archive
-            icon: paperless-ngx.png
     - Storage:
         - Synology:
             href: http://192.168.68.138:5000
+            description: NAS management
             icon: synology.png
   bookmarks.yaml: |
     - Documentation:
@@ -160,7 +127,9 @@ data:
   docker.yaml: |
     {}
   kubernetes.yaml: |
-    mode: disabled
+    mode: cluster
+    ingress: true
+    traefik: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -186,6 +155,8 @@ spec:
       labels:
         app: homepage
     spec:
+      serviceAccountName: homepage
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

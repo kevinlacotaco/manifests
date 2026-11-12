@@ -23,6 +23,12 @@ kind: IngressRoute
 metadata:
   name: traefik-dashboard
   namespace: kube-system
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Traefik"
+    gethomepage.dev/group: "Edge"
+    gethomepage.dev/icon: "traefik.png"
+    gethomepage.dev/href: "http://192.168.68.71:8080/dashboard/"
 spec:
   entryPoints:
     - traefik

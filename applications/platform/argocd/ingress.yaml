@@ -7,6 +7,12 @@ metadata:
     app.kubernetes.io/name: argocd
     argocd.argoproj.io/instance: applications
     app.kubernetes.io/part-of: argocd
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Argo CD"
+    gethomepage.dev/group: "Edge"
+    gethomepage.dev/icon: "argocd.png"
+    gethomepage.dev/href: "http://boulder.local:8081"
 spec:
   entryPoints:
     - argocd
