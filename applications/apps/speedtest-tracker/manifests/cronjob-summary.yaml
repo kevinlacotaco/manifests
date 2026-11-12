@@ -68,7 +68,20 @@ spec:
                 - -ec
                 - |
                   set -eu
-                  MSG="$(psql -v ON_ERROR_STOP=1 -Atc "SELECT format('Speedtest %s - down %s Mbps, up %s Mbps, ping %s ms (healthy=%s, id=%s)', to_char(created_at, 'YYYY-MM-DD HH24:MI'), round(download / 1000000.0, 1), round(upload / 1000000.0, 1), round(ping::numeric, 1), COALESCE(healthy::text, 'unknown'), id) FROM results WHERE status = 'completed' AND healthy IS TRUE ORDER BY created_at DESC, id DESC LIMIT 1;")"
+                  i=1
+                  MSG=""
+                  while [ "$i" -le 10 ]; do
+                    if MSG="$(psql -v ON_ERROR_STOP=1 -Atc "SELECT format('Speedtest %s - down %s Mbps, up %s Mbps, ping %s ms (healthy=%s, id=%s)', to_char(created_at, 'YYYY-MM-DD HH24:MI'), round(download / 1000000.0, 1), round(upload / 1000000.0, 1), round(ping::numeric, 1), COALESCE(healthy::text, 'unknown'), id) FROM results WHERE status = 'completed' AND healthy IS TRUE ORDER BY created_at DESC, id DESC LIMIT 1;")"; then
+                      break
+                    fi
+                    echo "psql attempt ${i} failed; retrying" >&2
+                    i=$((i+1))
+                    sleep 2
+                  done
+                  if [ "$i" -gt 10 ]; then
+                    echo "psql failed after 10 attempts" >&2
+                    exit 1
+                  fi
                   if [ -z "$MSG" ]; then
                     echo "no healthy completed results"
                     exit 0
