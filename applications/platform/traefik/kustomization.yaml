@@ -8,3 +8,5 @@ labels:
 
 resources:
   - entry-points.yaml
+  - dashboard.yaml
+  - dashboard-sealed-secret.yaml

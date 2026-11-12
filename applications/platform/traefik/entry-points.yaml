@@ -13,13 +13,15 @@ spec:
         cpu: 500m
         memory: 256Mi
     additionalArguments:
-      - "--api.insecure=true"
+      # The dashboard is served by an authenticated IngressRoute on the traefik
+      # entrypoint; the insecure API must stay disabled.
+      - "--api.dashboard=true"
       # k3s servicelb (klipper-lb) masquerades LoadBalancer traffic, so Traefik sees
       # the svclb pod IP rather than the Synology source. Trust the cluster pod CIDR.
       - "--entryPoints.web.forwardedHeaders.trustedIPs=10.42.0.0/16,192.168.68.138/32"
     ingressRoute:
       dashboard:
-        enabled: true
+        enabled: false
     ports:
       argocd:
         port: 8081
