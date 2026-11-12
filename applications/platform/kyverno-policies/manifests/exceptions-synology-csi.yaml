@@ -1,0 +1,31 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-synology-csi-platform-access
+  namespace: synology-csi
+spec:
+  background: true
+  exceptions:
+    - policyName: disallow-privileged
+      ruleNames:
+        - no-privileged-containers
+        - autogen-no-privileged-containers
+        - no-host-namespaces
+        - autogen-no-host-namespaces
+        - no-hostpath-volumes
+        - autogen-no-hostpath-volumes
+    - policyName: require-resource-limits
+      ruleNames:
+        - containers-must-have-cpu-and-memory-limits
+        - autogen-containers-must-have-cpu-and-memory-limits
+  match:
+    any:
+      - resources:
+          kinds:
+            - DaemonSet
+            - StatefulSet
+            - Pod
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: synology-csi

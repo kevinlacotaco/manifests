@@ -1,0 +1,47 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-node-exporter-host-access
+  namespace: monitoring
+spec:
+  background: true
+  exceptions:
+    - policyName: disallow-privileged
+      ruleNames:
+        - no-host-namespaces
+        - autogen-no-host-namespaces
+        - no-hostpath-volumes
+        - autogen-no-hostpath-volumes
+  match:
+    any:
+      - resources:
+          kinds:
+            - DaemonSet
+            - Pod
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus-node-exporter
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-alloy-hostpath
+  namespace: monitoring
+spec:
+  background: true
+  exceptions:
+    - policyName: disallow-privileged
+      ruleNames:
+        - no-hostpath-volumes
+        - autogen-no-hostpath-volumes
+  match:
+    any:
+      - resources:
+          kinds:
+            - DaemonSet
+            - Pod
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: alloy
