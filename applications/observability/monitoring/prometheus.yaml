@@ -504,6 +504,23 @@ spec:
           - job_name: rabbitmq
             static_configs:
               - targets: ["rabbitmq.messaging.svc.cluster.local:15692"]
+
+          - job_name: synology-snmp
+            metrics_path: /snmp
+            scrape_interval: 60s
+            scrape_timeout: 15s
+            static_configs:
+              - targets: ["192.168.68.138"]
+            params:
+              auth: [synology_v3]
+              module: [synology]
+            relabel_configs:
+              - source_labels: [__address__]
+                target_label: __param_target
+              - source_labels: [__param_target]
+                target_label: instance
+              - target_label: __address__
+                replacement: prometheus-snmp-exporter.monitoring.svc.cluster.local:9116
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

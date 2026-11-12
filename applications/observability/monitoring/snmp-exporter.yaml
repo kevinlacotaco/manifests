@@ -1,0 +1,99 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-snmp-exporter
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: observability
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-snmp-exporter
+    targetRevision: 9.21.1
+    helm:
+      values: |
+        kind: Deployment
+        replicas: 1
+        image:
+          repository: quay.io/prometheus/snmp-exporter
+          tag: v0.31.0
+          pullPolicy: IfNotPresent
+        service:
+          type: ClusterIP
+          port: 9116
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        containerSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        extraArgs:
+          - --config.expand-environment-variables
+        envFrom:
+          - secretRef:
+              name: snmp-exporter-auth
+        config: |
+          auths:
+            synology_v3:
+              username: ${SNMP_USERNAME}
+              security_level: authPriv
+              auth_protocol: SHA
+              password: ${SNMP_AUTH_PASSWORD}
+              priv_protocol: AES
+              priv_password: ${SNMP_PRIV_PASSWORD}
+              version: 3
+          modules:
+            synology:
+              walk:
+                - 1.3.6.1.4.1.6574.1
+              metrics:
+                - name: synology_system_status
+                  oid: 1.3.6.1.4.1.6574.1.1
+                  type: gauge
+                  help: Synology system status
+                - name: synology_temperature_celsius
+                  oid: 1.3.6.1.4.1.6574.1.2
+                  type: gauge
+                  help: Synology system temperature in Celsius
+                - name: synology_power_status
+                  oid: 1.3.6.1.4.1.6574.1.3
+                  type: gauge
+                  help: Synology power status
+                - name: synology_system_fan_status
+                  oid: 1.3.6.1.4.1.6574.1.4.1
+                  type: gauge
+                  help: Synology system fan status
+                - name: synology_cpu_fan_status
+                  oid: 1.3.6.1.4.1.6574.1.4.2
+                  type: gauge
+                  help: Synology CPU fan status
+                - name: synology_cpu_utilization_percent
+                  oid: 1.3.6.1.4.1.6574.1.7.1
+                  type: gauge
+                  help: Synology CPU utilization percent
+                - name: synology_memory_utilization_percent
+                  oid: 1.3.6.1.4.1.6574.1.7.2
+                  type: gauge
+                  help: Synology memory utilization percent
+                - name: synology_thermal_status
+                  oid: 1.3.6.1.4.1.6574.1.8
+                  type: gauge
+                  help: Synology thermal status
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

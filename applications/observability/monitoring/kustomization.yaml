@@ -19,6 +19,8 @@ resources:
   - grafana-network-policy.yaml
   - grafana-dashboards.yaml
   - prometheus.yaml
+  - snmp-exporter.yaml
+  - snmp-exporter-auth-sealed-secret.yaml
   - loki.yaml
   - alloy.yaml
   - uptime-kuma-push-sealed-secret.yaml
