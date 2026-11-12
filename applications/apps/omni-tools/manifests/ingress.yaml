@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: omni-tools
+  namespace: omni-tools
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: auth-authelia-forwardauth@kubernetescrd
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Omni Tools"
+    gethomepage.dev/group: "Applications"
+    gethomepage.dev/icon: "omni-tools.png"
+    gethomepage.dev/href: "https://omni.lakotko.synology.me"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: omni.lakotko.synology.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: omni-tools
+                port:
+                  number: 80

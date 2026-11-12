@@ -27,6 +27,8 @@ spec:
       namespace: speedtest-tracker
     - server: https://kubernetes.default.svc
       namespace: homepage
+    - server: https://kubernetes.default.svc
+      namespace: omni-tools
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: omni-tools
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: apps
+  source:
+    repoURL: git@github.com:kevinlacotaco/manifests.git
+    targetRevision: main
+    path: applications/apps/omni-tools/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: omni-tools
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

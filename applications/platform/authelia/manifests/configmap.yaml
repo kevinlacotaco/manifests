@@ -10,7 +10,8 @@ data:
     \  file:\n    path: /config/users_database.yml\n\naccess_control:\n  default_policy:\
     \ one_factor\n  rules:\n    - domain: meals.lakotko.synology.me\n      policy:\
     \ two_factor\n    - domain: tasks.lakotko.synology.me\n      policy: two_factor\n\
-    \    - domain: paperless.lakotko.synology.me\n      policy: two_factor\n\nidentity_providers:\n\
+    \    - domain: paperless.lakotko.synology.me\n      policy: two_factor\n    -\
+    \ domain: omni.lakotko.synology.me\n      policy: two_factor\n\nidentity_providers:\n\
     \  oidc:\n    hmac_secret: {{ secret \"/config/secrets/oidc/hmac-secret\" | msquote\
     \ }}\n    jwks:\n      - key: {{ secret \"/config/secrets/oidc/jwks-key\" | mindent\
     \ 10 \"|\" | msquote }}\n        algorithm: RS256\n        use: sig\n    clients:\n\
