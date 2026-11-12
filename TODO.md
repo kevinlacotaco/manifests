@@ -14,8 +14,9 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
 - [ ] Store Kopia repo password and Renovate GitHub App private key offline; remove plaintext working copies.
 - [ ] Run restore tests for Postgres, Authelia, SQLite backups, and Kopia; add offsite replication.
-- [ ] Review Kyverno Audit findings, fix them or add narrow `PolicyException` resources, then move the policies from `Audit` to `Enforce`.
-- [ ] Migrate the Kyverno `ClusterPolicy` resources to the CEL-based `ValidatingPolicy` API.
+- [x] Review Kyverno Audit findings and add narrow `PolicyException` resources for legitimate host-access workloads.
+- [ ] Move the Kyverno policies from `Audit` to `Enforce` after a final review.
+- [ ] Migrate the Kyverno `ClusterPolicy` and `PolicyException` resources to the CEL-based APIs.
 
 ## P1 — Identity and network gaps
 
@@ -44,6 +45,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 ## Recently completed
 
 - Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.
+- Kyverno Audit cleaned to 0 failures: cert-manager/Donetick/RabbitMQ limits fixed and PolicyExceptions added for node-exporter, Alloy, and Synology CSI.
+- Kustomize tracking labels no longer injected into selectors; fixed Donetick/ntfy DNS and the Grafana NetworkPolicy, and recreated the Alertmanager-ntfy relay.
 - Argo CD application-controller memory limit raised to 2Gi after repeated OOMKills stalled sync operations.
 - Authelia OIDC provider live; Paperless-ngx deployed with Postgres, Valkey, and NFS storage.
 - Authelia protects Mealie and Donetick with two-factor.

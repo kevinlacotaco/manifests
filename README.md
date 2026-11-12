@@ -733,8 +733,8 @@ plaintext secret with the new controller certificate.
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
-| `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; CRDs installed |
-| `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits |
+| `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; PolicyExceptions enabled in `kyverno` |
+| `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits; 0 current failures |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
 | `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP; alert rules |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
@@ -781,15 +781,30 @@ workloads. The initial policy set covers:
 - `require-resource-limits`: every container must set CPU and memory limits.
 
 Inspect them with `kubectl get clusterpolicy` and the results with
-`kubectl get policyreport -A`. The first audit found violations in
+`kubectl get policyreport -A`. The initial audit found violations in
 cert-manager, Donetick, monitoring, RabbitMQ, the NFS provisioner, and the
-Synology CSI driver. Fix the workloads or add narrow `PolicyException`
-resources before changing `validationFailureAction` to `Enforce`.
+Synology CSI driver.
+
+The real issues are fixed: cert-manager, Donetick, and RabbitMQ now set CPU
+and memory limits. Narrow `PolicyException` resources cover the legitimate
+platform workloads that need host access:
+
+- `allow-node-exporter-host-access` for `hostNetwork`/`hostPath`.
+- `allow-alloy-hostpath` for the Alloy log collector's host path.
+- `allow-synology-csi-platform-access` for the Synology CSI driver's
+  privileged/host access and chart limitation on resources.
+
+PolicyExceptions are enabled with `features.policyExceptions.enabled=true` and
+`namespace=kyverno`; the exception objects live in the `kyverno` namespace and
+target `monitoring`/`synology-csi` explicitly. The current audit is **0
+failures**. ReplicaSets are excluded from background scans; historical
+ReplicaSet reports were removed.
 
 The policies currently use the `kyverno.io/v1` `ClusterPolicy` API, which
 Kyverno 1.19 marks deprecated. Plan a migration to the CEL-based
 `policies.kyverno.io` `ValidatingPolicy` API before a future Kyverno major
-release.
+release. The `kyverno.io/v2` `PolicyException` API is also deprecated; migrate
+it with the policies.
 
 ### PostgreSQL databases
 
