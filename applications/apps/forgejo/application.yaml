@@ -9,7 +9,7 @@ spec:
   project: apps
 
   sources:
-    - repoURL: oci://code.forgejo.org/forgejo-helm
+    - repoURL: code.forgejo.org/forgejo-helm
       chart: forgejo
       targetRevision: 17.3.2
 

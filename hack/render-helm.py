@@ -232,6 +232,11 @@ def build_helm_command(
     if repo_url.startswith("oci://"):
         chart_ref = f"{repo_url.rstrip('/')}/{chart}"
         command = ["helm", "template", release, chart_ref]
+    elif "://" not in repo_url:
+        # Argo CD expects OCI chart registries without the oci:// prefix,
+        # while Helm requires it. Treat a scheme-less chart repoURL as OCI.
+        chart_ref = f"oci://{repo_url.rstrip('/')}/{chart}"
+        command = ["helm", "template", release, chart_ref]
     else:
         chart_ref = chart
         command = [
