@@ -52,6 +52,14 @@ spec:
           rules:
             enabled: false
 
+        # A fresh single-binary pod cannot become ready until its memberlist
+        # headless service resolves. The chart defaults to publishing only
+        # ready addresses, which creates a bootstrap deadlock after the PVC is
+        # replaced.
+        memberlist:
+          service:
+            publishNotReadyAddresses: true
+
         singleBinary:
           replicas: 1
           resources:
@@ -65,6 +73,12 @@ spec:
             enabled: true
             size: 20Gi
             storageClass: synology-iscsi
+            # Loki uses filesystem storage here, so its PVC is the source of
+            # truth. The chart defaults to deleting PVCs on scale-down or
+            # StatefulSet deletion because it assumes object storage.
+            enableStatefulSetAutoDeletePVC: true
+            whenScaled: Retain
+            whenDeleted: Retain
 
         gateway:
           resources:
