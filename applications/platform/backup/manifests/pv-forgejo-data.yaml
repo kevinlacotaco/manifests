@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backup-forgejo-data
+  labels:
+    app.kubernetes.io/name: kopia
+    app.kubernetes.io/component: source
+  annotations:
+    backup.lakotko.synology.me/source: forgejo-data
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: backup
+    name: forgejo-data-readonly
+  nfs:
+    server: 192.168.68.138
+    # This is the NFS subdirectory backing Forgejo's Retain PV. If the
+    # Forgejo PVC is ever recreated, update this path to the new subdirectory.
+    path: /volume1/k8s-nfs/forgejo-forgejo-data-pvc-c73e0dc1-753f-4067-84d5-c30369748c75
+    readOnly: true
+  mountOptions:
+    - vers=4.1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: forgejo-data-readonly
+  namespace: backup
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: ""
+  volumeName: backup-forgejo-data
+  resources:
+    requests:
+      storage: 20Gi

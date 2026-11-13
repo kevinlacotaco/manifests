@@ -11,6 +11,7 @@ resources:
   - pvc-mealie-media.yaml
   - pv-paperless-media.yaml
   - pvc-paperless-media.yaml
+  - pv-forgejo-data.yaml
   - kopia-repo-sealed-secret.yaml
   - backup-db-secrets-sealed.yaml
   - uptime-kuma-push-sealed-secret.yaml

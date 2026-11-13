@@ -210,6 +210,8 @@ flowchart LR
     ARGO["Argo CD"]
     BACKUP["Kopia + DB dumps"]
     RABBITMQ["RabbitMQ"]
+    FORGEJO["Forgejo"]
+    FORGEJO_RUNNER["Forgejo runner"]
   end
 
   subgraph GRAPPLE["grapple - general workloads"]
@@ -249,6 +251,9 @@ flowchart LR
   AUTHELIA -->|"DB"| POSTGRES
   SPEEDTEST -->|"DB"| POSTGRES
   SPEEDTEST -.->|"config"| ISCSI
+  FORGEJO -.->|"repos, LFS"| NFS
+  FORGEJO -->|"DB"| POSTGRES
+  FORGEJO_RUNNER -.->|"runner config"| ISCSI
   POSTGRES -.->|"10Gi PVC"| ISCSI
   RABBITMQ -.->|"20Gi PVC"| ISCSI
   GRAFANA -.->|"SQLite"| ISCSI
@@ -279,21 +284,23 @@ flowchart LR
   classDef both fill:#fff8e1,stroke:#f9a825,color:#e65100;
   classDef none fill:#f5f5f5,stroke:#9e9e9e,color:#424242;
 
-  class MEALIE,PAPERLESS both;
-  class DONETICK,AUTHELIA,SPEEDTEST,GRAFANA,KUMA,NTFY,ADGUARD,LOKI,POSTGRES,RABBITMQ,ISCSI iscsi;
+  class MEALIE,PAPERLESS,FORGEJO both;
+  class DONETICK,AUTHELIA,SPEEDTEST,GRAFANA,KUMA,NTFY,ADGUARD,LOKI,POSTGRES,RABBITMQ,ISCSI,FORGEJO_RUNNER iscsi;
   class BACKUP,NFS,KOPIA nfs;
   class TRAEFIK,ARGO,HOMEPAGE,OMNI,PROM,VALKEY,EPHEMERAL,ZIGBEE,MQTT,RTL,BLE,AUTOMATION,USB none;
 ```
 
 Applications marked **via Postgres** do not mount the iSCSI volume themselves;
-their database rows live in Postgres' iSCSI-backed PVC. Mealie and Paperless are
-the only applications that use both storage classes directly or indirectly:
-NFS for document/media files and Postgres for relational data.
+their database rows live in Postgres' iSCSI-backed PVC. Mealie, Paperless, and
+Forgejo use both storage classes directly or indirectly: NFS for
+document/media/repository files and Postgres for relational data.
 
 | Application | NFS | iSCSI | Storage note |
 | --- | --- | --- | --- |
 | Mealie | `mealie-media` | via Postgres | **Both** |
 | Paperless-ngx | `paperless-media`, `-data`, `-consume`, `-export` | via Postgres | **Both** |
+| Forgejo | `forgejo-data` | via Postgres | **Both**; repositories, attachments, LFS |
+| Forgejo runner | — | `forgejo-runner-data` | iSCSI only; runner registration/config |
 | Donetick | — | `donetick-data` + via Postgres | iSCSI only |
 | Authelia | — | via Postgres | iSCSI only; legacy SQLite PVC retained but not mounted |
 | Speedtest Tracker | — | `speedtest-tracker-config-v2` + via Postgres | iSCSI only; old corrupt PVC retained |

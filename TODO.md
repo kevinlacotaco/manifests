@@ -8,6 +8,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Protect Donetick with Authelia two-factor (external 302 verified).
 - [ ] Confirm Donetick TOTP login and remove any direct Synology bypass.
 - [ ] Add the Synology reverse proxy rule for `paperless.lakotko.synology.me` to Traefik and verify the external OIDC login end to end.
+- [ ] Add the Synology reverse proxy rule for `git.lakotko.synology.me` to Traefik and verify external Forgejo access.
 - [ ] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
 - [ ] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
 - [x] Verify Postgres `fsGroup` on the CSI volume.
@@ -23,6 +24,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Decide whether Uptime Kuma should be behind Authelia or kept internal.
 - [x] Enable the Authelia OIDC provider and use it for Paperless-ngx.
 - [ ] Decide on Authelia OIDC/SSO for Mealie/Argo CD.
+- [ ] Configure the Forgejo → GitHub push mirror with a GitHub PAT and verify a mirrored repository.
 - [ ] Tighten egress for `monitoring` and `argocd`; review `ntfy` egress and Traefik `trustedIPs` pod CIDR.
 - [ ] Add a second AdGuard instance or MetalLB VIP before router DHCP cutover.
 - [ ] Add DNS-specific and TLS-cert-expiry monitoring if not already covered.
@@ -45,6 +47,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## Recently completed
 
+- Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
 - Synology DSM CPU, memory, and temperature metrics scraped over SNMPv3; `Synology NAS` Grafana dashboard added.
 - Loki recovered from a corrupt iSCSI volume; old volume removed and memberlist bootstrap/PVC retention corrected.
 - Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.

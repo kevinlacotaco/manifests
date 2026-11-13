@@ -747,6 +747,8 @@ plaintext secret with the new controller certificate.
 | `mealie` | `mealie` | Git path `applications/apps/mealie/manifests` | Wired in; Postgres `mealie` DB |
 | `paperless` | `paperless` | Git path `applications/apps/paperless/manifests` | Wired in; Postgres `paperless` DB; Authelia OIDC |
 | `speedtest-tracker` | `speedtest-tracker` | Git path `applications/apps/speedtest-tracker/manifests` | Wired in; Postgres `speedtest` DB; Apprise sidecar; ntfy URL uses `?format=markdown` |
+| `forgejo` | `forgejo` | Helm OCI `code.forgejo.org/forgejo-helm` `17.3.2` | Native login; Postgres + NFS 20Gi; GitHub push mirror; Actions enabled |
+| `forgejo-runner` | `forgejo` | Git path `applications/apps/forgejo/manifests` | Forgejo Actions runner; privileged DinD sidecar; 2Gi iSCSI |
 | `ntfy` | `ntfy` | Helm `ntfy` `1.7.1` (HelmForge) | Wired in; SQLite on `synology-iscsi` |
 | `postgresql` | `database` | Git path `applications/platform/postgresql/manifests` | Wired in; 10Gi iSCSI; PostSync DB init job |
 
@@ -767,6 +769,11 @@ Additional resources not represented as child Applications:
 | `donetick-secret` | `donetick` | Sealed Donetick DB password and JWT secret |
 | `paperless-secrets` | `paperless` | Sealed Paperless DB/app/OIDC credentials |
 | `speedtest-db` | `speedtest-tracker` | Sealed Speedtest DB password |
+| `forgejo-secrets` | `forgejo` | Sealed Forgejo DB, secret key, internal token, JWT secret |
+| `forgejo-admin` | `forgejo` | Sealed Forgejo admin username/password |
+| `forgejo-runner-token` | `forgejo` | Sealed Actions runner registration token |
+| `forgejo-data` PVC | `forgejo` | 20Gi NFS RWX for Forgejo repositories and LFS |
+| `forgejo-runner-data` PVC | `forgejo` | 2Gi iSCSI for runner registration/config |
 | `mealie` Deployment/PVC/Service | `mealie` | Managed by the `mealie` child Application |
 | `paperless` Deployment/PVC/Service | `paperless` | Managed by the `paperless` child Application |
 | `speedtest-tracker` Deployment/PVC/Service | `speedtest-tracker` | Managed by the `speedtest-tracker` child Application |
@@ -864,6 +871,25 @@ must forward `paperless.lakotko.synology.me` to Traefik at
 `http://192.168.68.71:80` and preserve the Host header, like the Mealie and
 Donetick rules.
 
+### Forgejo
+
+Forgejo runs at `git.lakotko.synology.me` with native login rather than Authelia
+forward-auth, so git-over-HTTPS, API tokens, and runner registration work
+normally. It uses Postgres database `forgejo` and a 20Gi NFS volume
+(`forgejo-data`) for repositories, attachments, and LFS objects.
+
+The Actions runner runs as a separate Deployment with a privileged Docker-in-
+Docker sidecar. The `forgejo` namespace therefore enforces Pod Security
+`privileged`; Kyverno has a narrow `allow-forgejo-runner-dind` exception for the
+runner labeled `app.kubernetes.io/name: forgejo-runner`. Do not run untrusted
+workflows with access to cluster credentials.
+
+GitHub push mirroring is configured per repository in Forgejo with a GitHub
+personal access token; the token is stored in Forgejo's database, not in Git.
+
+The Synology reverse proxy must forward `git.lakotko.synology.me` to Traefik at
+`http://192.168.68.71:80` and preserve the Host header.
+
 ### Endpoints and ports
 
 | Endpoint | Address |
@@ -875,6 +901,7 @@ Donetick rules.
 | Mealie | `https://meals.lakotko.synology.me` |
 | Donetick | `https://tasks.lakotko.synology.me` |
 | Paperless-ngx | `https://paperless.lakotko.synology.me` |
+| Forgejo | `https://git.lakotko.synology.me` |
 | Homepage | `https://home.lakotko.synology.me` |
 | ntfy | `https://ntfy.lakotko.synology.me` |
 | RabbitMQ MQTT | `mqtt://192.168.68.71:1883` |
