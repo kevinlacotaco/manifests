@@ -40,6 +40,13 @@ spec:
           podSelector:
             matchLabels:
               requires-db: postgres
+        # Prometheus Postgres exporter.
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus-postgres-exporter
         # Uptime Kuma runs a TCP-only health check from the monitoring namespace.
         - namespaceSelector:
             matchLabels:

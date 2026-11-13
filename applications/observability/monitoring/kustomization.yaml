@@ -21,6 +21,8 @@ resources:
   - prometheus.yaml
   - snmp-exporter.yaml
   - snmp-exporter-auth-sealed-secret.yaml
+  - postgres-exporter.yaml
+  - postgres-exporter-sealed-secret.yaml
   - loki.yaml
   - alloy.yaml
   - uptime-kuma-push-sealed-secret.yaml

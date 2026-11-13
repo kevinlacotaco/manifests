@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-postgres-exporter
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: observability
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-postgres-exporter
+    targetRevision: 8.2.5
+    helm:
+      values: |
+        replicaCount: 1
+
+        image:
+          registry: quay.io
+          repository: prometheuscommunity/postgres-exporter
+          tag: v0.20.1
+          pullPolicy: IfNotPresent
+
+        service:
+          type: ClusterIP
+          port: 80
+          targetPort: 9187
+          name: http
+
+        resources:
+          requests:
+            cpu: 20m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+
+        config:
+          datasource:
+            host: postgres-headless-service.database.svc.cluster.local
+            user: postgres_exporter
+            passwordSecret:
+              name: postgres-exporter-auth
+              key: POSTGRES_PASSWORD
+            port: "5432"
+            database: postgres
+            sslmode: disable
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

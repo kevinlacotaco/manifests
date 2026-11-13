@@ -521,6 +521,10 @@ spec:
                 target_label: instance
               - target_label: __address__
                 replacement: prometheus-snmp-exporter.monitoring.svc.cluster.local:9116
+
+          - job_name: postgres
+            static_configs:
+              - targets: ["prometheus-postgres-exporter.monitoring.svc.cluster.local:80"]
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

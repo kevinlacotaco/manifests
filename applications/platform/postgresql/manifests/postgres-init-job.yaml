@@ -81,6 +81,11 @@ spec:
                 secretKeyRef:
                   name: postgres-app-secrets
                   key: forgejo-db-password
+            - name: POSTGRES_EXPORTER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: postgres-exporter-password
           command:
             - /bin/sh
             - -ec
@@ -96,7 +101,8 @@ spec:
                 -v paperless_password="$PAPERLESS_DB_PASSWORD" \
                 -v speedtest_password="$SPEEDTEST_DB_PASSWORD" \
                 -v authelia_password="$AUTHELIA_DB_PASSWORD" \
-                -v forgejo_password="$FORGEJO_DB_PASSWORD" <<'SQL'
+                -v forgejo_password="$FORGEJO_DB_PASSWORD" \
+                -v postgres_exporter_password="$POSTGRES_EXPORTER_PASSWORD" <<'SQL'
               SELECT format('CREATE ROLE mealie LOGIN PASSWORD %L', :'mealie_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mealie')\gexec
               ALTER ROLE mealie WITH LOGIN PASSWORD :'mealie_password';
@@ -120,6 +126,11 @@ spec:
               SELECT format('CREATE ROLE forgejo LOGIN PASSWORD %L', :'forgejo_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'forgejo')\gexec
               ALTER ROLE forgejo WITH LOGIN PASSWORD :'forgejo_password';
+
+              SELECT format('CREATE ROLE postgres_exporter LOGIN PASSWORD %L', :'postgres_exporter_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgres_exporter')\gexec
+              ALTER ROLE postgres_exporter WITH LOGIN PASSWORD :'postgres_exporter_password';
+              GRANT pg_monitor TO postgres_exporter;
 
               SELECT 'CREATE DATABASE mealie OWNER mealie'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'mealie')\gexec
