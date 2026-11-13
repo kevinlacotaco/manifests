@@ -179,6 +179,139 @@ flowchart TB
   KUMA -.->|"probe"| VIP
 ```
 
+The aggregated `WEBAPPS` and `DATA` boxes are expanded per application in the
+storage map below.
+
+## Application placement and storage
+
+Each application is its own node below. The `boulder`, `grapple`, and
+`hardware` groups are an example placement, not one VM per application. Move an
+application between `boulder` and `grapple` as the scheduling model changes; the
+storage edges show what the application actually mounts.
+
+Color key:
+
+- **Amber**: uses both NFS and iSCSI (directly, or through Postgres).
+- **Green**: NFS only.
+- **Blue**: iSCSI only.
+- **Gray**: no persistent volume.
+
+```mermaid
+flowchart LR
+  subgraph BOULDER["boulder - general workloads"]
+    TRAEFIK["Traefik"]
+    AUTHELIA["Authelia"]
+    MEALIE["Mealie"]
+    PAPERLESS["Paperless-ngx"]
+    DONETICK["Donetick"]
+    SPEEDTEST["Speedtest Tracker"]
+    POSTGRES["Postgres"]
+    VALKEY["Valkey / Redis"]
+    ARGO["Argo CD"]
+    BACKUP["Kopia + DB dumps"]
+    RABBITMQ["RabbitMQ"]
+  end
+
+  subgraph GRAPPLE["grapple - general workloads"]
+    HOMEPAGE["Homepage"]
+    OMNI["Omni Tools"]
+    NTFY["ntfy"]
+    KUMA["Uptime Kuma"]
+    GRAFANA["Grafana"]
+    PROM["Prometheus"]
+    LOKI["Loki"]
+    ADGUARD["AdGuard Home"]
+  end
+
+  subgraph HARDWARE["hardware node - tainted"]
+    ZIGBEE["zigbee2mqtt"]
+    MQTT["Mosquitto"]
+    RTL["rtl_433"]
+    BLE["BLE collector"]
+    AUTOMATION["Home Assistant / automation"]
+  end
+
+  subgraph STORAGE["Synology storage"]
+    NFS["NFS RWX<br/>synology-nfs-subdir"]
+    ISCSI["iSCSI RWO<br/>synology-iscsi"]
+    KOPIA["Kopia repository<br/>on NFS"]
+  end
+
+  EPHEMERAL["No PVC<br/>emptyDir / ConfigMap / CRDs"]
+  USB["USB devices<br/>Zigbee / SDR / Bluetooth"]
+
+  MEALIE -.->|"media"| NFS
+  MEALIE -->|"DB"| POSTGRES
+  PAPERLESS -.->|"media, data,<br/>consume, export"| NFS
+  PAPERLESS -->|"DB"| POSTGRES
+  DONETICK -->|"DB"| POSTGRES
+  DONETICK -.->|"app data"| ISCSI
+  AUTHELIA -->|"DB"| POSTGRES
+  SPEEDTEST -->|"DB"| POSTGRES
+  SPEEDTEST -.->|"config"| ISCSI
+  POSTGRES -.->|"10Gi PVC"| ISCSI
+  RABBITMQ -.->|"20Gi PVC"| ISCSI
+  GRAFANA -.->|"SQLite"| ISCSI
+  KUMA -.->|"SQLite"| ISCSI
+  NTFY -.->|"SQLite"| ISCSI
+  ADGUARD -.->|"SQLite"| ISCSI
+  LOKI -.->|"chunks / TSDB"| ISCSI
+  BACKUP -.->|"repository"| KOPIA
+  BACKUP -.->|"read-only media"| NFS
+  BACKUP -->|"pg_dump"| POSTGRES
+
+  TRAEFIK -.-> EPHEMERAL
+  ARGO -.-> EPHEMERAL
+  HOMEPAGE -.-> EPHEMERAL
+  OMNI -.-> EPHEMERAL
+  PROM -.-> EPHEMERAL
+  VALKEY -.-> EPHEMERAL
+  ZIGBEE --> USB
+  RTL --> USB
+  BLE --> USB
+  ZIGBEE --> MQTT
+  RTL --> MQTT
+  BLE --> MQTT
+  MQTT --> AUTOMATION
+
+  classDef nfs fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+  classDef iscsi fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+  classDef both fill:#fff8e1,stroke:#f9a825,color:#e65100;
+  classDef none fill:#f5f5f5,stroke:#9e9e9e,color:#424242;
+
+  class MEALIE,PAPERLESS both;
+  class DONETICK,AUTHELIA,SPEEDTEST,GRAFANA,KUMA,NTFY,ADGUARD,LOKI,POSTGRES,RABBITMQ,ISCSI iscsi;
+  class BACKUP,NFS,KOPIA nfs;
+  class TRAEFIK,ARGO,HOMEPAGE,OMNI,PROM,VALKEY,EPHEMERAL,ZIGBEE,MQTT,RTL,BLE,AUTOMATION,USB none;
+```
+
+Applications marked **via Postgres** do not mount the iSCSI volume themselves;
+their database rows live in Postgres' iSCSI-backed PVC. Mealie and Paperless are
+the only applications that use both storage classes directly or indirectly:
+NFS for document/media files and Postgres for relational data.
+
+| Application | NFS | iSCSI | Storage note |
+| --- | --- | --- | --- |
+| Mealie | `mealie-media` | via Postgres | **Both** |
+| Paperless-ngx | `paperless-media`, `-data`, `-consume`, `-export` | via Postgres | **Both** |
+| Donetick | — | `donetick-data` + via Postgres | iSCSI only |
+| Authelia | — | via Postgres | iSCSI only; legacy SQLite PVC retained but not mounted |
+| Speedtest Tracker | — | `speedtest-tracker-config-v2` + via Postgres | iSCSI only; old corrupt PVC retained |
+| Grafana | — | `grafana` SQLite | iSCSI only |
+| Uptime Kuma | — | `uptime-kuma-config` SQLite | iSCSI only |
+| ntfy | — | `ntfy-data-iscsi` SQLite | iSCSI only |
+| AdGuard Home | — | `adguard-home-pvc` SQLite | iSCSI only |
+| Loki | — | `storage-loki-0` chunks / TSDB | iSCSI only |
+| RabbitMQ | — | 20Gi PVC | iSCSI only |
+| Postgres | — | 10Gi PVC | iSCSI only |
+| Prometheus | — | — | `emptyDir`; metrics are lost on restart |
+| Homepage | — | — | ConfigMap only |
+| Omni Tools | — | — | stateless |
+| Traefik | — | — | no PVC |
+| Argo CD | — | — | CRDs; Redis is ephemeral |
+| Backup | repository + read-only media | pg_dump over the network | NFS only for mounted volumes |
+| Hardware workflows | — | — | USB devices; no PVC defined yet |
+
 ## Request path
 
 Public traffic:
