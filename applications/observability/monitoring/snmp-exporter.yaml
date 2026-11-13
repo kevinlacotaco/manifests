@@ -55,6 +55,10 @@ spec:
             synology:
               walk:
                 - 1.3.6.1.4.1.6574.1
+                - 1.3.6.1.4.1.6574.2
+                - 1.3.6.1.4.1.6574.3
+                - 1.3.6.1.2.1.31.1.1
+                - 1.3.6.1.2.1.2.2.1.8
               metrics:
                 - name: synology_system_status
                   oid: 1.3.6.1.4.1.6574.1.1
@@ -88,6 +92,118 @@ spec:
                   oid: 1.3.6.1.4.1.6574.1.8
                   type: gauge
                   help: Synology thermal status
+                - name: synology_disk_status
+                  oid: 1.3.6.1.4.1.6574.2.1.1.5
+                  type: gauge
+                  help: Synology disk status (1 healthy)
+                  indexes:
+                    - labelname: diskIndex
+                      type: gauge
+                  lookups:
+                    - labels: [diskIndex]
+                      labelname: diskID
+                      oid: 1.3.6.1.4.1.6574.2.1.1.2
+                      type: DisplayString
+                    - labels: [diskIndex]
+                      labelname: diskModel
+                      oid: 1.3.6.1.4.1.6574.2.1.1.3
+                      type: DisplayString
+                    - labels: [diskIndex]
+                      labelname: diskType
+                      oid: 1.3.6.1.4.1.6574.2.1.1.4
+                      type: DisplayString
+                - name: synology_disk_temperature_celsius
+                  oid: 1.3.6.1.4.1.6574.2.1.1.6
+                  type: gauge
+                  help: Synology disk temperature in Celsius
+                  indexes:
+                    - labelname: diskIndex
+                      type: gauge
+                  lookups:
+                    - labels: [diskIndex]
+                      labelname: diskID
+                      oid: 1.3.6.1.4.1.6574.2.1.1.2
+                      type: DisplayString
+                    - labels: [diskIndex]
+                      labelname: diskModel
+                      oid: 1.3.6.1.4.1.6574.2.1.1.3
+                      type: DisplayString
+                    - labels: [diskIndex]
+                      labelname: diskType
+                      oid: 1.3.6.1.4.1.6574.2.1.1.4
+                      type: DisplayString
+                - name: synology_raid_status
+                  oid: 1.3.6.1.4.1.6574.3.1.1.3
+                  type: gauge
+                  help: Synology RAID status (1 healthy)
+                  indexes:
+                    - labelname: raidIndex
+                      type: gauge
+                  lookups:
+                    - labels: [raidIndex]
+                      labelname: raidName
+                      oid: 1.3.6.1.4.1.6574.3.1.1.2
+                      type: DisplayString
+                - name: synology_raid_free_bytes
+                  oid: 1.3.6.1.4.1.6574.3.1.1.4
+                  type: gauge
+                  help: Synology RAID free bytes
+                  indexes:
+                    - labelname: raidIndex
+                      type: gauge
+                  lookups:
+                    - labels: [raidIndex]
+                      labelname: raidName
+                      oid: 1.3.6.1.4.1.6574.3.1.1.2
+                      type: DisplayString
+                - name: synology_raid_total_bytes
+                  oid: 1.3.6.1.4.1.6574.3.1.1.5
+                  type: gauge
+                  help: Synology RAID total bytes
+                  indexes:
+                    - labelname: raidIndex
+                      type: gauge
+                  lookups:
+                    - labels: [raidIndex]
+                      labelname: raidName
+                      oid: 1.3.6.1.4.1.6574.3.1.1.2
+                      type: DisplayString
+                - name: synology_network_receive_bytes_total
+                  oid: 1.3.6.1.2.1.31.1.1.1.6
+                  type: counter
+                  help: Synology network received bytes
+                  indexes:
+                    - labelname: ifIndex
+                      type: gauge
+                  lookups:
+                    - labels: [ifIndex]
+                      labelname: ifName
+                      oid: 1.3.6.1.2.1.31.1.1.1.1
+                      type: DisplayString
+                - name: synology_network_transmit_bytes_total
+                  oid: 1.3.6.1.2.1.31.1.1.1.10
+                  type: counter
+                  help: Synology network transmitted bytes
+                  indexes:
+                    - labelname: ifIndex
+                      type: gauge
+                  lookups:
+                    - labels: [ifIndex]
+                      labelname: ifName
+                      oid: 1.3.6.1.2.1.31.1.1.1.1
+                      type: DisplayString
+                - name: synology_network_oper_status
+                  oid: 1.3.6.1.2.1.2.2.1.8
+                  type: gauge
+                  help: Synology network interface operational status
+                  indexes:
+                    - labelname: ifIndex
+                      type: gauge
+                  lookups:
+                    - labels: [ifIndex]
+                      labelname: ifName
+                      oid: 1.3.6.1.2.1.31.1.1.1.1
+                      type: DisplayString
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
