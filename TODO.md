@@ -35,6 +35,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Add Synology SNMP system, disk, RAID, and network metrics and the Synology Health Grafana dashboard.
 - [x] Add Kubernetes capacity, storage-health, and Synology-health dashboards.
 - [x] Add a Traefik request-rate and error dashboard.
+- [x] Add a Postgres exporter and PostgreSQL Grafana dashboard.
 - [ ] Add AdGuard and Authelia metrics/dashboards.
 - [ ] Add backup-staleness and certificate-expiry alerts.
 - [ ] Investigate node-exporter historical restarts.
@@ -53,6 +54,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - Synology DSM system, disk, RAID, and network metrics scraped over SNMPv3; `Synology NAS` and expanded `Synology Health` Grafana dashboards added.
 - Added Kubernetes Capacity, Storage Health, and Synology Health Grafana dashboards.
 - Added a Traefik Requests dashboard for per-service request rate, 5xx errors, latency, and traffic.
+- Postgres exporter added; PostgreSQL dashboard covers connections, size, transactions, cache, locks, deadlocks, temp, sessions, WAL, and archiver health.
 - Loki recovered from a corrupt iSCSI volume; old volume removed and memberlist bootstrap/PVC retention corrected.
 - Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.
 - Kyverno Audit cleaned to 0 failures: cert-manager/Donetick/RabbitMQ limits fixed and PolicyExceptions added for node-exporter, Alloy, and Synology CSI.

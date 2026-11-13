@@ -738,6 +738,7 @@ plaintext secret with the new controller certificate.
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
 | `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP; alert rules |
 | `prometheus-snmp-exporter` | `monitoring` | Helm `prometheus-snmp-exporter` `9.21.1` | Synology SNMPv3 system, disk, RAID, and network metrics |
+| `prometheus-postgres-exporter` | `monitoring` | Helm `prometheus-postgres-exporter` `8.2.5` | Postgres metrics exporter; DB role `postgres_exporter` with `pg_monitor` |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
 | `rabbitmq-operator` | `rabbitmq-system` | Git path `config/installation` | Operator `v2.12.0`, image pinned to `2.12.0` |
 | `sealed-secrets` | `kube-system` | Helm `2.17.0` | Controller |
@@ -947,7 +948,7 @@ status/capacity, network throughput/link status, and a table of all SNMP
 metrics. The exporter is reachable at
 `prometheus-snmp-exporter.monitoring.svc.cluster.local:9116`.
 
-Grafana also provisions four compact operational dashboards from
+Grafana also provisions five compact operational dashboards from
 `applications/observability/monitoring/grafana-dashboards.yaml`:
 
 - **Kubernetes Capacity** — node CPU/memory, requests and limits against
@@ -963,6 +964,8 @@ Grafana also provisions four compact operational dashboards from
   status code, p95 latency, response bytes, entrypoint request rate, open
   connections, and total requests in range. Traefik service metrics are the
   per-application request source; there is no separate app request counter.
+
+- **PostgreSQL** — connections by database, database size, transactions per second, cache hit ratio, locks, deadlocks, temp bytes, active sessions, max transaction duration, WAL size, and archiver failures.
 
 ### Storage
 
