@@ -82,7 +82,8 @@ spec:
             admin:
               existingSecret: forgejo-admin
               email: admin@lakotko.synology.me
-              passwordMode: keepUpdated
+              # The admin already exists; do not rewrite the password on every start.
+              passwordMode: initialOnlyNoReset
 
             config:
               APP_NAME: Forgejo
