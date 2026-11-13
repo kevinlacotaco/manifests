@@ -17,6 +17,14 @@ spec:
         - podSelector:
             matchLabels:
               requires-db: postgres
+        # Forgejo's chart does not expose pod labels, so select its pod by
+        # the chart's stable app label instead of requires-db.
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: forgejo
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: forgejo
         # Applications running in their own namespaces
         - namespaceSelector:
             matchExpressions:
@@ -29,7 +37,6 @@ spec:
                   - backup
                   - speedtest-tracker
                   - auth
-                  - forgejo
           podSelector:
             matchLabels:
               requires-db: postgres
