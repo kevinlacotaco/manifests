@@ -10,3 +10,4 @@ resources:
   - ntfy
   - speedtest-tracker
   - omni-tools
+  - forgejo

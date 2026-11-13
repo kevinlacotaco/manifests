@@ -29,6 +29,7 @@ spec:
                   - backup
                   - speedtest-tracker
                   - auth
+                  - forgejo
           podSelector:
             matchLabels:
               requires-db: postgres

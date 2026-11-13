@@ -1,0 +1,161 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: forgejo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: apps
+
+  sources:
+    - repoURL: oci://code.forgejo.org/forgejo-helm
+      chart: forgejo
+      targetRevision: 17.3.2
+
+      helm:
+        values: |
+          replicaCount: 1
+          strategy:
+            type: Recreate
+
+          image:
+            rootless: true
+
+          podSecurityContext:
+            fsGroup: 1000
+
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+
+          service:
+            http:
+              type: ClusterIP
+              port: 3000
+            ssh:
+              type: ClusterIP
+              port: 22
+
+          persistence:
+            enabled: true
+            create: true
+            mount: true
+            claimName: forgejo-data
+            size: 20Gi
+            accessModes:
+              - ReadWriteMany
+            storageClass: synology-nfs-subdir
+            annotations:
+              helm.sh/resource-policy: keep
+
+          ingress:
+            enabled: true
+            className: traefik
+            annotations:
+              gethomepage.dev/enabled: "true"
+              gethomepage.dev/name: Forgejo
+              gethomepage.dev/group: Applications
+              gethomepage.dev/icon: forgejo.png
+              gethomepage.dev/href: "https://git.lakotko.synology.me"
+            hosts:
+              - host: git.lakotko.synology.me
+                paths:
+                  - path: /
+                    pathType: Prefix
+                    port: http
+
+          gitea:
+            admin:
+              existingSecret: forgejo-admin
+              email: admin@lakotko.synology.me
+              passwordMode: keepUpdated
+
+            config:
+              APP_NAME: Forgejo
+              RUN_MODE: prod
+
+              server:
+                DOMAIN: git.lakotko.synology.me
+                ROOT_URL: https://git.lakotko.synology.me/
+                SSH_DOMAIN: git.lakotko.synology.me
+                SSH_PORT: 22
+                SSH_LISTEN_PORT: 2222
+                HTTP_PORT: 3000
+
+              database:
+                DB_TYPE: postgres
+                HOST: postgres-headless-service.database.svc.cluster.local:5432
+                NAME: forgejo
+                USER: forgejo
+                SSL_MODE: disable
+
+              security:
+                INSTALL_LOCK: true
+
+              service:
+                DISABLE_REGISTRATION: true
+                REQUIRE_SIGNIN_VIEW: true
+
+              actions:
+                ENABLED: true
+
+              mirror:
+                DEFAULT_INTERVAL: 8h
+
+              repository:
+                DEFAULT_BRANCH: main
+
+              log:
+                LEVEL: info
+
+          deployment:
+            env:
+              - name: FORGEJO__SECURITY__SECRET_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: forgejo-secrets
+                    key: SECRET_KEY
+              - name: FORGEJO__SECURITY__INTERNAL_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: forgejo-secrets
+                    key: INTERNAL_TOKEN
+              - name: FORGEJO__OAUTH2__JWT_SECRET
+                valueFrom:
+                  secretKeyRef:
+                    name: forgejo-secrets
+                    key: JWT_SECRET
+              - name: FORGEJO__DATABASE__PASSWD
+                valueFrom:
+                  secretKeyRef:
+                    name: forgejo-secrets
+                    key: DB_PASSWORD
+
+    - repoURL: git@github.com:kevinlacotaco/manifests.git
+      targetRevision: main
+      path: applications/apps/forgejo/manifests
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: forgejo
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

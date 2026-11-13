@@ -12,6 +12,8 @@ spec:
     - git@github.com:kevinlacotaco/manifests.git
     - https://bjw-s-labs.github.io/helm-charts/
     - https://repo.helmforge.dev
+    - oci://code.forgejo.org/forgejo-helm
+    - code.forgejo.org/forgejo-helm
   destinations:
     - server: https://kubernetes.default.svc
       namespace: networking
@@ -29,6 +31,8 @@ spec:
       namespace: homepage
     - server: https://kubernetes.default.svc
       namespace: omni-tools
+    - server: https://kubernetes.default.svc
+      namespace: forgejo
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

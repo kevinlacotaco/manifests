@@ -76,6 +76,11 @@ spec:
                 secretKeyRef:
                   name: postgres-app-secrets
                   key: authelia-db-password
+            - name: FORGEJO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: forgejo-db-password
           command:
             - /bin/sh
             - -ec
@@ -90,7 +95,8 @@ spec:
                 -v donetick_password="$DONETICK_DB_PASSWORD" \
                 -v paperless_password="$PAPERLESS_DB_PASSWORD" \
                 -v speedtest_password="$SPEEDTEST_DB_PASSWORD" \
-                -v authelia_password="$AUTHELIA_DB_PASSWORD" <<'SQL'
+                -v authelia_password="$AUTHELIA_DB_PASSWORD" \
+                -v forgejo_password="$FORGEJO_DB_PASSWORD" <<'SQL'
               SELECT format('CREATE ROLE mealie LOGIN PASSWORD %L', :'mealie_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mealie')\gexec
               ALTER ROLE mealie WITH LOGIN PASSWORD :'mealie_password';
@@ -111,6 +117,10 @@ spec:
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authelia')\gexec
               ALTER ROLE authelia WITH LOGIN PASSWORD :'authelia_password';
 
+              SELECT format('CREATE ROLE forgejo LOGIN PASSWORD %L', :'forgejo_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'forgejo')\gexec
+              ALTER ROLE forgejo WITH LOGIN PASSWORD :'forgejo_password';
+
               SELECT 'CREATE DATABASE mealie OWNER mealie'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'mealie')\gexec
               SELECT 'CREATE DATABASE donetick OWNER donetick'
@@ -121,6 +131,8 @@ spec:
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'speedtest')\gexec
               SELECT 'CREATE DATABASE authelia OWNER authelia'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'authelia')\gexec
+              SELECT 'CREATE DATABASE forgejo OWNER forgejo'
+              WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'forgejo')\gexec
 
               \c mealie
               ALTER SCHEMA public OWNER TO mealie;
@@ -141,6 +153,10 @@ spec:
               \c authelia
               ALTER SCHEMA public OWNER TO authelia;
               GRANT ALL ON SCHEMA public TO authelia;
+
+              \c forgejo
+              ALTER SCHEMA public OWNER TO forgejo;
+              GRANT ALL ON SCHEMA public TO forgejo;
               SQL
           resources:
             requests:
