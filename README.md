@@ -953,9 +953,8 @@ longer mounted by the Deployment.
 Loki uses a 20Gi `synology-iscsi` volume for chunks and TSDB indexes. On
 2026-11-13 `loki-0` crashlooped with `input/output error` from
 `/var/loki/chunks/index/...`; the LUN was corrupt beyond a single file. The PVC
-was recreated, so historical logs were lost. The old PV
-`pvc-3632f886-4e9b-4622-bc91-220a27529a91` is retained in `Released` state for
-inspection.
+was recreated, so historical logs were lost. The old PV and its backend iSCSI
+volume were deleted after the replacement volume proved healthy.
 
 Two settings in `applications/observability/monitoring/loki.yaml` prevent a
 repeat bootstrap failure:
@@ -966,9 +965,6 @@ repeat bootstrap failure:
 - `singleBinary.persistence.whenScaled: Retain` and `whenDeleted: Retain` — the
   chart defaults delete the PVC on scale-down; filesystem storage is the source
   of truth, so keep it.
-
-Delete the old Released PV/LUN only after confirming the replacement volume is
-healthy.
 
 ### Capacity
 
