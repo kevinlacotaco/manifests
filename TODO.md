@@ -35,6 +35,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Add backup-staleness and certificate-expiry alerts.
 - [ ] Investigate node-exporter historical restarts.
 - [ ] Add probes to `nfs-subdir-provisioner` and `synology-csi` or document the exception.
+- [ ] Delete the old corrupt Loki PV/LUN after confirming the replacement volume is healthy.
 
 ## P3 — Automation and documentation
 
@@ -46,6 +47,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 ## Recently completed
 
 - Synology DSM CPU, memory, and temperature metrics scraped over SNMPv3; `Synology NAS` Grafana dashboard added.
+- Loki recovered from a corrupt iSCSI volume; memberlist bootstrap and PVC retention corrected.
 - Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.
 - Kyverno Audit cleaned to 0 failures: cert-manager/Donetick/RabbitMQ limits fixed and PolicyExceptions added for node-exporter, Alloy, and Synology CSI.
 - Kustomize tracking labels no longer injected into selectors; fixed Donetick/ntfy DNS and the Grafana NetworkPolicy, and recreated the Alertmanager-ntfy relay.

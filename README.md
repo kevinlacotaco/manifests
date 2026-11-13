@@ -948,6 +948,28 @@ and now `authelia`) may use rolling updates when their shared data volumes are
 ReadWriteMany or their state is external. Authelia's legacy SQLite PVC is no
 longer mounted by the Deployment.
 
+### Loki storage
+
+Loki uses a 20Gi `synology-iscsi` volume for chunks and TSDB indexes. On
+2026-11-13 `loki-0` crashlooped with `input/output error` from
+`/var/loki/chunks/index/...`; the LUN was corrupt beyond a single file. The PVC
+was recreated, so historical logs were lost. The old PV
+`pvc-3632f886-4e9b-4622-bc91-220a27529a91` is retained in `Released` state for
+inspection.
+
+Two settings in `applications/observability/monitoring/loki.yaml` prevent a
+repeat bootstrap failure:
+
+- `memberlist.service.publishNotReadyAddresses: true` — the memberlist headless
+  Service must publish the pod before it reports ready, otherwise Loki cannot
+  resolve its own DNS name and never becomes ready.
+- `singleBinary.persistence.whenScaled: Retain` and `whenDeleted: Retain` — the
+  chart defaults delete the PVC on scale-down; filesystem storage is the source
+  of truth, so keep it.
+
+Delete the old Released PV/LUN only after confirming the replacement volume is
+healthy.
+
 ### Capacity
 
 The cluster is a single node with roughly 15.4Gi of allocatable memory. Most
