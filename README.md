@@ -947,7 +947,7 @@ status/capacity, network throughput/link status, and a table of all SNMP
 metrics. The exporter is reachable at
 `prometheus-snmp-exporter.monitoring.svc.cluster.local:9116`.
 
-Grafana also provisions three compact operational dashboards from
+Grafana also provisions four compact operational dashboards from
 `applications/observability/monitoring/grafana-dashboards.yaml`:
 
 - **Kubernetes Capacity** — node CPU/memory, requests and limits against
@@ -959,6 +959,10 @@ Grafana also provisions three compact operational dashboards from
   system, and thermal status; per-disk temperature/status; RAID
   status/capacity; network throughput/link status; and a table of the
   available SNMP metrics.
+- **Traefik Requests** — request rate and 5xx errors by service, requests by
+  status code, p95 latency, response bytes, entrypoint request rate, open
+  connections, and total requests in range. Traefik service metrics are the
+  per-application request source; there is no separate app request counter.
 
 ### Storage
 
