@@ -33,6 +33,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 - [ ] Move Grafana SQLite to Postgres or a more reliable volume.
 - [x] Add Synology SNMP CPU, memory, and temperature metrics and a Grafana dashboard.
+- [x] Add Kubernetes capacity, storage-health, and Synology-health dashboards.
 - [ ] Add AdGuard and Authelia metrics/dashboards.
 - [ ] Add backup-staleness and certificate-expiry alerts.
 - [ ] Investigate node-exporter historical restarts.
@@ -49,6 +50,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 - Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
 - Synology DSM CPU, memory, and temperature metrics scraped over SNMPv3; `Synology NAS` Grafana dashboard added.
+- Added Kubernetes Capacity, Storage Health, and Synology Health Grafana dashboards.
 - Loki recovered from a corrupt iSCSI volume; old volume removed and memberlist bootstrap/PVC retention corrected.
 - Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.
 - Kyverno Audit cleaned to 0 failures: cert-manager/Donetick/RabbitMQ limits fixed and PolicyExceptions added for node-exporter, Alloy, and Synology CSI.

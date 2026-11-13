@@ -931,6 +931,17 @@ Prometheus records:
 Grafana has a `Synology NAS` dashboard. The exporter is reachable at
 `prometheus-snmp-exporter.monitoring.svc.cluster.local:9116`.
 
+Grafana also provisions three compact operational dashboards from
+`applications/observability/monitoring/grafana-dashboards.yaml`:
+
+- **Kubernetes Capacity** — node CPU/memory, requests and limits against
+  allocatable, top pods, restarts, OOM events, CPU throttling, pending pods,
+  and PVC usage.
+- **Storage Health** — PVC used/capacity, node filesystem usage, disk I/O
+  utilization, network throughput, and inode usage.
+- **Synology Health** — CPU, memory, and temperature over time; fan, power,
+  system, and thermal status; and a table of the available SNMP metrics.
+
 ### Storage
 
 | StorageClass | Backing store | Typical use |
