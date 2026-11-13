@@ -7,3 +7,6 @@ resources:
   - networkpolicy.yaml
   - forgejo-sealed-secret.yaml
   - forgejo-admin-sealed-secret.yaml
+  - forgejo-runner-pvc.yaml
+  - forgejo-runner-token-sealed-secret.yaml
+  - forgejo-runner.yaml

@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-forgejo-runner-dind
+  namespace: kyverno
+spec:
+  background: true
+  exceptions:
+    - policyName: disallow-privileged
+      ruleNames:
+        - no-privileged-containers
+        - autogen-no-privileged-containers
+  match:
+    any:
+      - resources:
+          kinds:
+            - Deployment
+            - Pod
+            - ReplicaSet
+          namespaces:
+            - forgejo
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: forgejo-runner

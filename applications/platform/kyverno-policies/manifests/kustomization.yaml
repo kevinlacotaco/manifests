@@ -5,3 +5,4 @@ resources:
   - policies.yaml
   - exceptions-monitoring.yaml
   - exceptions-synology-csi.yaml
+  - exceptions-forgejo-runner.yaml
