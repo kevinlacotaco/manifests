@@ -32,7 +32,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 ## P2 — Reliability and observability
 
 - [ ] Move Grafana SQLite to Postgres or a more reliable volume.
-- [x] Add Synology SNMP CPU, memory, and temperature metrics and a Grafana dashboard.
+- [x] Add Synology SNMP system, disk, RAID, and network metrics and the Synology Health Grafana dashboard.
 - [x] Add Kubernetes capacity, storage-health, and Synology-health dashboards.
 - [ ] Add AdGuard and Authelia metrics/dashboards.
 - [ ] Add backup-staleness and certificate-expiry alerts.
@@ -49,7 +49,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 ## Recently completed
 
 - Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
-- Synology DSM CPU, memory, and temperature metrics scraped over SNMPv3; `Synology NAS` Grafana dashboard added.
+- Synology DSM system, disk, RAID, and network metrics scraped over SNMPv3; `Synology NAS` and expanded `Synology Health` Grafana dashboards added.
 - Added Kubernetes Capacity, Storage Health, and Synology Health Grafana dashboards.
 - Loki recovered from a corrupt iSCSI volume; old volume removed and memberlist bootstrap/PVC retention corrected.
 - Kyverno installed with Audit-only policies for image tags, privileged/host access, and resource limits.

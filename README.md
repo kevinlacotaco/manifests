@@ -737,7 +737,7 @@ plaintext secret with the new controller certificate.
 | `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits; 0 current failures |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
 | `prometheus` | `monitoring` | Helm `prometheus` `25.21.0` | ClusterIP; alert rules |
-| `prometheus-snmp-exporter` | `monitoring` | Helm `prometheus-snmp-exporter` `9.21.1` | Synology SNMPv3 CPU, memory, and temperature metrics |
+| `prometheus-snmp-exporter` | `monitoring` | Helm `prometheus-snmp-exporter` `9.21.1` | Synology SNMPv3 system, disk, RAID, and network metrics |
 | `nfs-subdir-provisioner` | `nfs-provisioner` | Helm `4.0.18` | Creates `synology-nfs-subdir` |
 | `rabbitmq-operator` | `rabbitmq-system` | Git path `config/installation` | Operator `v2.12.0`, image pinned to `2.12.0` |
 | `sealed-secrets` | `kube-system` | Helm `2.17.0` | Controller |
@@ -914,8 +914,8 @@ The Synology reverse proxy must forward `git.lakotko.synology.me` to Traefik at
 
 ### Synology SNMP metrics
 
-The NAS exposes CPU, memory, and temperature through SNMPv3. In DSM, enable
-SNMP under **Control Panel > Terminal & SNMP > SNMP**, create user
+The NAS exposes system, disk, RAID, and network metrics through SNMPv3. In
+DSM, enable SNMP under **Control Panel > Terminal & SNMP > SNMP**, create user
 `prometheus`, use SHA authentication and AES privacy, and allow UDP 161 from
 the Kubernetes node/network. The username and passwords are stored in the
 `snmp-exporter-auth` SealedSecret in `monitoring`.
@@ -923,12 +923,28 @@ the Kubernetes node/network. The username and passwords are stored in the
 `prometheus-snmp-exporter` scrapes `192.168.68.138` with module `synology`.
 Prometheus records:
 
-- `synology_cpu_utilization_percent`
-- `synology_memory_utilization_percent`
-- `synology_temperature_celsius`
-- `synology_system_status`, fan, power, and thermal status
+- System: `synology_cpu_utilization_percent`,
+  `synology_memory_utilization_percent`, `synology_temperature_celsius`,
+  `synology_system_status`, `synology_system_fan_status`,
+  `synology_cpu_fan_status`, `synology_power_status`,
+  `synology_thermal_status`
+- Disk: `synology_disk_status`, `synology_disk_temperature_celsius` with
+  `diskID`, `diskModel`, and `diskType` labels
+- RAID: `synology_raid_status`, `synology_raid_free_bytes`,
+  `synology_raid_total_bytes` with `raidName`
+- Network: `synology_network_receive_bytes_total`,
+  `synology_network_transmit_bytes_total`, `synology_network_oper_status`
+  with `ifName`; use `eth0` or `eth[0-9]+` to exclude Docker interfaces
 
-Grafana has a `Synology NAS` dashboard. The exporter is reachable at
+The SNMP agent does not expose the UPS group
+(`1.3.6.1.4.1.6574.4` returns no such object). Add UPS panels only if a UPS is
+attached and DSM starts reporting it.
+
+Grafana has a `Synology NAS` dashboard for system health and a `Synology
+Health` dashboard with 16 panels covering CPU/memory/temperature, fans,
+power, system and thermal status, per-disk temperature/status, RAID
+status/capacity, network throughput/link status, and a table of all SNMP
+metrics. The exporter is reachable at
 `prometheus-snmp-exporter.monitoring.svc.cluster.local:9116`.
 
 Grafana also provisions three compact operational dashboards from
@@ -940,7 +956,9 @@ Grafana also provisions three compact operational dashboards from
 - **Storage Health** — PVC used/capacity, node filesystem usage, disk I/O
   utilization, network throughput, and inode usage.
 - **Synology Health** — CPU, memory, and temperature over time; fan, power,
-  system, and thermal status; and a table of the available SNMP metrics.
+  system, and thermal status; per-disk temperature/status; RAID
+  status/capacity; network throughput/link status; and a table of the
+  available SNMP metrics.
 
 ### Storage
 
