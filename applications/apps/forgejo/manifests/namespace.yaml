@@ -3,6 +3,10 @@ kind: Namespace
 metadata:
   name: forgejo
   labels:
-    pod-security.kubernetes.io/enforce: baseline
+    # The Forgejo Actions runner uses a privileged Docker-in-Docker sidecar.
+    # Pod Security Admission has no per-pod exemption, so the namespace must
+    # allow privileged pods. Kyverno still audits this, and the only exception
+    # is scoped to the forgejo-runner label in the policy manifests.
+    pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: restricted
     pod-security.kubernetes.io/warn: restricted
