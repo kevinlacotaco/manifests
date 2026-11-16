@@ -44,12 +44,23 @@ spec:
                   set -eu
                   mkdir -p /backup-share/staging/sqlite /backup-share/staging/authelia
                   out=/backup-share/staging/sqlite/authelia.db
-                  rm -f "$out"
-                  sqlite3 /data/db.sqlite3 ".timeout 30000" ".backup '$out'"
-                  check=$(sqlite3 "$out" "PRAGMA integrity_check;")
-                  [ "$check" = "ok" ] || { echo "integrity check failed: $check" >&2; exit 1; }
-                  cp /users/users_database.yml /backup-share/staging/authelia/users_database.yml
-                  ls -lh "$out" /backup-share/staging/authelia/users_database.yml
+                  tmp="${out}.tmp"
+                  rm -f "$tmp"
+                  # Write to a temporary file first so a failed run never
+                  # destroys the last known-good dump.
+                  sqlite3 /data/db.sqlite3 ".timeout 30000" ".backup '$tmp'"
+                  check=$(sqlite3 "$tmp" "PRAGMA integrity_check;")
+                  [ "$check" = "ok" ] || {
+                    echo "integrity check failed: $check" >&2
+                    rm -f "$tmp"
+                    exit 1
+                  }
+                  mv -f "$tmp" "$out"
+                  users_out=/backup-share/staging/authelia/users_database.yml
+                  users_tmp="${users_out}.tmp"
+                  cp /users/users_database.yml "$users_tmp"
+                  mv -f "$users_tmp" "$users_out"
+                  ls -lh "$out" "$users_out"
               volumeMounts:
                 - name: config
                   mountPath: /data

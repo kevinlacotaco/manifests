@@ -44,13 +44,21 @@ spec:
                   set -eu
                   mkdir -p /backup-share/staging/sqlite
                   out=/backup-share/staging/sqlite/grafana.db
-                  rm -f "$out"
+                  tmp="${out}.tmp"
+                  rm -f "$tmp"
+                  # Write to a temporary file first so a failed run never
+                  # destroys the last known-good dump.
                   # Grafana stores dashboards, users, and API keys in its
                   # default SQLite DB. The PVC is mounted read-write so SQLite
                   # can use the live WAL/SHM files while Grafana is running.
-                  sqlite3 /data/grafana.db ".timeout 30000" ".backup '$out'"
-                  check=$(sqlite3 "$out" "PRAGMA integrity_check;")
-                  [ "$check" = "ok" ] || { echo "integrity check failed: $check" >&2; exit 1; }
+                  sqlite3 /data/grafana.db ".timeout 30000" ".backup '$tmp'"
+                  check=$(sqlite3 "$tmp" "PRAGMA integrity_check;")
+                  [ "$check" = "ok" ] || {
+                    echo "integrity check failed: $check" >&2
+                    rm -f "$tmp"
+                    exit 1
+                  }
+                  mv -f "$tmp" "$out"
                   ls -lh "$out"
               volumeMounts:
                 - name: data
