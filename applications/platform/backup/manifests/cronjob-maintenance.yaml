@@ -22,6 +22,8 @@ spec:
         spec:
           restartPolicy: Never
           automountServiceAccountToken: false
+          # Stable hostname keeps the Kopia source id consistent across Jobs.
+          hostname: kopia-backup
           securityContext:
             runAsNonRoot: true
             runAsUser: 1033

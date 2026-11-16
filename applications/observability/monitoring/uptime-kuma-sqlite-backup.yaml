@@ -44,16 +44,21 @@ spec:
                   set -eu
                   mkdir -p /backup-share/staging/sqlite
                   out=/backup-share/staging/sqlite/uptime-kuma.db
-                  rm -f "$out"
+                  tmp="${out}.tmp"
+                  rm -f "$tmp"
+                  # Write to a temporary file first so a failed run never
+                  # destroys the last known-good dump.
                   # SQLite's online backup API produces a consistent copy while
                   # Uptime Kuma is running. The PVC is writable so SQLite can
                   # use the live WAL/SHM files if present.
-                  sqlite3 /data/kuma.db ".timeout 30000" ".backup '$out'"
-                  check=$(sqlite3 "$out" "PRAGMA integrity_check;")
+                  sqlite3 /data/kuma.db ".timeout 30000" ".backup '$tmp'"
+                  check=$(sqlite3 "$tmp" "PRAGMA integrity_check;")
                   [ "$check" = "ok" ] || {
                     echo "integrity check failed: $check" >&2
+                    rm -f "$tmp"
                     exit 1
                   }
+                  mv -f "$tmp" "$out"
                   ls -lh "$out"
               volumeMounts:
                 - name: data
