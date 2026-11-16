@@ -17,15 +17,13 @@ spec:
   # The PV binder adds these fields after the static PVs are applied. They are
   # not part of the desired state and would otherwise keep the app OutOfSync.
   ignoreDifferences:
-    - group: ""
-      kind: PersistentVolume
+    - kind: PersistentVolume
       jsonPointers:
         - /metadata/annotations/argocd.argoproj.io~1tracking-id
         - /metadata/finalizers
         - /spec/claimRef/uid
         - /spec/claimRef/resourceVersion
-    - group: ""
-      kind: PersistentVolumeClaim
+    - kind: PersistentVolumeClaim
       jsonPointers:
         - /metadata/annotations/argocd.argoproj.io~1tracking-id
   syncPolicy:
