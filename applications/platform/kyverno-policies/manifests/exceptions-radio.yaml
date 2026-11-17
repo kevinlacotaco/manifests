@@ -1,0 +1,48 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-radio-usb
+  namespace: kyverno
+spec:
+  background: true
+  exceptions:
+    - policyName: disallow-privileged
+      ruleNames:
+        - no-hostpath-volumes
+        - autogen-no-hostpath-volumes
+        - no-privileged-containers
+        - autogen-no-privileged-containers
+        - no-host-namespaces
+        - autogen-no-host-namespaces
+  match:
+    any:
+      - resources:
+          namespaces:
+            - radio
+          kinds:
+            - Pod
+            - Deployment
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app: zigbee2mqtt
+      - resources:
+          namespaces:
+            - radio
+          kinds:
+            - Pod
+            - Deployment
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app: rtl433
+      - resources:
+          namespaces:
+            - radio
+          kinds:
+            - Pod
+            - Deployment
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app: theengs

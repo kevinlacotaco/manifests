@@ -1,0 +1,73 @@
+apiVersion: v1
+data:
+  configuration.yaml.tpl: |
+    homeassistant: true
+    frontend:
+      enabled: true
+      port: 8080
+    permit_join: false
+    mqtt:
+      base_topic: zigbee2mqtt
+      server: mqtt://__MQTT_HOST__:1883
+      user: __MQTT_USER__
+      password: __MQTT_PASSWORD__
+    serial:
+      port: /dev/zigbee
+    advanced:
+      homeassistant_legacy_entity_attributes: false
+      legacy_api: false
+      legacy_availability_payload: false
+    device_options:
+      legacy: false
+    devices:
+      '0x282c02bfffec9080':
+        friendly_name: '0x282c02bfffec9080'
+      '0x282c02bfffea6f5d':
+        friendly_name: '0x282c02bfffea6f5d'
+      '0x282c02bfffec8db4':
+        friendly_name: '0x282c02bfffec8db4'
+      '0x282c02bfffec941f':
+        friendly_name: '0x282c02bfffec941f'
+      '0x282c02bfffeae438':
+        friendly_name: '0x282c02bfffeae438'
+      '0x282c02bfffeae7b7':
+        friendly_name: '0x282c02bfffeae7b7'
+      '0x282c02bfffeae47e':
+        friendly_name: '0x282c02bfffeae47e'
+      '0x00158d000af32f63':
+        friendly_name: '0x00158d000af32f63'
+      '0xbc026efffea8db9a':
+        friendly_name: '0xbc026efffea8db9a'
+      '0x00158d000af2c6e4':
+        friendly_name: '0x00158d000af2c6e4'
+      '0x001788010fefe488':
+        friendly_name: '0x001788010fefe488'
+      '0x001788010fefe30d':
+        friendly_name: '0x001788010fefe30d'
+      '0x001788010fee7aca':
+        friendly_name: '0x001788010fee7aca'
+      '0x001788010ff05dc7':
+        friendly_name: '0x001788010ff05dc7'
+      '0xffffb40e06032cc9':
+        friendly_name: '0xffffb40e06032cc9'
+      '0x282c02bfffec8642':
+        friendly_name: '0x282c02bfffec8642'
+      '0x282c02bfffec3463':
+        friendly_name: '0x282c02bfffec3463'
+      '0x282c02bfffec763f':
+        friendly_name: '0x282c02bfffec763f'
+      '0xffffb40e0605be5e':
+        friendly_name: '0xffffb40e0605be5e'
+      '0xffffb40e0605dd6a':
+        friendly_name: '0xffffb40e0605dd6a'
+      '0xffffb40e0603a716':
+        friendly_name: '0xffffb40e0603a716'
+      '0xffffb40e060437cc':
+        friendly_name: '0xffffb40e060437cc'
+      '0x282c02bfffec61e0':
+        friendly_name: '0x282c02bfffec61e0'
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: zigbee2mqtt-config
+  namespace: radio

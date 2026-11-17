@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - guardrails.yaml
+  - networkpolicy.yaml
+  - mqtt-auth-sealed-secret.yaml
+  - zigbee2mqtt-seed-sealed-secret.yaml
+  - zigbee2mqtt-configmap.yaml
+  - zigbee2mqtt-deployment.yaml
+  - zigbee2mqtt-service.yaml
+  - zigbee2mqtt-ingress.yaml
+  - rtl433-deployment.yaml
+  - theengs-deployment.yaml

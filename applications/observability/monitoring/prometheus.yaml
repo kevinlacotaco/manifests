@@ -120,6 +120,11 @@ spec:
               memory: 128Mi
 
         prometheus-node-exporter:
+          tolerations:
+            - key: homelab.io/radios
+              operator: Equal
+              value: "true"
+              effect: NoSchedule
           resources:
             requests:
               cpu: 10m
@@ -521,6 +526,12 @@ spec:
                 target_label: instance
               - target_label: __address__
                 replacement: prometheus-snmp-exporter.monitoring.svc.cluster.local:9116
+
+          - job_name: node-exporter-adguard
+            scrape_interval: 30s
+            scrape_timeout: 10s
+            static_configs:
+              - targets: ["192.168.68.72:9100"]
 
           - job_name: postgres
             static_configs:

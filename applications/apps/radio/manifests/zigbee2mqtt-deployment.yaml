@@ -1,0 +1,163 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zigbee2mqtt
+  namespace: radio
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: zigbee2mqtt
+  template:
+    metadata:
+      labels:
+        app: zigbee2mqtt
+    spec:
+      nodeSelector:
+        homelab.io/radios: "true"
+      tolerations:
+        - key: homelab.io/radios
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      securityContext:
+        fsGroup: 1000
+        supplementalGroups:
+          - 20
+
+      initContainers:
+        - name: prepare-data
+          image: alpine:3.20
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - FOWNER
+                - DAC_OVERRIDE
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              set -eu
+              mkdir -p /data
+              if [ ! -f /data/configuration.yaml ]; then
+                sed \
+                  -e "s|__MQTT_HOST__|${MQTT_HOST}|g" \
+                  -e "s|__MQTT_USER__|${MQTT_USER}|g" \
+                  -e "s|__MQTT_PASSWORD__|${MQTT_PASSWORD}|g" \
+                  /config/configuration.yaml.tpl > /data/configuration.yaml
+              fi
+              for f in database.db coordinator_backup.json state.json; do
+                if [ ! -f "/data/$f" ] && [ -f "/seed/$f" ]; then
+                  cp "/seed/$f" "/data/$f"
+                fi
+              done
+              chown -R 1000:1000 /data
+              chmod 0700 /data
+              chmod 0600 /data/configuration.yaml 2>/dev/null || true
+          env:
+            - name: MQTT_HOST
+              value: rabbitmq.messaging.svc.cluster.local
+            - name: MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: radio-mqtt-auth
+                  key: username
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: radio-mqtt-auth
+                  key: password
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: seed
+              mountPath: /seed
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+      containers:
+        - name: zigbee2mqtt
+          image: koenkk/zigbee2mqtt:2.14.3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: ZIGBEE2MQTT_DATA
+              value: /app/data
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: dev
+              mountPath: /dev
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+      volumes:
+        - name: config
+          configMap:
+            name: zigbee2mqtt-config
+        - name: seed
+          secret:
+            secretName: zigbee2mqtt-seed
+        - name: data
+          hostPath:
+            path: /var/lib/zigbee2mqtt
+            type: DirectoryOrCreate
+        - name: dev
+          hostPath:
+            path: /dev
+            type: Directory

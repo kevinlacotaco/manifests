@@ -13,6 +13,8 @@ resources:
   - networkpolicy.yaml
   - rabbitmq-mqtt-auth-sealed-secret.yaml
   - rabbitmq-mqtt-user-job.yaml
+  - radio-mqtt-auth-sealed-secret.yaml
+  - rabbitmq-radio-mqtt-user-job.yaml
   - mqtt-ingressroute.yaml
   - rabbitmq-operator.yaml
   - rabbitmq.yaml

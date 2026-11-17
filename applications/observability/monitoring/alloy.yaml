@@ -21,6 +21,10 @@ spec:
               operator: Equal
               value: hardware
               effect: NoSchedule
+            - key: homelab.io/radios
+              operator: Equal
+              value: "true"
+              effect: NoSchedule
           volumes:
             extra:
               - name: alloy-state

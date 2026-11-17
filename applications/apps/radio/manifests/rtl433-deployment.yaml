@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtl433
+  namespace: radio
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: rtl433
+  template:
+    metadata:
+      labels:
+        app: rtl433
+    spec:
+      nodeSelector:
+        homelab.io/radios: "true"
+      tolerations:
+        - key: homelab.io/radios
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: rtl433
+          image: hertzg/rtl_433:25.12
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-Fjson"
+            - "-R40"
+            - "-Mtime:utc"
+            - "-f433920000"
+            - "-Fmqtt://rabbitmq.messaging.svc.cluster.local:1883,user=$(MQTT_USER),pass=$(MQTT_PASSWORD),retain=0,devices=rtl_433/grapple/devices[/type][/model][/id][/subtype]/C[channel:0],events=rtl_433/grapple/events"
+          env:
+            - name: MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: radio-mqtt-auth
+                  key: username
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: radio-mqtt-auth
+                  key: password
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: usb
+              mountPath: /dev/bus/usb
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+        - name: usb
+          hostPath:
+            path: /dev/bus/usb
+            type: Directory

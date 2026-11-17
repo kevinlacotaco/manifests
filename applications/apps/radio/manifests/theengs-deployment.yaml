@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: theengs
+  namespace: radio
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: theengs
+  template:
+    metadata:
+      labels:
+        app: theengs
+    spec:
+      nodeSelector:
+        homelab.io/radios: "true"
+      tolerations:
+        - key: homelab.io/radios
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: theengs
+          image: theengs/gateway:v1.8.0.2
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -ec
+            - source /opt/venv/bin/activate && exec /opt/venv/start.sh
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: LOG_LEVEL
+              value: INFO
+            - name: MQTT_HOST
+              value: rabbitmq.messaging.svc.cluster.local
+            - name: MQTT_PORT
+              value: "1883"
+            - name: MQTT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: radio-mqtt-auth
+                  key: username
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: radio-mqtt-auth
+                  key: password
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: dbus
+              mountPath: /var/run/dbus
+            - name: dev
+              mountPath: /dev
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: dbus
+          hostPath:
+            path: /var/run/dbus
+            type: Directory
+        - name: dev
+          hostPath:
+            path: /dev
+            type: Directory
