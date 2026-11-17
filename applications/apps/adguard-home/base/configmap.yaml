@@ -14,6 +14,21 @@ data:
         - https://cloudflare-dns.com/dns-query
       upstream_mode: load_balance
       enable_dnssec: true
+      rewrites:
+        - domain: boulder.home.arpa
+          answer: 192.168.68.71
+        - domain: hauler.home.arpa
+          answer: 192.168.68.102
+        - domain: grapple.home.arpa
+          answer: 192.168.68.53
+        - domain: nas.home.arpa
+          answer: 192.168.68.138
+        - domain: adguard-primary.home.arpa
+          answer: 192.168.68.72
+        - domain: pebble.home.arpa
+          answer: 192.168.68.72
+        - domain: router.home.arpa
+          answer: 192.168.68.1
 
     filters:
       - id: 1
@@ -31,28 +46,6 @@ data:
 
     filtering:
       protection_enabled: true
-      rewrites:
-        - domain: boulder.home.arpa
-          answer: 192.168.68.71
-          enabled: true
-        - domain: hauler.home.arpa
-          answer: 192.168.68.102
-          enabled: true
-        - domain: grapple.home.arpa
-          answer: 192.168.68.53
-          enabled: true
-        - domain: nas.home.arpa
-          answer: 192.168.68.138
-          enabled: true
-        - domain: adguard-primary.home.arpa
-          answer: 192.168.68.72
-          enabled: true
-        - domain: pebble.home.arpa
-          answer: 192.168.68.72
-          enabled: true
-        - domain: router.home.arpa
-          answer: 192.168.68.1
-          enabled: true
 
     http:
       address: 0.0.0.0:3000
