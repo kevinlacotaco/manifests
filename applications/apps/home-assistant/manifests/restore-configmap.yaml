@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: home-assistant-restore
+  namespace: home-assistant
+data:
+  restore.py: |
+    import json
+    import os
+    import pathlib
+    import tarfile
+
+    config = pathlib.Path("/config")
+    marker = config / ".restored-from-nas"
+    if marker.exists():
+        print("config already restored")
+        raise SystemExit(0)
+
+    print("extracting /backup/migration/homeassistant-config.tgz")
+    with tarfile.open("/backup/migration/homeassistant-config.tgz", "r:gz") as archive:
+        archive.extractall(config)
+
+    # Trust the in-cluster Traefik proxy in addition to the old NAS proxy.
+    config_yaml = config / "configuration.yaml"
+    text = config_yaml.read_text()
+    anchors = ["    - 192.168.68.71\n", "    - 10.42.0.0/16\n"]
+    for extra in anchors:
+        if extra not in text:
+            text = text.replace("    - 192.168.68.138\n", "    - 192.168.68.138\n" + extra, 1)
+    config_yaml.write_text(text)
+
+    # Repoint the MQTT and Frigate integrations at their new in-cluster services.
+    entries_path = config / ".storage" / "core.config_entries"
+    entries = json.loads(entries_path.read_text())
+    for entry in entries["data"]["entries"]:
+        if entry.get("domain") == "mqtt":
+            entry["title"] = os.environ["MQTT_HOST"]
+            entry["data"]["broker"] = os.environ["MQTT_HOST"]
+            entry["data"]["port"] = 1883
+            entry["data"]["username"] = os.environ["MQTT_USERNAME"]
+            entry["data"]["password"] = os.environ["MQTT_PASSWORD"]
+        elif entry.get("domain") == "frigate":
+            url = "http://frigate.frigate.svc.cluster.local:5000"
+            entry["title"] = "frigate.frigate.svc.cluster.local:5000"
+            entry["data"]["url"] = url
+    entries_path.write_text(json.dumps(entries, indent=2) + "\n")
+
+    marker.write_text("restored\n")
+    print("restore complete")

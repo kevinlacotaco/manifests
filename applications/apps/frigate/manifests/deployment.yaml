@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frigate
+  namespace: frigate
+  labels:
+    app: frigate
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: frigate
+  template:
+    metadata:
+      labels:
+        app: frigate
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 1000
+        supplementalGroups:
+          - 993
+          - 44
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: restore-config
+          image: python:3.12-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - /scripts/restore.py
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: backup
+              mountPath: /backup
+              readOnly: true
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+      containers:
+        - name: frigate
+          image: ghcr.io/blakeblackshear/frigate:0.13.2
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+            runAsUser: 0
+            runAsGroup: 0
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: LIBVA_DRIVER_NAME
+              value: i965
+            - name: S6_LOGGING_SCRIPT
+              value: "1"
+          envFrom:
+            - secretRef:
+                name: frigate-secrets
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+            - name: rtsp
+              containerPort: 8554
+              protocol: TCP
+            - name: webrtc-tcp
+              containerPort: 8555
+              protocol: TCP
+            - name: webrtc-udp
+              containerPort: 8555
+              protocol: UDP
+            - name: go2rtc
+              containerPort: 1984
+              protocol: TCP
+            - name: rtmp
+              containerPort: 1935
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "4"
+              memory: 4Gi
+          startupProbe:
+            httpGet:
+              path: /api/version
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/version
+              port: http
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/version
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media/frigate
+            - name: cache
+              mountPath: /tmp/cache
+            - name: dri
+              mountPath: /dev/dri
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: frigate-config
+        - name: media
+          nfs:
+            server: 192.168.68.138
+            path: /volume1/k8s-nfs/frigate-media
+        - name: backup
+          nfs:
+            server: 192.168.68.138
+            path: /volume1/k8s-backups
+            readOnly: true
+        - name: scripts
+          configMap:
+            name: frigate-restore
+        - name: cache
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: Directory
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            type: File
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi

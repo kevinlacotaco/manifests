@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: home-assistant
+  namespace: home-assistant
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Home Assistant"
+    gethomepage.dev/group: "Home"
+    gethomepage.dev/icon: "home-assistant.png"
+    gethomepage.dev/href: "https://ha.lakotko.synology.me"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: ha.lakotko.synology.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-assistant
+                port:
+                  name: http

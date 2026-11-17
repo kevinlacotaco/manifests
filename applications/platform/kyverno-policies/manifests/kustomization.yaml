@@ -7,3 +7,5 @@ resources:
   - exceptions-synology-csi.yaml
   - exceptions-forgejo-runner.yaml
   - exceptions-radio.yaml
+  - exceptions-home-assistant.yaml
+  - exceptions-frigate.yaml

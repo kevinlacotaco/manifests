@@ -35,6 +35,10 @@ spec:
       namespace: forgejo
     - server: https://kubernetes.default.svc
       namespace: radio
+    - server: https://kubernetes.default.svc
+      namespace: home-assistant
+    - server: https://kubernetes.default.svc
+      namespace: frigate
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

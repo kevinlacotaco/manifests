@@ -1,0 +1,28 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-home-assistant-usb
+  namespace: kyverno
+spec:
+  background: true
+  exceptions:
+    - policyName: disallow-privileged
+      ruleNames:
+        - no-hostpath-volumes
+        - autogen-no-hostpath-volumes
+        - no-privileged-containers
+        - autogen-no-privileged-containers
+        - no-host-namespaces
+        - autogen-no-host-namespaces
+  match:
+    any:
+      - resources:
+          namespaces:
+            - home-assistant
+          kinds:
+            - Pod
+            - Deployment
+            - ReplicaSet
+          selector:
+            matchLabels:
+              app: home-assistant

@@ -12,3 +12,5 @@ resources:
   - omni-tools
   - forgejo
   - radio
+  - home-assistant
+  - frigate
