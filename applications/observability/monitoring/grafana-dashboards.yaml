@@ -35,8 +35,8 @@ data:
           },
           "targets": [
             {
-              "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-              "legendFormat": "{{instance}}"
+              "expr": "100 - (avg by(nodename) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]) * on(instance) group_left(nodename) node_uname_info) * 100)",
+              "legendFormat": "{{nodename}}"
             }
           ],
           "title": "Node CPU usage",
@@ -61,8 +61,8 @@ data:
           },
           "targets": [
             {
-              "expr": "(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100",
-              "legendFormat": "{{instance}}"
+              "expr": "(1 - sum by(nodename) (node_memory_MemAvailable_bytes * on(instance) group_left(nodename) node_uname_info) / sum by(nodename) (node_memory_MemTotal_bytes * on(instance) group_left(nodename) node_uname_info)) * 100",
+              "legendFormat": "{{nodename}}"
             }
           ],
           "title": "Node memory usage",
