@@ -21,8 +21,6 @@ spec:
           operator: Equal
           value: "true"
           effect: NoSchedule
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: theengs
           image: theengs/gateway:v1.8.0.2
