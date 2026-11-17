@@ -8,4 +8,6 @@ labels:
 resources:
   - ../../base
   - sealed-secret.yaml
+  - sync-auth-sealed-secret.yaml
+  - sync-cronjob.yaml
   - guardrails.yaml

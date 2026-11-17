@@ -1,0 +1,113 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: adguardhome-sync
+  namespace: networking
+spec:
+  # Enable this after the physical AdGuard sync user has been created by
+  # ansible-playbook playbooks/adguard.yml.
+  suspend: true
+  schedule: "*/10 * * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: adguardhome-sync
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sync
+              image: ghcr.io/bakito/adguardhome-sync:v0.7.9
+              imagePullPolicy: IfNotPresent
+              args:
+                - run
+                - --api-port
+                - "0"
+              env:
+                - name: ORIGIN_URL
+                  value: http://adguard-home.networking.svc.cluster.local:3001
+                - name: ORIGIN_USERNAME_FILE
+                  value: /etc/adguard-sync/origin-username
+                - name: ORIGIN_PASSWORD_FILE
+                  value: /etc/adguard-sync/origin-password
+                - name: REPLICA1_URL
+                  value: http://192.168.68.72:8080
+                - name: REPLICA1_USERNAME_FILE
+                  value: /etc/adguard-sync/replica-username
+                - name: REPLICA1_PASSWORD_FILE
+                  value: /etc/adguard-sync/replica-password
+                - name: CRON
+                  value: ""
+                - name: RUN_ON_START
+                  value: "true"
+                - name: API_PORT
+                  value: "0"
+                - name: LOG_LEVEL
+                  value: info
+                - name: HOME
+                  value: /tmp
+                - name: REPLICA1_FEATURES_DNS_ACCESS_LISTS
+                  value: "false"
+                - name: REPLICA1_FEATURES_DNS_SERVER_CONFIG
+                  value: "true"
+                - name: REPLICA1_FEATURES_DNS_REWRITES
+                  value: "true"
+                - name: REPLICA1_FEATURES_DHCP_SERVER_CONFIG
+                  value: "false"
+                - name: REPLICA1_FEATURES_DHCP_STATIC_LEASES
+                  value: "false"
+                - name: REPLICA1_FEATURES_QUERY_LOG_CONFIG
+                  value: "false"
+                - name: REPLICA1_FEATURES_STATS_CONFIG
+                  value: "false"
+                - name: REPLICA1_FEATURES_CLIENT_SETTINGS
+                  value: "false"
+                - name: REPLICA1_FEATURES_SERVICES
+                  value: "false"
+                - name: REPLICA1_FEATURES_TLS_CONFIG
+                  value: "false"
+                - name: REPLICA1_FEATURES_THEME
+                  value: "false"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - name: auth
+                  mountPath: /etc/adguard-sync
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: auth
+              secret:
+                secretName: adguard-sync-auth
+                defaultMode: 0440
+            - name: tmp
+              emptyDir: {}
