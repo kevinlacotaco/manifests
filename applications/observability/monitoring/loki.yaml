@@ -99,7 +99,8 @@ spec:
         lokiCanary:
           resources:
             requests:
-              cpu: 5m
+              # monitoring namespace LimitRange requires at least 10m/16Mi.
+              cpu: 10m
               memory: 48Mi
             limits:
               cpu: 50m
