@@ -33,6 +33,8 @@ spec:
       namespace: omni-tools
     - server: https://kubernetes.default.svc
       namespace: forgejo
+    - server: https://kubernetes.default.svc
+      namespace: radio
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
