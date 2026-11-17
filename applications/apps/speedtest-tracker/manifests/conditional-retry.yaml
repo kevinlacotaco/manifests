@@ -1,0 +1,283 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: speedtest-bufferbloat-retry
+  namespace: speedtest-tracker
+  labels:
+    app: speedtest-bufferbloat-retry
+data:
+  retry.py: |
+    #!/usr/bin/env python3
+    """Retry the hourly speedtest only when the last result looks bad.
+
+    The app runs a scheduled test at :05. This job runs at :15, reads the
+    latest result through the app API, and asks the app to run one more test
+    when download is low or bufferbloat (download latency IQM) is high.
+    """
+    import json
+    import os
+    import sys
+    import urllib.error
+    import urllib.request
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
+
+    BASE = os.environ.get(
+        "SPEEDTEST_URL",
+        "http://speedtest-tracker.speedtest-tracker.svc.cluster.local",
+    ).rstrip("/")
+    TOKEN = os.environ["SPEEDTEST_TOKEN"].strip()
+    DOWNLOAD_MIN_MBPS = float(os.environ.get("DOWNLOAD_MIN_MBPS", "100"))
+    IQM_MAX_MS = float(os.environ.get("IQM_MAX_MS", "50"))
+    MIN_AGE_MINUTES = float(os.environ.get("MIN_AGE_MINUTES", "5"))
+    MAX_AGE_MINUTES = float(os.environ.get("MAX_AGE_MINUTES", "20"))
+    TIMEOUT_SECONDS = float(os.environ.get("REQUEST_TIMEOUT_SECONDS", "20"))
+    TZ = ZoneInfo(os.environ.get("TZ", "America/New_York"))
+    DRY_RUN = os.environ.get("DRY_RUN", "false").lower() in ("1", "true", "yes")
+
+
+    def api(path, method="GET", body=None):
+        data = None if body is None else json.dumps(body).encode()
+        request = urllib.request.Request(
+            BASE + path,
+            data=data,
+            method=method,
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {TOKEN}",
+                "Content-Type": "application/json",
+                "User-Agent": "speedtest-bufferbloat-retry/1.0",
+            },
+        )
+        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+            raw = response.read().decode()
+            return response.status, (json.loads(raw) if raw else {})
+
+
+    def latest_result():
+        try:
+            _, payload = api("/api/v1/results/latest")
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                print("no speedtest results yet; skipping")
+                return None
+            raise
+        result = payload.get("data", payload)
+        if isinstance(result, dict) and "id" not in result and isinstance(result.get("data"), dict):
+            result = result["data"]
+        return result
+
+
+    def result_age_minutes(created_at):
+        if not created_at:
+            return None
+        created = datetime.fromisoformat(str(created_at))
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=TZ)
+        return (datetime.now(timezone.utc) - created.astimezone(timezone.utc)).total_seconds() / 60.0
+
+
+    def main():
+        result = latest_result()
+        if result is None:
+            return 0
+
+        result_id = result.get("id")
+        status = result.get("status")
+        age = result_age_minutes(result.get("created_at"))
+        age_text = f"{age:.1f}m" if age is not None else "unknown"
+
+        download_bits = result.get("download_bits")
+        if download_bits is None and result.get("download") is not None:
+            download_bits = float(result["download"]) * 8
+        download_mbps = float(download_bits) / 1_000_000 if download_bits is not None else None
+        download_text = f"{download_mbps:.1f}Mbps" if download_mbps is not None else "unknown"
+
+        iqm = (
+            ((result.get("data") or {}).get("download") or {})
+            .get("latency", {})
+            .get("iqm")
+        )
+        iqm_text = f"{float(iqm):.1f}ms" if iqm is not None else "unknown"
+
+        print(
+            f"latest id={result_id} status={status} age={age_text} "
+            f"download={download_text} iqm={iqm_text}"
+        )
+
+        if age is None or age < MIN_AGE_MINUTES:
+            print("skip: latest result is missing or too new (the :05 test may still be running)")
+            return 0
+        if age > MAX_AGE_MINUTES:
+            print(
+                f"skip: latest result is outside the "
+                f"{MIN_AGE_MINUTES:g}-{MAX_AGE_MINUTES:g}m window"
+            )
+            return 0
+        if status != "completed":
+            print(f"skip: latest result status is {status}, not completed")
+            return 0
+
+        bad_download = download_mbps is not None and download_mbps < DOWNLOAD_MIN_MBPS
+        bad_iqm = iqm is not None and float(iqm) > IQM_MAX_MS
+        if not (bad_download or bad_iqm):
+            print(
+                f"healthy: download >= {DOWNLOAD_MIN_MBPS:g} Mbps and "
+                f"iqm <= {IQM_MAX_MS:g} ms; no retry"
+            )
+            return 0
+
+        reasons = []
+        if bad_download:
+            reasons.append(f"download {download_mbps:.1f} < {DOWNLOAD_MIN_MBPS:g} Mbps")
+        if bad_iqm:
+            reasons.append(f"iqm {float(iqm):.1f} > {IQM_MAX_MS:g} ms")
+        print("unhealthy: " + ", ".join(reasons))
+
+        if DRY_RUN:
+            print("dry-run: not triggering a retest")
+            return 0
+
+        code, payload = api("/api/v1/speedtests/run", method="POST", body={})
+        new_result = payload.get("data", payload)
+        new_id = new_result.get("id") if isinstance(new_result, dict) else None
+        print(
+            f"triggered retest: HTTP {code} new_id={new_id} "
+            f"message={payload.get('message', '')}"
+        )
+        return 0
+
+
+    if __name__ == "__main__":
+        try:
+            sys.exit(main())
+        except Exception as error:  # noqa: BLE001 - this is a job log, not a library
+            print(f"error: {error}", file=sys.stderr)
+            sys.exit(1)
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: speedtest-bufferbloat-retry
+  namespace: speedtest-tracker
+  labels:
+    app: speedtest-bufferbloat-retry
+spec:
+  # Ten minutes after the app's :05 scheduled test.
+  schedule: "15 * * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      # One attempt only: the API marks its own retest as scheduled, so a
+      # retrying Job could otherwise keep adding tests.
+      backoffLimit: 0
+      activeDeadlineSeconds: 120
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: speedtest-bufferbloat-retry
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: retry
+              image: python:3.12-alpine
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - /app/retry.py
+              env:
+                - name: SPEEDTEST_URL
+                  value: http://speedtest-tracker.speedtest-tracker.svc.cluster.local
+                - name: SPEEDTEST_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: speedtest-api-token
+                      key: token
+                - name: DOWNLOAD_MIN_MBPS
+                  value: "100"
+                - name: IQM_MAX_MS
+                  value: "50"
+                - name: MIN_AGE_MINUTES
+                  value: "5"
+                - name: MAX_AGE_MINUTES
+                  value: "20"
+                - name: DRY_RUN
+                  value: "false"
+                - name: TZ
+                  value: America/New_York
+                - name: PYTHONDONTWRITEBYTECODE
+                  value: "1"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              volumeMounts:
+                - name: script
+                  mountPath: /app
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: script
+              configMap:
+                name: speedtest-bufferbloat-retry
+                defaultMode: 0555
+            - name: tmp
+              emptyDir:
+                sizeLimit: 10Mi
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-bufferbloat-retry-egress
+  namespace: speedtest-tracker
+spec:
+  podSelector:
+    matchLabels:
+      app: speedtest-bufferbloat-retry
+  policyTypes:
+    - Egress
+  egress:
+    # Call the speedtest-tracker API.
+    - to:
+        - podSelector:
+            matchLabels:
+              app: speedtest-tracker
+      ports:
+        - protocol: TCP
+          port: 80
+    # Resolve the service name.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
