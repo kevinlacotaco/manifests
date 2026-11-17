@@ -27,7 +27,7 @@ spec:
       containers:
       - name: speedtest-tracker
         image: lscr.io/linuxserver/speedtest-tracker:1.15.1
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
         ports:
@@ -96,11 +96,11 @@ spec:
           failureThreshold: 5
         resources:
           requests:
-            cpu: 50m
-            memory: 128Mi
+            cpu: 100m
+            memory: 256Mi
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: "2"
+            memory: 1Gi
       - name: apprise
         image: lscr.io/linuxserver/apprise-api:2.1.0
         imagePullPolicy: IfNotPresent
