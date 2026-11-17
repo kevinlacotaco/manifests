@@ -20,12 +20,16 @@ data:
         "ntfy",
         "homepage",
         "speedtest-tracker",
+        "frigate",
+        "home-assistant",
+        "omni-tools",
+        "radio",
     }
 
     def topic_for(alerts):
         for alert in alerts:
-            namespace = alert.get("labels", {}).get("namespace", "")
-            if namespace in APP_NAMESPACES:
+            labels = alert.get("labels", {})
+            if labels.get("namespace", "") in APP_NAMESPACES or labels.get("component") == "app":
                 return "apps"
         return "platform"
 

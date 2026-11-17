@@ -26,5 +26,6 @@ resources:
   - loki.yaml
   - alloy.yaml
   - uptime-kuma-push-sealed-secret.yaml
+  - uptime-kuma-metrics-sealed-secret.yaml
   - uptime-kuma-sqlite-backup.yaml
   - grafana-sqlite-backup.yaml

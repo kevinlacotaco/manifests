@@ -100,6 +100,12 @@ spec:
                 memory: 64Mi
 
         server:
+          extraSecretMounts:
+            - name: uptime-kuma-metrics
+              mountPath: /etc/prometheus/secrets
+              subPath: ""
+              secretName: uptime-kuma-metrics
+              readOnly: true
           resources:
             requests:
               cpu: 100m
@@ -477,6 +483,18 @@ spec:
                       summary: RabbitMQ has an active resource alarm
                       description: RabbitMQ is blocking publishers due to memory or disk pressure.
 
+              - name: homelab-apps
+                rules:
+                  - alert: AppMonitorDown
+                    expr: monitor_status == 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: app
+                    annotations:
+                      summary: Application monitor {{ $labels.monitor_name }} is down
+                      description: Uptime Kuma has reported {{ $labels.monitor_name }} down for 5 minutes.
+
         extraScrapeConfigs: |
           - job_name: grafana
             static_configs:
@@ -536,6 +554,20 @@ spec:
           - job_name: postgres
             static_configs:
               - targets: ["prometheus-postgres-exporter.monitoring.svc.cluster.local:80"]
+
+          - job_name: uptime-kuma
+            metrics_path: /metrics
+            basic_auth:
+              username: prometheus
+              password_file: /etc/prometheus/secrets/uptime-kuma-metrics
+            static_configs:
+              - targets: ["uptime-kuma.monitoring.svc.cluster.local:3001"]
+
+          - job_name: home-assistant
+            metrics_path: /api/prometheus
+            scrape_interval: 60s
+            static_configs:
+              - targets: ["home-assistant.home-assistant.svc.cluster.local:8123"]
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

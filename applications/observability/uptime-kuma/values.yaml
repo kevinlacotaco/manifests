@@ -77,6 +77,22 @@ controllers:
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Forgejo')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Homepage', 1, 1, 60, 'http', 2000, 2, 60, 'Homepage dashboard', 'http://homepage.homepage.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Homepage')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Omni Tools', 1, 1, 60, 'http', 2000, 2, 60, 'Omni Tools application', 'http://omni-tools.omni-tools.svc.cluster.local/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Omni Tools')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Frigate', 1, 1, 60, 'http', 2000, 2, 60, 'Frigate API health endpoint', 'http://frigate.frigate.svc.cluster.local:5000/api/version', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Frigate')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Home Assistant', 1, 1, 60, 'http', 2000, 2, 60, 'Home Assistant web UI', 'http://home-assistant.home-assistant.svc.cluster.local:8123/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Home Assistant')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
             SELECT 'ntfy', 1, 1, 60, 'http', 2000, 2, 60, 'ntfy health endpoint', 'http://ntfy-ntfy.ntfy.svc.cluster.local/v1/health', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'ntfy')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);

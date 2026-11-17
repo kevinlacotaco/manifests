@@ -27,6 +27,8 @@ data:
     for extra in anchors:
         if extra not in text:
             text = text.replace("    - 192.168.68.138\n", "    - 192.168.68.138\n" + extra, 1)
+    if "\nprometheus:" not in "\n" + text:
+        text += "\nprometheus:\n  requires_auth: false\n"
     config_yaml.write_text(text)
 
     # Repoint the MQTT and Frigate integrations at their new in-cluster services.
