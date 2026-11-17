@@ -25,6 +25,8 @@ spec:
         spec:
           restartPolicy: Never
           automountServiceAccountToken: false
+          nodeSelector:
+            kubernetes.io/hostname: boulder
           securityContext:
             runAsNonRoot: true
             runAsUser: 65534
