@@ -1,0 +1,4 @@
+---
+# Pin the control plane and workers to the same K3s release.
+k3s_version: "v1.31.4+k3s1"
+k3s_server_url: "https://192.168.68.71:6443"
