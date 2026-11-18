@@ -569,6 +569,14 @@ spec:
             scrape_interval: 60s
             static_configs:
               - targets: ["home-assistant.home-assistant.svc.cluster.local:8123"]
+
+          - job_name: crowdsec-lapi
+            static_configs:
+              - targets: ["crowdsec-service.crowdsec.svc.cluster.local:6060"]
+
+          - job_name: crowdsec-appsec
+            static_configs:
+              - targets: ["crowdsec-appsec-service.crowdsec.svc.cluster.local:6060"]
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

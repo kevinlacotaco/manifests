@@ -10,3 +10,5 @@ resources:
   - entry-points.yaml
   - dashboard.yaml
   - dashboard-sealed-secret.yaml
+  - crowdsec-bouncer-middleware.yaml
+  - crowdsec-bouncer-key-sealed-secret.yaml

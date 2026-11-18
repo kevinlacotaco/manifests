@@ -1,0 +1,118 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crowdsec
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: platform
+
+  # The chart deploys the Security Engine (agent), Local API, and AppSec.
+  # The git source adds the namespace guardrails and the sealed bouncer key.
+  sources:
+    - repoURL: https://crowdsecurity.github.io/helm-charts
+      chart: crowdsec
+      targetRevision: 0.24.3
+      helm:
+        releaseName: crowdsec
+        values: |
+          container_runtime: containerd
+
+          image:
+            repository: crowdsecurity/crowdsec
+            pullPolicy: IfNotPresent
+            tag: v1.8.2
+
+          lapi:
+            replicas: 1
+            strategy:
+              type: Recreate
+            # Registers the Traefik bouncer from the sealed key. The key never
+            # appears in values, logs, or the Traefik Middleware.
+            env:
+              - name: BOUNCER_KEY_TRAEFIK
+                valueFrom:
+                  secretKeyRef:
+                    name: crowdsec-bouncer-key
+                    key: BOUNCER_KEY_TRAEFIK
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+            persistentVolume:
+              data:
+                enabled: true
+                storageClassName: synology-iscsi
+                size: 1Gi
+              config:
+                enabled: true
+                storageClassName: synology-iscsi
+                size: 100Mi
+            metrics:
+              enabled: true
+              serviceMonitor:
+                enabled: false
+              podMonitor:
+                enabled: false
+
+          agent:
+            enabled: true
+            acquisition:
+              - namespace: kube-system
+                podName: traefik-*
+                program: traefik
+            env:
+              - name: COLLECTIONS
+                value: "crowdsecurity/traefik"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
+
+          appsec:
+            enabled: true
+            acquisitions:
+              - source: appsec
+                listen_addr: "0.0.0.0:7422"
+                path: /
+                appsec_config: crowdsecurity/virtual-patching
+                labels:
+                  type: appsec
+            env:
+              - name: COLLECTIONS
+                value: "crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+            metrics:
+              enabled: true
+              serviceMonitor:
+                enabled: false
+              podMonitor:
+                enabled: false
+
+    - repoURL: git@github.com:kevinlacotaco/manifests.git
+      targetRevision: main
+      path: applications/platform/crowdsec/manifests
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crowdsec
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

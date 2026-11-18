@@ -12,6 +12,7 @@ resources:
   - synology-iscsi-storageclass
   - traefik
   - authelia
+  - crowdsec
   - backup
   - renovate
   - cert-manager

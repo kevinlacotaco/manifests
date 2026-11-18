@@ -1,0 +1,28 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: crowdsec-bouncer
+  namespace: kube-system
+spec:
+  plugin:
+    crowdsec:
+      enabled: true
+      logLevel: INFO
+      # live mode checks LAPI on each request. updateMaxFailure: -1 makes the
+      # middleware fail open when LAPI cannot be reached, so a CrowdSec outage
+      # never takes an ingress offline.
+      crowdsecMode: live
+      updateMaxFailure: -1
+      httpTimeoutSeconds: 5
+      defaultDecisionSeconds: 60
+      crowdsecLapiScheme: http
+      crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
+      # Mounted read-only from the crowdsec-bouncer-key SealedSecret.
+      crowdsecLapiKeyFile: /etc/traefik/crowdsec/BOUNCER_KEY_TRAEFIK
+      crowdsecAppsecEnabled: true
+      crowdsecAppsecScheme: http
+      crowdsecAppsecHost: crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
+      crowdsecAppsecPath: /
+      # Fail open if AppSec errors or is unreachable during the phase-1 rollout.
+      crowdsecAppsecFailureBlock: false
+      crowdsecAppsecUnreachableBlock: false

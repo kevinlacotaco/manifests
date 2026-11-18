@@ -17,6 +17,7 @@ spec:
     - https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
     - https://github.com/rabbitmq/cluster-operator
     - https://kyverno.github.io/kyverno/
+    - https://crowdsecurity.github.io/helm-charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: argocd
@@ -34,6 +35,8 @@ spec:
       namespace: database
     - server: https://kubernetes.default.svc
       namespace: auth
+    - server: https://kubernetes.default.svc
+      namespace: crowdsec
     - server: https://kubernetes.default.svc
       namespace: backup
     - server: https://kubernetes.default.svc

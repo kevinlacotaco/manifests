@@ -236,6 +236,10 @@ kind: Ingress
 metadata:
   name: homepage
   namespace: homepage
+  annotations:
+    # Phase 1 CrowdSec test host. This is the only Ingress using the bouncer
+    # until the middleware is verified; do not add it globally yet.
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

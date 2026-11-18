@@ -8,10 +8,34 @@ spec:
     resources:
       requests:
         cpu: 50m
-        memory: 64Mi
+        memory: 96Mi
       limits:
         cpu: 500m
-        memory: 256Mi
+        memory: 512Mi
+    # CrowdSec bouncer plugin. The plugin is downloaded from the Traefik
+    # plugin catalog at startup, so Traefik needs egress access to GitHub.
+    experimental:
+      plugins:
+        crowdsec:
+          moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+          version: v1.8.2
+    # The bouncer key is mounted from the SealedSecret in kube-system and read
+    # with crowdsecLapiKeyFile, so the key is never inlined in the Middleware.
+    volumes:
+      - name: crowdsec-bouncer-key
+        mountPath: /etc/traefik/crowdsec
+        type: secret
+    # CrowdSec parses Traefik's JSON access logs. Drop headers by default so
+    # cookies and Authorization never reach the log pipeline.
+    logs:
+      access:
+        enabled: true
+        format: json
+        fields:
+          headers:
+            defaultmode: drop
+            names:
+              User-Agent: keep
     additionalArguments:
       # The dashboard is served by an authenticated IngressRoute on the traefik
       # entrypoint; the insecure API must stay disabled.
