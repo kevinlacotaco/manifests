@@ -28,22 +28,26 @@ the single largest improvement and does not require renaming anything.
 
 ## Entity ID convention
 
-Use:
+Entity IDs are stable identifiers. **Location belongs in the area**, not in the
+ID, unless the device is fixed in place.
+
+Use one of these shapes:
 
 ```text
-<area>_<device>_<function>
+<device>_<function>          # movable devices: plugs, battery sensors, lamps
+<area>_<device>_<function>   # fixed devices: HVAC, freezer, water heater
+home_<function>              # whole-house systems: grid, solar, internet
 ```
 
 Examples:
 
 ```text
-sensor.garage_freezer_temperature
+sensor.garage_freezer_temperature       # fixed appliance, room prefix is useful
 sensor.garage_fridge_humidity
 binary_sensor.garage_freezer_door
-switch.kitchen_coffee_maker
-sensor.master_bedroom_temperature
-sensor.master_bedroom_climate_battery
-sensor.living_room_ac_filter_life
+switch.coffee_maker                     # movable; area is Kitchen
+sensor.temperature_sensor_1             # movable; area changes with the device
+sensor.living_room_ac_filter_life       # fixed HVAC
 binary_sensor.second_floor_bathroom_leak
 sensor.home_grid_power
 sensor.home_solar_power
@@ -52,22 +56,50 @@ sensor.home_solar_power
 Rules:
 
 1. **Keep the domain** (`sensor`, `binary_sensor`, `switch`, `light`, ...).
-2. **Start with the area** for physical devices. Use `home_` for whole-house
-   systems such as grid, solar, and internet.
-3. **Use the device name**, not its brand, model, IP, MAC, or Zigbee address.
-4. **End with the function or measurement** (`temperature`, `humidity`,
+2. **The area is the source of truth for location.** Assign the device to an
+   area. Dashboards, area cards, and area-targeted automations then follow the
+   device when it moves.
+3. **Movable devices do not get a room prefix.** Smart plugs, battery sensors,
+   floor lamps, fans, and humidifiers should keep a location-neutral ID. Moving
+   one means changing its area and friendly name, not its entity ID.
+4. **Fixed devices may use a room prefix.** Built-in HVAC, a freezer, a water
+   heater, a hard-wired leak sensor, or a door sensor screwed to a frame are
+   unlikely to move; the room prefix makes the ID easier to read.
+5. **Use the device name**, not its brand, model, IP, MAC, or Zigbee address.
+6. **End with the function or measurement** (`temperature`, `humidity`,
    `battery`, `power`, `energy`, `fps`, `leak`, `filter_life`).
-5. **Do not repeat words.** `garage_fridge_temperature`, not
+7. **Do not repeat words.** `garage_fridge_temperature`, not
    `garage_garage_fridge_sensor_garage_fridge_temperature`.
-6. **Do not encode state or units** in the ID. `battery`, not
+8. **Do not encode state or units** in the ID. `battery`, not
    `battery_state`; `temperature`, not `temperature_c`.
-7. Keep the entity's `unique_id` unchanged. Renaming the entity ID in the UI
-   preserves history and registry identity.
-8. Prefer assigning the **device** to an area; only override the entity area
-   when a device genuinely spans rooms.
-9. Keep user-facing names short. With device `Garage Freezer` and entity name
-   `Temperature`, Home Assistant renders `Garage Freezer Temperature`
-   automatically.
+9. Keep the entity's `unique_id` unchanged. Rename the entity ID in the UI, not
+   by editing storage. Recorder history follows the registry entry; long-term
+   statistics are keyed by statistic ID, so avoid routine renames of
+   statistic-bearing sensors and check them after a rename.
+10. Keep user-facing names short. With device `Garage Freezer` and entity name
+    `Temperature`, Home Assistant renders `Garage Freezer Temperature`.
+
+### Moving a device
+
+1. Change the device's **area** (and friendly name if needed).
+2. Leave the entity ID alone for movable devices.
+3. If an ID must change, rename it in the UI, then update any automations or
+   dashboards that referenced the old ID.
+4. Do not rename an entity merely because it moved rooms. The area is the
+   location record.
+
+### Unplugged and spare sensors
+
+Unavailable does **not** mean removable. Sensors get unplugged, batteries die,
+and seasonal devices go into storage.
+
+- Never delete an entity only because it is `unavailable`.
+- Delete entities only when the integration or physical device is actually
+  removed, or when you explicitly confirm the device is gone.
+- Label intentional spare/unplugged devices `spare` or `unplugged` and exclude
+  them from "unavailable entity" alerts.
+- Give them a small place on the **Systems & Maintenance** dashboard so they
+  are visible without cluttering normal room views.
 
 ### Areas
 
@@ -182,14 +214,17 @@ Do not add a custom card dependency for the first pass.
 - Network (TP-Link Deco) status.
 - Backups and Home Assistant updates.
 - Frigate CPU, detection FPS, and skipped FPS.
-- Full list of unavailable entities.
+- Full list of unavailable entities, excluding sensors labeled `spare` or
+  `unplugged`.
 - Firmware and low-battery maintenance.
 
 ## Rollout order
 
-1. **Clean up.** Remove the 112 Docker switches and their devices. Review
-   unavailable discovery duplicates and delete the ones whose integrations are
-   gone. Do not touch deliberate disabled entities.
+1. **Clean up.** The 121 Docker switches are already removed; the `ironhide`
+   and `grapple` system-monitor devices stay. Review remaining unavailable
+   discovery duplicates, but delete only entries whose integration or physical
+   device is actually gone. Never delete an unplugged or spare sensor merely
+   because it is unavailable. Do not touch deliberate disabled entities.
 2. **Assign areas.** Start with the 460 MQTT entities. Device-level assignment
    is fastest.
 3. **Add labels** to the entities used by each planned dashboard.
