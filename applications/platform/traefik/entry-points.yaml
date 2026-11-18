@@ -43,6 +43,8 @@ spec:
       # k3s servicelb (klipper-lb) masquerades LoadBalancer traffic, so Traefik sees
       # the svclb pod IP rather than the Synology source. Trust the cluster pod CIDR.
       - "--entryPoints.web.forwardedHeaders.trustedIPs=10.42.0.0/16,192.168.68.138/32"
+      - "--entryPoints.web.http.middlewares=kube-system-crowdsec-bouncer@kubernetescrd"
+      - "--entryPoints.websecure.http.middlewares=kube-system-crowdsec-bouncer@kubernetescrd"
     ingressRoute:
       dashboard:
         enabled: false
