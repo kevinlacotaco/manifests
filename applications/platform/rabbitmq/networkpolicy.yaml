@@ -43,12 +43,12 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: home-assistant
+        # Allow the trusted monitoring namespace to check the MQTT listener.
+        # The RabbitMQ kustomization injects its component label into
+        # podSelectors, so use a namespace selector instead of a pod label.
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: monitoring
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: uptime-kuma
       ports:
         - port: 1883
           protocol: TCP
