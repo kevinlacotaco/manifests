@@ -16,11 +16,10 @@ spec:
       logApiRequests: false
       api: "https://get.geojs.io/v1/ip/country/{ip}"
       apiTimeoutMs: 750
-      # Fail open when get.geojs.io is unreachable or errors. CrowdSec still
-      # enforces its decisions; a third-party lookup outage must not take the
-      # public ingress offline.
+      # Allow on a slow lookup so a stalled API does not stall the ingress.
+      # Other failures, including an IP with no country, are denied.
       ignoreApiTimeout: true
-      ignoreApiFailures: true
+      ignoreApiFailures: false
       xForwardedForReverseProxy: true
       cacheSize: 10000
       cacheTtlSeconds: 86400

@@ -24,10 +24,10 @@ The middleware is `kube-system/geoblock`:
 - `cacheSize: 10000`, `cacheTtlSeconds: 86400` — one lookup per client IP per
   day; cached results keep normal traffic off the lookup API.
 - `allowUnknownCountries: false` — an IP with no country is denied.
-- `ignoreApiTimeout: true`, `ignoreApiFailures: true` — if
-  `get.geojs.io` is unreachable or errors, requests are allowed. CrowdSec still
-  applies its own decisions, and an external lookup outage must not take the
-  ingress offline.
+- `ignoreApiTimeout: true`, `ignoreApiFailures: false` — a timeout is allowed
+  so a stalled lookup API cannot take the ingress offline. Other lookup
+  failures, including an empty response with no country, are denied. CrowdSec
+  still applies its own decisions.
 - Denied requests receive `403`.
 - `X-IPCountry` is added to allowed requests for troubleshooting.
 
