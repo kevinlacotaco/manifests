@@ -51,7 +51,8 @@ spec:
               config:
                 enabled: true
                 storageClassName: synology-iscsi
-                size: 100Mi
+                # Synology CSI rejects volumes smaller than 1Gi.
+                size: 1Gi
             metrics:
               enabled: true
               serviceMonitor:
