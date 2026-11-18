@@ -41,6 +41,7 @@ mqtt:
       device_class: "temperature"
       device:
         identifiers: "14216"
+        name: "Garage Freezer"
         suggested_area: "garage"
       state_class: "measurement"
       value_template: "{{ value }}"
@@ -52,6 +53,7 @@ mqtt:
       device_class: "humidity"
       device:
         identifiers: "14216"
+        name: "Garage Freezer"
         suggested_area: "garage"
       state_class: "measurement"
       value_template: "{{ value }}"
@@ -63,6 +65,7 @@ mqtt:
       device_class: "temperature"
       device:
         identifiers: "6407"
+        name: "Garage Fridge"
         suggested_area: "garage"
       state_class: "measurement"
       value_template: "{{ value }}"
@@ -74,6 +77,7 @@ mqtt:
       device_class: "humidity"
       device:
         identifiers: "6407"
+        name: "Garage Fridge"
         suggested_area: "garage"
       state_class: "measurement"
       value_template: "{{ value }}"
