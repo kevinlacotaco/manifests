@@ -302,8 +302,8 @@ document/media/repository files and Postgres for relational data.
 | Forgejo | `forgejo-data` | via Postgres | **Both**; repositories, attachments, LFS |
 | Forgejo runner | — | `forgejo-runner-data` | iSCSI only; runner registration/config |
 | Donetick | — | `donetick-data` + via Postgres | iSCSI only |
-| Authelia | — | via Postgres | iSCSI only; legacy SQLite PVC retained but not mounted |
-| Speedtest Tracker | — | `speedtest-tracker-config-v2` + via Postgres | iSCSI only; old corrupt PVC retained |
+| Authelia | — | via Postgres | iSCSI only; Postgres storage |
+| Speedtest Tracker | — | `speedtest-tracker-config-v2` + via Postgres | iSCSI only; corrupt pre-migration volume removed |
 | Grafana | — | `grafana` SQLite | iSCSI only |
 | Uptime Kuma | — | `uptime-kuma-config` SQLite | iSCSI only |
 | ntfy | — | `ntfy-data-iscsi` SQLite | iSCSI only |

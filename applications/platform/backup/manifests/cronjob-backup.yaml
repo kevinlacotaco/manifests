@@ -182,13 +182,13 @@ spec:
                   test -d /forgejo-data
                   test -d /backup
 
-                  # The SQLite CronJobs run at 01:10, 01:20, and 01:30.
-                  # Fail before snapshotting if any database copy is missing,
-                  # empty, or stale, so a broken dump never produces a green
-                  # backup.
+                  # The Grafana and Uptime Kuma SQLite CronJobs run at 01:10
+                  # and 01:30. Fail before snapshotting if any database copy is
+                  # missing, empty, or stale, so a broken dump never produces a
+                  # green backup. Authelia uses PostgreSQL, so its data is in
+                  # the pg_dump set below instead of a SQLite staging file.
                   for f in \
                     /repo/staging/sqlite/grafana.db \
-                    /repo/staging/sqlite/authelia.db \
                     /repo/staging/sqlite/uptime-kuma.db; do
                     test -s "$f" || {
                       echo "missing or empty SQLite backup: $f" >&2

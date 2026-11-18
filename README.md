@@ -853,9 +853,11 @@ Authelia runs two replicas in `auth` with shared state:
   reset-password JWT secret, OIDC HMAC, and JWKS.
 - `RollingUpdate` with `maxSurge: 1` and `maxUnavailable: 0`.
 
-The old `authelia-config` PVC and `authelia-sqlite-backup` CronJob are retained
-only as a rollback path. Authelia no longer mounts that PVC. The Postgres dump
-is included in the central backup CronJob.
+The legacy `authelia-config` SQLite PVC and `authelia-sqlite-backup` CronJob
+were removed once the Postgres migration was verified; the last SQLite copy is
+still in the Kopia/NFS staging tree. Authelia no longer mounts that PVC. The
+Postgres dump is included in the central backup CronJob, and
+`users_database.yml` lives in the `authelia-users` SealedSecret.
 
 ### Paperless-ngx OIDC
 

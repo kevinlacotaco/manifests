@@ -62,9 +62,9 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - Argo CD application-controller memory limit raised to 2Gi after repeated OOMKills stalled sync operations.
 - Authelia OIDC provider live; Paperless-ngx deployed with Postgres, Valkey, and NFS storage.
 - Authelia protects Mealie and Donetick with two-factor.
-- Authelia moved to Postgres storage with Redis sessions and two replicas; TOTP data migrated, legacy SQLite PVC retained for rollback.
+- Authelia moved to Postgres storage with Redis sessions and two replicas; TOTP data migrated, legacy SQLite PVC and backup CronJob removed.
 - Authelia users DB/Postgres dump, Uptime Kuma, Grafana SQLite, other Postgres dumps, and Mealie/Paperless media are in Kopia.
-- Speedtest Tracker moved from SQLite to Postgres; its corrupt iSCSI config volume is retained for inspection.
+- Speedtest Tracker moved from SQLite to Postgres; its corrupt pre-migration iSCSI volume was removed after verification.
 - Uptime Kuma monitors Authelia, Kopia backups, and AdGuard DNS.
 - Default-deny egress for mealie, donetick, ntfy, speedtest-tracker, auth, and adguard-home.
 - Sealed Secrets keyring encrypted offline; no plaintext secrets in the repo.
