@@ -4613,11 +4613,11 @@ data:
                 "uid": "prometheus"
               },
               "expr": "sum(rabbitmq_connections)",
-              "legendFormat": "Connections",
+              "legendFormat": "AMQP connections",
               "refId": "A"
             }
           ],
-          "title": "Connections",
+          "title": "AMQP connections",
           "type": "stat"
         },
         {
@@ -5253,7 +5253,7 @@ data:
           "id": 13,
           "options": {
             "mode": "markdown",
-            "content": "MQTT topics are not first-class Prometheus labels. MQTT clients appear as RabbitMQ connections; topics map to exchanges and subscription queues. Per-topic detail requires the management API or the RabbitMQ event exchange."
+            "content": "RabbitMQ's Prometheus plugin does not expose MQTT connection counts. The AMQP connections panel only counts AMQP connections, so it can show 0 while MQTT clients are connected. MQTT topics are not first-class Prometheus labels; use the amq.topic exchange and queue metrics on this dashboard for MQTT traffic. Per-topic detail requires the RabbitMQ management API or event exchange."
           },
           "title": "MQTT / topic note",
           "type": "text"
