@@ -20,8 +20,8 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: boulder
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
       initContainers:
