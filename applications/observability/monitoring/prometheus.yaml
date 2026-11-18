@@ -525,6 +525,7 @@ spec:
               - targets: ["argo-argocd-applicationset-controller-metrics.argocd.svc.cluster.local:8080"]
 
           - job_name: rabbitmq
+            metrics_path: /metrics/per-object
             static_configs:
               - targets: ["rabbitmq.messaging.svc.cluster.local:15692"]
 
