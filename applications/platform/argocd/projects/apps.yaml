@@ -39,6 +39,8 @@ spec:
       namespace: home-assistant
     - server: https://kubernetes.default.svc
       namespace: frigate
+    - server: https://kubernetes.default.svc
+      namespace: jellyfin
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
