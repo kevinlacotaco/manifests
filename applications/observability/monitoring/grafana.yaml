@@ -11,11 +11,28 @@ spec:
     chart: grafana
     helm:
       values: |
-        # Grafana stores its state in SQLite on a single-writer RWO volume.
-        # RollingUpdate can run old and new pods on the same node against the
-        # same database; Recreate guarantees the old writer exits first.
+        # Grafana keeps its state in PostgreSQL. The PVC below is retained for
+        # rollback to the original SQLite database and still backs the plugins
+        # directory; deploymentStrategy Recreate keeps a single writer during
+        # upgrades.
         deploymentStrategy:
           type: Recreate
+
+        # Database settings live in grafana.ini; the password is injected as
+        # GF_DATABASE_PASSWORD from a SealedSecret so it never enters values.
+        grafana.ini:
+          database:
+            type: postgres
+            host: postgres-headless-service.database.svc.cluster.local:5432
+            name: grafana
+            user: grafana
+            ssl_mode: disable
+
+        envValueFrom:
+          GF_DATABASE_PASSWORD:
+            secretKeyRef:
+              name: grafana-db-secret
+              key: password
 
         admin:
           existingSecret: grafana-admin-credentials

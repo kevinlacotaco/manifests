@@ -72,6 +72,14 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: monitoring
+    # PostgreSQL backing the Grafana database.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: database
+      ports:
+        - protocol: TCP
+          port: 5432
     # External HTTPS for plugins and update checks.
     - to:
         - ipBlock:

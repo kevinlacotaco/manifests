@@ -11,6 +11,7 @@ labels:
 
 resources:
   - grafana-admin-sealed-secret.yaml
+  - grafana-db-sealed-secret.yaml
   - alertmanager-ntfy-sealed-secret.yaml
   - alertmanager-ntfy-relay.yaml
   - guardrails.yaml

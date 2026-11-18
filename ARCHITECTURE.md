@@ -304,7 +304,7 @@ document/media/repository files and Postgres for relational data.
 | Donetick | — | `donetick-data` + via Postgres | iSCSI only |
 | Authelia | — | via Postgres | iSCSI only; Postgres storage |
 | Speedtest Tracker | — | `speedtest-tracker-config-v2` + via Postgres | iSCSI only; corrupt pre-migration volume removed |
-| Grafana | — | `grafana` SQLite | iSCSI only |
+| Grafana | — | via Postgres (SQLite PVC retained for rollback) | iSCSI only; dashboards provisioned from ConfigMaps |
 | Uptime Kuma | — | `uptime-kuma-config` SQLite | iSCSI only |
 | ntfy | — | `ntfy-data-iscsi` SQLite | iSCSI only |
 | AdGuard Home | — | `adguard-home-pvc` SQLite | iSCSI only |

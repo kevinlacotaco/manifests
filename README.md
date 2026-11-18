@@ -732,7 +732,7 @@ plaintext secret with the new controller certificate.
 | `authelia` | `auth` | Git path `applications/platform/authelia/manifests` | 2 replicas; Postgres storage; Redis sessions; OIDC provider |
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
-| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | 10Gi iSCSI; Prometheus/Loki datasources; UI on 3000 |
+| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | Postgres storage; 10Gi iSCSI retained for plugins/rollback; UI on 3000 |
 | `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; PolicyExceptions enabled in `kyverno` |
 | `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits; 0 current failures |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
@@ -829,7 +829,7 @@ it with the policies.
 ### PostgreSQL databases
 
 The `postgresql` child Application runs a single `postgres` StatefulSet in the
-`database` namespace. The `postgres-init-apps` PostSync Job creates seven
+`database` namespace. The `postgres-init-apps` PostSync Job creates eight
 application roles/databases idempotently:
 
 | Role/database | Password source | Consumer |
@@ -841,6 +841,7 @@ application roles/databases idempotently:
 | `authelia` | `authelia-db` Secret in `auth` | Authelia |
 | `forgejo` | `forgejo-db` Secret in `forgejo` | Forgejo |
 | `crowdsec` | `crowdsec-db-secret` Secret in `crowdsec` | CrowdSec LAPI |
+| `grafana` | `grafana-db-secret` Secret in `monitoring` | Grafana |
 
 The Job also reads `postgres-app-secrets` in `database`, which contains the same
 passwords. Keep the two SealedSecrets in sync if you rotate a password.
@@ -1005,15 +1006,15 @@ Current SQLite-backed workloads:
 | Workload | Strategy | Notes |
 | --- | --- | --- |
 | `adguard-home` | `Recreate` | session DB on `synology-iscsi` |
-| `grafana` | `Recreate` | `grafana.db` on `synology-iscsi` |
 | `ntfy` | `Recreate` | chart default; SQLite on `synology-iscsi` |
 | `uptime-kuma` | `Recreate` | `kuma.db` on `synology-iscsi` |
-| `speedtest-tracker` | `Recreate` | now Postgres; kept for the legacy PVC |
 
 Postgres-backed apps (`mealie`, `donetick`, `paperless`, `speedtest-tracker`,
-and now `authelia`) may use rolling updates when their shared data volumes are
-ReadWriteMany or their state is external. Authelia's legacy SQLite PVC is no
-longer mounted by the Deployment.
+`authelia`, `crowdsec`, and `grafana`) may use rolling updates when their
+shared data volumes are ReadWriteMany or their state is external. Authelia's
+and Speedtest Tracker's legacy SQLite PVCs were removed. Grafana keeps its
+`Recreate` strategy because the retained `grafana` PVC still holds plugins and
+the pre-migration SQLite database used for rollback.
 
 ### Loki storage
 
