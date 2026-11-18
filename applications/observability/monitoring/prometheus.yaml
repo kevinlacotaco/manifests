@@ -126,6 +126,8 @@ spec:
               memory: 128Mi
 
         prometheus-node-exporter:
+          # Node-exporter is the one monitoring pod allowed on grapple: it is
+          # small and gives the Pi a basic node view. Alloy stays off.
           tolerations:
             - key: homelab.io/radios
               operator: Equal

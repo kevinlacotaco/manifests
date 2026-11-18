@@ -21,10 +21,8 @@ spec:
               operator: Equal
               value: hardware
               effect: NoSchedule
-            - key: homelab.io/radios
-              operator: Equal
-              value: "true"
-              effect: NoSchedule
+            # Deliberately no homelab.io/radios toleration: grapple is a
+            # radio-only node and must not run the Alloy DaemonSet.
           volumes:
             extra:
               - name: alloy-state
