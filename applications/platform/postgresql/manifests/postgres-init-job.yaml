@@ -81,6 +81,11 @@ spec:
                 secretKeyRef:
                   name: postgres-app-secrets
                   key: forgejo-db-password
+            - name: CROWDSEC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app-secrets
+                  key: crowdsec-db-password
             - name: POSTGRES_EXPORTER_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -102,6 +107,7 @@ spec:
                 -v speedtest_password="$SPEEDTEST_DB_PASSWORD" \
                 -v authelia_password="$AUTHELIA_DB_PASSWORD" \
                 -v forgejo_password="$FORGEJO_DB_PASSWORD" \
+                -v crowdsec_password="$CROWDSEC_DB_PASSWORD" \
                 -v postgres_exporter_password="$POSTGRES_EXPORTER_PASSWORD" <<'SQL'
               SELECT format('CREATE ROLE mealie LOGIN PASSWORD %L', :'mealie_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'mealie')\gexec
@@ -127,6 +133,10 @@ spec:
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'forgejo')\gexec
               ALTER ROLE forgejo WITH LOGIN PASSWORD :'forgejo_password';
 
+              SELECT format('CREATE ROLE crowdsec LOGIN PASSWORD %L', :'crowdsec_password')
+              WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'crowdsec')\gexec
+              ALTER ROLE crowdsec WITH LOGIN PASSWORD :'crowdsec_password';
+
               SELECT format('CREATE ROLE postgres_exporter LOGIN PASSWORD %L', :'postgres_exporter_password')
               WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgres_exporter')\gexec
               ALTER ROLE postgres_exporter WITH LOGIN PASSWORD :'postgres_exporter_password';
@@ -144,6 +154,8 @@ spec:
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'authelia')\gexec
               SELECT 'CREATE DATABASE forgejo OWNER forgejo'
               WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'forgejo')\gexec
+              SELECT 'CREATE DATABASE crowdsec OWNER crowdsec'
+              WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'crowdsec')\gexec
 
               \c mealie
               ALTER SCHEMA public OWNER TO mealie;
@@ -168,6 +180,10 @@ spec:
               \c forgejo
               ALTER SCHEMA public OWNER TO forgejo;
               GRANT ALL ON SCHEMA public TO forgejo;
+
+              \c crowdsec
+              ALTER SCHEMA public OWNER TO crowdsec;
+              GRANT ALL ON SCHEMA public TO crowdsec;
               SQL
           resources:
             requests:

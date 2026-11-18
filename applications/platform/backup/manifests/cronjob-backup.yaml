@@ -84,6 +84,11 @@ spec:
                     secretKeyRef:
                       name: backup-db-secrets
                       key: forgejo-db-password
+                - name: CROWDSEC_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-db-secrets
+                      key: crowdsec-db-password
               command:
                 - /bin/sh
                 - -ec
@@ -125,6 +130,7 @@ spec:
                   dump speedtest speedtest speedtest "$SPEEDTEST_DB_PASSWORD"
                   dump authelia authelia authelia "$AUTHELIA_DB_PASSWORD"
                   dump forgejo forgejo forgejo "$FORGEJO_DB_PASSWORD"
+                  dump crowdsec crowdsec crowdsec "$CROWDSEC_DB_PASSWORD"
                   ls -lh /backup
               volumeMounts:
                 - name: dumps

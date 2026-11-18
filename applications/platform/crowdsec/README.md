@@ -13,10 +13,15 @@ to the Homepage Ingress only for phase 1 testing.
 | AppSec | `crowdsec-appsec-service.crowdsec.svc.cluster.local` | 7422 |
 | AppSec metrics | `crowdsec-appsec-service.crowdsec.svc.cluster.local` | 6060 |
 
-The LAPI keeps its SQLite database and cscli credentials on two 1Gi
-`synology-iscsi` PVCs. The agent reads Traefik's JSON access log from
-`/var/log/containers` and parses it with the `crowdsecurity/traefik` collection.
-AppSec loads `crowdsecurity/virtual-patching` and 207 in-band rules.
+The LAPI stores decisions, alerts, and machine registrations in the shared
+PostgreSQL database (`crowdsec`/`crowdsec` in the `database` namespace); the
+password comes from the sealed `crowdsec/crowdsec-db-secret` Secret and is
+expanded from `DB_PASSWORD`. The old 1Gi `crowdsec-db-pvc` SQLite volume is
+still mounted for rollback but is no longer authoritative, and the 1Gi
+`crowdsec-config-pvc` keeps cscli credentials and local config. The agent reads
+Traefik's JSON access log from `/var/log/containers` and parses it with the
+`crowdsecurity/traefik` collection. AppSec loads `crowdsecurity/virtual-patching`
+and 207 in-band rules.
 
 Prometheus scrapes the LAPI and AppSec metrics through the scrape jobs in
 `applications/observability/monitoring/prometheus.yaml`.

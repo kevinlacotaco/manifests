@@ -37,6 +37,7 @@ spec:
                   - backup
                   - speedtest-tracker
                   - auth
+                  - crowdsec
           podSelector:
             matchLabels:
               requires-db: postgres

@@ -829,7 +829,7 @@ it with the policies.
 ### PostgreSQL databases
 
 The `postgresql` child Application runs a single `postgres` StatefulSet in the
-`database` namespace. The `postgres-init-apps` PostSync Job creates five
+`database` namespace. The `postgres-init-apps` PostSync Job creates seven
 application roles/databases idempotently:
 
 | Role/database | Password source | Consumer |
@@ -839,6 +839,8 @@ application roles/databases idempotently:
 | `paperless` | `paperless-secrets` Secret in `paperless` | Paperless-ngx |
 | `speedtest` | `speedtest-db` Secret in `speedtest-tracker` | Speedtest Tracker |
 | `authelia` | `authelia-db` Secret in `auth` | Authelia |
+| `forgejo` | `forgejo-db` Secret in `forgejo` | Forgejo |
+| `crowdsec` | `crowdsec-db-secret` Secret in `crowdsec` | CrowdSec LAPI |
 
 The Job also reads `postgres-app-secrets` in `database`, which contains the same
 passwords. Keep the two SealedSecrets in sync if you rotate a password.

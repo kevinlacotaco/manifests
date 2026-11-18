@@ -19,6 +19,30 @@ spec:
         values: |
           container_runtime: containerd
 
+          # LAPI database. CrowdSec ships a SQLite default; point it at the
+          # shared PostgreSQL instance instead. The password is expanded from
+          # the DB_PASSWORD env var in the lapi section below.
+          config:
+            config.yaml.local: |
+              db_config:
+                type: postgresql
+                user: crowdsec
+                password: ${DB_PASSWORD}
+                db_name: crowdsec
+                host: postgres-headless-service.database.svc.cluster.local
+                port: 5432
+                sslmode: disable
+              api:
+                server:
+                  auto_registration:
+                    enabled: true
+                    token: "${REGISTRATION_TOKEN}"
+                    allowed_ranges:
+                      - "127.0.0.1/32"
+                      - "192.168.0.0/16"
+                      - "10.0.0.0/8"
+                      - "172.16.0.0/12"
+
           image:
             repository: crowdsecurity/crowdsec
             pullPolicy: IfNotPresent
@@ -28,14 +52,22 @@ spec:
             replicas: 1
             strategy:
               type: Recreate
-            # Registers the Traefik bouncer from the sealed key. The key never
-            # appears in values, logs, or the Traefik Middleware.
+            # The LAPI stores decisions, alerts, and machine registrations in
+            # PostgreSQL. The password is read from a SealedSecret and expanded
+            # by CrowdSec from ${DB_PASSWORD}; it never appears in values.
+            podLabels:
+              requires-db: postgres
             env:
               - name: BOUNCER_KEY_TRAEFIK
                 valueFrom:
                   secretKeyRef:
                     name: crowdsec-bouncer-key
                     key: BOUNCER_KEY_TRAEFIK
+              - name: DB_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: crowdsec-db-secret
+                    key: password
             resources:
               requests:
                 cpu: 50m
@@ -47,6 +79,8 @@ spec:
               data:
                 enabled: true
                 storageClassName: synology-iscsi
+                # Kept mounted so the pre-migration SQLite database remains
+                # available for rollback; PostgreSQL is authoritative now.
                 size: 1Gi
               config:
                 enabled: true
