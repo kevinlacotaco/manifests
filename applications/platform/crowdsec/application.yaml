@@ -62,13 +62,17 @@ spec:
 
           agent:
             enabled: true
-            acquisition:
-              - namespace: kube-system
-                podName: traefik-*
-                program: traefik
-                # boulder's inotify limits are exhausted; polling avoids the
-                # fsnotify watcher failure that crash-loops the agent there.
+            # Rendered verbatim. The chart's `acquisition` helper hardcodes
+            # force_inotify: true; boulder has exhausted its inotify watches,
+            # so use polling here instead.
+            additionalAcquisition:
+              - source: file
+                filenames:
+                  - /var/log/containers/traefik-*_kube-system_*.log
                 poll_without_inotify: true
+                labels:
+                  type: containerd
+                  program: traefik
             env:
               - name: COLLECTIONS
                 value: "crowdsecurity/traefik"
