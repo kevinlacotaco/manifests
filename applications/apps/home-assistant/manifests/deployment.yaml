@@ -18,8 +18,6 @@ spec:
       labels:
         app: home-assistant
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: boulder
       hostNetwork: false
       dnsPolicy: ClusterFirst
       automountServiceAccountToken: false
@@ -106,11 +104,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: usb
-              mountPath: /dev/bus/usb
-            - name: dbus
-              mountPath: /run/dbus
-              readOnly: true
             - name: localtime
               mountPath: /etc/localtime
               readOnly: true
@@ -128,14 +121,7 @@ spec:
         - name: scripts
           configMap:
             name: home-assistant-restore
-        - name: usb
-          hostPath:
-            path: /dev/bus/usb
-            type: Directory
-        - name: dbus
-          hostPath:
-            path: /run/dbus
-            type: Directory
+
         - name: localtime
           hostPath:
             path: /etc/localtime
