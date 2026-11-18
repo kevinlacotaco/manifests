@@ -62,9 +62,21 @@ spec:
 
           agent:
             enabled: true
+            # CrowdSec creates an fsnotify watcher even in polling mode. Boulder
+            # has exhausted its inotify instance limit, so the agent crash-loops
+            # there. Traefik currently runs on hauler; run the agent there until
+            # fs.inotify.max_user_instances is raised on boulder.
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: NotIn
+                          values:
+                            - boulder
             # Rendered verbatim. The chart's `acquisition` helper hardcodes
-            # force_inotify: true; boulder has exhausted its inotify watches,
-            # so use polling here instead.
+            # force_inotify: true, so use the file datasource directly.
             additionalAcquisition:
               - source: file
                 filenames:
