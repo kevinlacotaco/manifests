@@ -34,6 +34,12 @@ spec:
               repeat_interval: 4h
               routes:
                 - matchers:
+                    - alertname="CrowdSecThreatDetected"
+                  receiver: ntfy-crowdsec
+                  group_wait: 30s
+                  group_interval: 10m
+                  repeat_interval: 6h
+                - matchers:
                     - severity="critical"
                   receiver: ntfy-critical
                   repeat_interval: 1h
@@ -68,6 +74,14 @@ spec:
                 webhook_configs:
                   - url: http://alertmanager-ntfy-relay.monitoring.svc.cluster.local:8080/webhook
                     send_resolved: true
+                    http_config:
+                      authorization:
+                        type: Bearer
+                        credentials_file: /etc/alertmanager/secrets/token
+              - name: ntfy-crowdsec
+                webhook_configs:
+                  - url: http://alertmanager-ntfy-relay.monitoring.svc.cluster.local:8080/webhook
+                    send_resolved: false
                     http_config:
                       authorization:
                         type: Bearer
@@ -496,6 +510,21 @@ spec:
                     annotations:
                       summary: Application monitor {{ $labels.monitor_name }} is down
                       description: Uptime Kuma has reported {{ $labels.monitor_name }} down for 5 minutes.
+
+              - name: homelab-crowdsec
+                rules:
+                  - alert: CrowdSecThreatDetected
+                    expr: |
+                      sum(delta(cs_alerts[10m])) > 0
+                      or sum(increase(cs_appsec_block_total[10m])) > 0
+                      or sum(increase(cs_lapi_decisions_ok_total[10m])) > 0
+                    for: 1m
+                    labels:
+                      severity: info
+                      component: crowdsec
+                    annotations:
+                      summary: CrowdSec detected or blocked threat activity
+                      description: New CrowdSec alerts, AppSec blocks, or active decisions in the last 10 minutes.
 
         extraScrapeConfigs: |
           - job_name: grafana

@@ -153,9 +153,25 @@ controllers:
             INSERT INTO notification (name, active, user_id, is_default, config)
             SELECT 'apps', 1, 1, 1, '{"type":"ntfy","name":"apps","active":true,"isDefault":true,"ntfyAuthenticationMethod":"accessToken","ntfyserverurl":"http://ntfy-ntfy.ntfy.svc.cluster.local/","ntfytopic":"apps","ntfyPriority":4,"ntfyaccesstoken":"${NTFY_TOKEN}"}'
             WHERE NOT EXISTS (SELECT 1 FROM notification WHERE name = 'apps');
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Jellyfin', 1, 1, 60, 'http', 2000, 2, 60, 'Jellyfin health endpoint', 'http://jellyfin.jellyfin.svc.cluster.local:8096/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Jellyfin')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Zigbee2MQTT', 1, 1, 60, 'http', 2000, 2, 60, 'Zigbee2MQTT web interface', 'http://zigbee2mqtt.radio.svc.cluster.local:8080/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Zigbee2MQTT')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'CrowdSec LAPI', 1, 1, 60, 'http', 2000, 2, 60, 'CrowdSec LAPI health endpoint', 'http://crowdsec-service.crowdsec.svc.cluster.local:8080/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'CrowdSec LAPI')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port, expiry_notification)
+            SELECT 'RabbitMQ MQTT', 1, 1, 60, 'port', 2000, 2, 60, 'RabbitMQ MQTT listener', 'rabbitmq.messaging.svc.cluster.local', 1883, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'RabbitMQ MQTT')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor_notification (monitor_id, notification_id)
             SELECT m.id, n.id FROM monitor m, notification n
-            WHERE n.name = CASE WHEN m.name IN ('Argo CD','Grafana','Prometheus','Alertmanager','Loki','Uptime Kuma','AdGuard Home','AdGuard DNS','AdGuard Pi DNS','Kubernetes API','PostgreSQL','RabbitMQ AMQP','Traefik','Kuma ingress','Authelia','Kopia backups') THEN 'platform' ELSE 'apps' END
+            WHERE n.name = CASE WHEN m.name IN ('Argo CD','Grafana','Prometheus','Alertmanager','Loki','Uptime Kuma','AdGuard Home','AdGuard DNS','AdGuard Pi DNS','Kubernetes API','PostgreSQL','RabbitMQ AMQP','Traefik','Kuma ingress','Authelia','Kopia backups','CrowdSec LAPI','RabbitMQ MQTT') THEN 'platform' ELSE 'apps' END
               AND NOT EXISTS (SELECT 1 FROM monitor_notification mn WHERE mn.monitor_id = m.id AND mn.notification_id = n.id);
             UPDATE monitor SET maxretries = 2, retry_interval = 60;
             COMMIT;
