@@ -18,8 +18,6 @@ spec:
       labels:
         app: frigate
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: boulder
       hostNetwork: false
       dnsPolicy: ClusterFirst
       automountServiceAccountToken: false
@@ -127,8 +125,6 @@ spec:
               mountPath: /media/frigate
             - name: cache
               mountPath: /tmp/cache
-            - name: dri
-              mountPath: /dev/dri
             - name: localtime
               mountPath: /etc/localtime
               readOnly: true
@@ -154,10 +150,6 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
-        - name: dri
-          hostPath:
-            path: /dev/dri
-            type: Directory
         - name: localtime
           hostPath:
             path: /etc/localtime
