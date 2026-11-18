@@ -35,44 +35,48 @@ template: !include_dir_merge_list templates
 mqtt:
   - sensor:
       name: "Freezer Temperature"
-      state_topic: "rtl_433/Acurite-Tower/14216"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/14216/CA/temperature_C"
       unit_of_measurement: "°C"
       unique_id: "freezer_temperature_c"
       device_class: "temperature"
       device:
         identifiers: "14216"
         suggested_area: "garage"
-      value_template: "{{ value_json.temperature_C }}"
+      state_class: "measurement"
+      value_template: "{{ value }}"
   - sensor:
       name: "Freezer Humidity"
-      state_topic: "rtl_433/Acurite-Tower/14216"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/14216/CA/humidity"
       unit_of_measurement: "%"
       unique_id: "freezer_temperature_humidity"
       device_class: "humidity"
       device:
         identifiers: "14216"
         suggested_area: "garage"
-      value_template: "{{ value_json.humidity }}"
+      state_class: "measurement"
+      value_template: "{{ value }}"
   - sensor:
       name: "Garage Fridge Temperature"
-      state_topic: "rtl_433/Acurite-Tower/6407"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/6407/CA/temperature_C"
       unit_of_measurement: "°C"
       unique_id: "garage_fridge_temperature_c"
       device_class: "temperature"
       device:
         identifiers: "6407"
         suggested_area: "garage"
-      value_template: "{{ value_json.temperature_C }}"
+      state_class: "measurement"
+      value_template: "{{ value }}"
   - sensor:
       name: "Garage Fridge Humidity"
-      state_topic: "rtl_433/Acurite-Tower/6407"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/6407/CA/humidity"
       unit_of_measurement: "%"
       unique_id: "garage_fridge_temperature_humidity"
       device_class: "humidity"
       device:
         identifiers: "6407"
         suggested_area: "garage"
-      value_template: "{{ value_json.humidity }}"
+      state_class: "measurement"
+      value_template: "{{ value }}"
 
 prometheus:
   requires_auth: false
