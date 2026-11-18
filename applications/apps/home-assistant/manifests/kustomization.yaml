@@ -20,4 +20,4 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - configuration.yaml=config/configuration.yaml.tpl
-      - generating_solar.yaml=config/templates/generating_solar.yaml.tpl
+      - template-generating_solar.yaml=config/templates/generating_solar.yaml.tpl

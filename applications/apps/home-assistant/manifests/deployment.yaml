@@ -72,7 +72,10 @@ spec:
             - |
               mkdir -p /config/templates
               cp -f /git/configuration.yaml /config/configuration.yaml
-              cp -f /git/generating_solar.yaml /config/templates/generating_solar.yaml
+              for f in /git/template-*.yaml; do
+                [ -e "$f" ] || continue
+                cp -f "$f" "/config/templates/${f##*/template-}"
+              done
           securityContext:
             runAsUser: 0
             runAsGroup: 0
