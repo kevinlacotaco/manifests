@@ -19,6 +19,11 @@ spec:
         crowdsec:
           moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
           version: v1.8.2
+        # US-only geoblock. Lookups use get.geojs.io; Traefik therefore needs
+        # egress to that host in addition to GitHub for plugin downloads.
+        geoblock:
+          moduleName: github.com/PascalMinder/geoblock
+          version: v0.3.8
     # The bouncer key is mounted from the SealedSecret in kube-system and read
     # with crowdsecLapiKeyFile, so the key is never inlined in the Middleware.
     volumes:
@@ -43,8 +48,8 @@ spec:
       # k3s servicelb (klipper-lb) masquerades LoadBalancer traffic, so Traefik sees
       # the svclb pod IP rather than the Synology source. Trust the cluster pod CIDR.
       - "--entryPoints.web.forwardedHeaders.trustedIPs=10.42.0.0/16,192.168.68.138/32"
-      - "--entryPoints.web.http.middlewares=kube-system-crowdsec-bouncer@kubernetescrd"
-      - "--entryPoints.websecure.http.middlewares=kube-system-crowdsec-bouncer@kubernetescrd"
+      - "--entryPoints.web.http.middlewares=kube-system-crowdsec-bouncer@kubernetescrd,kube-system-geoblock@kubernetescrd"
+      - "--entryPoints.websecure.http.middlewares=kube-system-crowdsec-bouncer@kubernetescrd,kube-system-geoblock@kubernetescrd"
     ingressRoute:
       dashboard:
         enabled: false

@@ -1,0 +1,40 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: geoblock
+  namespace: kube-system
+spec:
+  plugin:
+    geoblock:
+      silentStartUp: false
+      # Keep LAN/private clients working; only public source addresses are
+      # looked up. Synology forwards the real client in X-Forwarded-For, and
+      # Traefik trusts 192.168.68.138, so the first XFF entry is the client.
+      allowLocalRequests: true
+      logLocalRequests: false
+      logAllowedRequests: false
+      logApiRequests: false
+      api: "https://get.geojs.io/v1/ip/country/{ip}"
+      apiTimeoutMs: 750
+      # Fail open when get.geojs.io is unreachable or errors. CrowdSec still
+      # enforces its decisions; a third-party lookup outage must not take the
+      # public ingress offline.
+      ignoreApiTimeout: true
+      ignoreApiFailures: true
+      xForwardedForReverseProxy: true
+      cacheSize: 10000
+      cacheTtlSeconds: 86400
+      forceMonthlyUpdate: true
+      # Strict allowlist: US only. Unknown/empty country responses are denied.
+      allowUnknownCountries: false
+      unknownCountryApiResponse: "nil"
+      addCountryHeader: true
+      httpStatusCodeDeniedRequest: 403
+      countries:
+        - US
+      excludedPathPatterns:
+        - "^[^/]+/health$"
+        - "^[^/]+/health/.*"
+        - "^[^/]+/status$"
+        - "^[^/]+/api/health$"
+        - "^[^/]+/.well-known/acme-challenge/.*"

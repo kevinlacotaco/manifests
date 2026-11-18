@@ -12,3 +12,4 @@ resources:
   - dashboard-sealed-secret.yaml
   - crowdsec-bouncer-middleware.yaml
   - crowdsec-bouncer-key-sealed-secret.yaml
+  - geoblock-middleware.yaml
