@@ -29,6 +29,8 @@ spec:
     # MQTT is reachable only through the Traefik TCP entrypoint and the
     # in-cluster radio, Frigate, and Home Assistant namespaces.
     - from:
+        - ipBlock:
+            cidr: 192.168.68.0/24
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: kube-system
