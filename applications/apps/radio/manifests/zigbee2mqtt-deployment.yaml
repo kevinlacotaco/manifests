@@ -104,14 +104,14 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          # The Zigbee dongle is a character device. The default device cgroup
+          # denies open() on it even though /dev is mounted, so the container
+          # needs privileged access like the other radio workloads.
           securityContext:
+            privileged: true
             runAsUser: 1000
             runAsGroup: 1000
             runAsNonRoot: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           volumeMounts:
             - name: data
               mountPath: /app/data
