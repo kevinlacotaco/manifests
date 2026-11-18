@@ -31,7 +31,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## P2 — Reliability and observability
 
-- [ ] Move Grafana SQLite to Postgres or a more reliable volume.
+- [x] Move Grafana SQLite to Postgres or a more reliable volume.
 - [x] Add Synology SNMP system, disk, RAID, and network metrics and the Synology Health Grafana dashboard.
 - [x] Add Kubernetes capacity, storage-health, and Synology-health dashboards.
 - [x] Add a Traefik request-rate and error dashboard.
@@ -50,6 +50,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## Recently completed
 
+- CrowdSec LAPI and Grafana moved to PostgreSQL; the legacy Grafana SQLite PVC is retained for rollback.
 - Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
 - Synology DSM system, disk, RAID, and network metrics scraped over SNMPv3; `Synology NAS` and expanded `Synology Health` Grafana dashboards added.
 - Added Kubernetes Capacity, Storage Health, and Synology Health Grafana dashboards.

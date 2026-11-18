@@ -1014,7 +1014,9 @@ Postgres-backed apps (`mealie`, `donetick`, `paperless`, `speedtest-tracker`,
 shared data volumes are ReadWriteMany or their state is external. Authelia's
 and Speedtest Tracker's legacy SQLite PVCs were removed. Grafana keeps its
 `Recreate` strategy because the retained `grafana` PVC still holds plugins and
-the pre-migration SQLite database used for rollback.
+the pre-migration SQLite database used for rollback; its
+`grafana-sqlite-backup` CronJob and the `grafana.db` freshness check were
+removed after the Postgres dump was verified.
 
 ### Loki storage
 
