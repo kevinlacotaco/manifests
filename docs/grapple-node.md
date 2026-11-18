@@ -123,3 +123,23 @@ Do not add the toleration to shared DaemonSets or broad Deployments just to
 Device mappings and USB permissions live in `ansible/inventory/homelab/host_vars/grapple.yml`
 and the `radios` role. The radio containers use hostPath device mounts only, no
 PVCs, so `grapple` does not need the Synology CSI node plugin.
+
+## Known runtime details
+
+- **Zigbee adapter type:** Zigbee2MQTT 2.x does not infer the adapter. The
+  ConfigMap sets `serial.adapter: zstack` for the Sonoff CC2652P dongle.
+  `prepare-data` only writes `/var/lib/zigbee2mqtt/configuration.yaml` when it
+  is missing, so an existing volume keeps its old file. Add the adapter there
+  once, or remove the file and let the init container regenerate it.
+- **Device access:** mounting `/dev` is not enough. The default device cgroup
+  denies `open()` on the Zigbee character device, so the Zigbee container runs
+  privileged. The other radio containers already do.
+- **DNS:** `/etc/resolv.conf` is symlinked to the systemd-resolved stub, and
+  NetworkManager is set to `rc-manager=unmanaged` so it is not overwritten.
+  This is required for containerd image pulls after a reboot.
+- **First join:** image pulls can fail while DNS settles. If a pod sits in
+  `ContainerCreating` with `lookup registry-1.docker.io: Try again`, verify
+  `getent ahostsv4 registry-1.docker.io`, then delete the pod to retry.
+- **Memory:** the Pi has about 905 MiB RAM. With all three radios and
+  node-exporter running, usage is roughly 420 MiB. The configured limits total
+  960 MiB, so watch for OOM if more workloads are ever allowed.
