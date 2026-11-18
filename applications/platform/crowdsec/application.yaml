@@ -66,6 +66,9 @@ spec:
               - namespace: kube-system
                 podName: traefik-*
                 program: traefik
+                # boulder's inotify limits are exhausted; polling avoids the
+                # fsnotify watcher failure that crash-loops the agent there.
+                poll_without_inotify: true
             env:
               - name: COLLECTIONS
                 value: "crowdsecurity/traefik"
