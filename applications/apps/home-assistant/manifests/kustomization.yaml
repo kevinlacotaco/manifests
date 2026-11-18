@@ -10,3 +10,14 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+
+# configuration.yaml and template entities are maintained in Git under
+# applications/apps/home-assistant/config/ and copied into /config by the
+# sync-config init container.
+configMapGenerator:
+  - name: home-assistant-git-config
+    options:
+      disableNameSuffixHash: true
+    files:
+      - configuration.yaml=config/configuration.yaml.tpl
+      - generating_solar.yaml=config/templates/generating_solar.yaml.tpl

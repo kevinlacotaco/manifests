@@ -61,6 +61,34 @@ spec:
             - name: scripts
               mountPath: /scripts
               readOnly: true
+        # configuration.yaml and template entities live in Git. Copy them over
+        # the PVC copies on every start so Git is the source of truth.
+        - name: sync-config
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -ec
+            - |
+              mkdir -p /config/templates
+              cp -f /git/configuration.yaml /config/configuration.yaml
+              cp -f /git/generating_solar.yaml /config/templates/generating_solar.yaml
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - name: git-config
+              mountPath: /git
+              readOnly: true
+            - name: config
+              mountPath: /config
       containers:
         - name: home-assistant
           image: ghcr.io/home-assistant/home-assistant:2026.11.2
@@ -121,6 +149,9 @@ spec:
         - name: scripts
           configMap:
             name: home-assistant-restore
+        - name: git-config
+          configMap:
+            name: home-assistant-git-config
 
         - name: localtime
           hostPath:
