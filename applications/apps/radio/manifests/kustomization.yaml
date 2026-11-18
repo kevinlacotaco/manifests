@@ -6,6 +6,7 @@ resources:
   - guardrails.yaml
   - networkpolicy.yaml
   - mqtt-auth-sealed-secret.yaml
+  - mqtt-watchdog-configmap.yaml
   - zigbee2mqtt-seed-sealed-secret.yaml
   - zigbee2mqtt-configmap.yaml
   - zigbee2mqtt-deployment.yaml

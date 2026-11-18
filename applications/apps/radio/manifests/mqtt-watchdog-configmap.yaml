@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mqtt-watchdog
+  namespace: radio
+data:
+  watchdog.sh: |
+    #!/bin/sh
+    # Track MQTT liveness for a radio container. The main container's liveness
+    # probe reads these files. If the broker is reachable but no messages have
+    # arrived for the configured grace period, kubelet restarts the app
+    # container. If the broker itself is down, the probe stays healthy so the
+    # pod does not restart-loop during a broker outage.
+    set -u
+
+    HB=/shared/last_message
+    OK=/shared/broker_ok
+    echo 0 > "$HB"
+    echo 0 > "$OK"
+
+    probe_broker() {
+      if timeout 10 mosquitto_pub \
+          -h "$MQTT_HOST" -p "$MQTT_PORT" \
+          -u "$MQTT_USERNAME" -P "$MQTT_PASSWORD" \
+          -q 0 -t radio/watchdog -m "$(date +%s)" >/dev/null 2>&1; then
+        echo 1 > "$OK"
+      else
+        echo 0 > "$OK"
+      fi
+    }
+
+    # Keep the broker reachability flag fresh even while the subscriber waits.
+    ( while true; do probe_broker; sleep 15; done ) &
+
+    while true; do
+      mosquitto_sub \
+        -h "$MQTT_HOST" -p "$MQTT_PORT" \
+        -u "$MQTT_USERNAME" -P "$MQTT_PASSWORD" \
+        -q 0 -t "$MQTT_TOPIC" -W 60 2>/dev/null |
+      while IFS= read -r _; do
+        date +%s > "$HB"
+      done
+      sleep 2
+    done
