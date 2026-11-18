@@ -13,6 +13,9 @@ data:
       password: __MQTT_PASSWORD__
     serial:
       port: /dev/zigbee
+      # Sonoff Zigbee 3.0 USB Dongle Plus (CC2652P). Zigbee2MQTT 2.x no
+      # longer infers the adapter type, so name it explicitly.
+      adapter: zstack
     advanced:
       homeassistant_legacy_entity_attributes: false
       legacy_api: false
