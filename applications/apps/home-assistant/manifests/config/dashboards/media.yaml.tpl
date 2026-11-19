@@ -7,9 +7,8 @@ views:
   sections:
   - type: grid
     cards:
-    - type: heading
-      heading: Attic
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Attic"
     - type: media-control
       entity: media_player.attic_tv
     - type: media-control
@@ -20,16 +19,14 @@ views:
       entity: media_player.googlehome3585
   - type: grid
     cards:
-    - type: heading
-      heading: Kitchen
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Kitchen"
     - type: media-control
       entity: media_player.nesthubmax641f
   - type: grid
     cards:
-    - type: heading
-      heading: Living Room
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Living Room"
     - type: media-control
       entity: media_player.living_room_speaker
     - type: media-control
@@ -38,23 +35,20 @@ views:
       entity: media_player.living_room_tv
   - type: grid
     cards:
-    - type: heading
-      heading: Master Bedroom
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Master Bedroom"
     - type: media-control
       entity: media_player.bedroom_speaker
   - type: grid
     cards:
-    - type: heading
-      heading: Office
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Office"
     - type: media-control
       entity: media_player.office_speaker
   - type: grid
     cards:
-    - type: heading
-      heading: Other
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Other"
     - type: media-control
       entity: media_player.all_non_office
     - type: media-control

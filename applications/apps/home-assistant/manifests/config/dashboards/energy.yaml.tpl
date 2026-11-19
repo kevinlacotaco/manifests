@@ -7,9 +7,8 @@ views:
   sections:
   - type: grid
     cards:
-    - type: heading
-      heading: Home demand
-      icon: mdi:transmission-tower
+    - type: markdown
+      content: "### Home demand"
     - type: tile
       entity: sensor.my_home_grid_power
     - type: tile

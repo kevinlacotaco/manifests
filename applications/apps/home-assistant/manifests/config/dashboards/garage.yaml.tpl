@@ -25,9 +25,8 @@ views:
       - entity: sensor.garage_ambient_humidity
   - type: grid
     cards:
-    - type: heading
-      heading: Current readings
-      icon: mdi:thermometer
+    - type: markdown
+      content: "### Current readings"
     - type: tile
       entity: sensor.garage_freezer_temperature
     - type: tile

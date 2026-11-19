@@ -34,9 +34,8 @@ views:
       show_state: false
   - type: grid
     cards:
-    - type: heading
-      heading: Water and freeze alerts
-      icon: mdi:alert-octagon
+    - type: markdown
+      content: "### Water and freeze alerts"
     - type: tile
       entity: binary_sensor.utility_sink_leak
     - type: tile
@@ -53,9 +52,8 @@ views:
       entity: sensor.garage_ambient_temperature
   - type: grid
     cards:
-    - type: heading
-      heading: Motion and occupancy
-      icon: mdi:motion-sensor
+    - type: markdown
+      content: "### Motion and occupancy"
     - type: tile
       entity: binary_sensor.main_floor_motion
     - type: tile

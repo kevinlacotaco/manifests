@@ -7,9 +7,8 @@ views:
   sections:
   - type: grid
     cards:
-    - type: heading
-      heading: Climate
-      icon: mdi:thermometer
+    - type: markdown
+      content: "### Climate"
     - type: tile
       entity: climate.living_room_air_conditioner
     - type: tile
@@ -26,9 +25,8 @@ views:
       entity: humidifier.girls_humidifier
   - type: grid
     cards:
-    - type: heading
-      heading: Energy
-      icon: mdi:flash
+    - type: markdown
+      content: "### Energy"
     - type: tile
       entity: sensor.my_home_grid_power
     - type: tile
@@ -37,9 +35,8 @@ views:
       entity: sensor.my_home_solar_power
   - type: grid
     cards:
-    - type: heading
-      heading: Security
-      icon: mdi:shield-home
+    - type: markdown
+      content: "### Security"
     - type: tile
       entity: binary_sensor.utility_sink_leak
     - type: tile
@@ -50,9 +47,8 @@ views:
       entity: binary_sensor.second_floor_bathroom_leak
   - type: grid
     cards:
-    - type: heading
-      heading: Garage
-      icon: mdi:garage
+    - type: markdown
+      content: "### Garage"
     - type: tile
       entity: sensor.garage_freezer_temperature
     - type: tile
@@ -61,9 +57,8 @@ views:
       entity: sensor.garage_ambient_temperature
   - type: grid
     cards:
-    - type: heading
-      heading: Media
-      icon: mdi:speaker
+    - type: markdown
+      content: "### Media"
     - type: media-control
       entity: media_player.living_room_tv
     - type: media-control
@@ -72,9 +67,8 @@ views:
       entity: media_player.office_speaker
   - type: grid
     cards:
-    - type: heading
-      heading: Systems
-      icon: mdi:server
+    - type: markdown
+      content: "### Systems"
     - type: tile
       entity: sensor.ironhide_cpu_usage
     - type: tile

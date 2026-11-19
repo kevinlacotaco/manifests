@@ -7,9 +7,8 @@ views:
   sections:
   - type: grid
     cards:
-    - type: heading
-      heading: Hosts
-      icon: mdi:server
+    - type: markdown
+      content: "### Hosts"
     - type: tile
       entity: sensor.ironhide_cpu_usage
     - type: tile

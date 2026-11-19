@@ -7,9 +7,8 @@ views:
   sections:
   - type: grid
     cards:
-    - type: heading
-      heading: Air conditioners
-      icon: mdi:air-conditioner
+    - type: markdown
+      content: "### Air conditioners"
     - type: tile
       entity: climate.living_room_air_conditioner
     - type: tile
@@ -24,9 +23,8 @@ views:
       entity: climate.second_floor
   - type: grid
     cards:
-    - type: heading
-      heading: Humidifiers
-      icon: mdi:water-percent
+    - type: markdown
+      content: "### Humidifiers"
     - type: tile
       entity: humidifier.willy_s_humidifier
     - type: tile
