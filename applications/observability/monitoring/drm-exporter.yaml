@@ -29,6 +29,9 @@ spec:
           env:
             - name: DRM_EXPORTER_PORT
               value: "8081"
+          args:
+            - --driver-option
+            - i915=power=msr
           ports:
             - name: metrics
               containerPort: 8081
@@ -43,6 +46,7 @@ spec:
                 - ALL
               add:
                 - PERFMON
+                - SYS_RAWIO
           resources:
             requests:
               cpu: 10m
@@ -70,6 +74,9 @@ spec:
             - name: sys
               mountPath: /sys
               readOnly: true
+            - name: cpu
+              mountPath: /dev/cpu
+              readOnly: true
       volumes:
         - name: dri
           hostPath:
@@ -78,6 +85,10 @@ spec:
         - name: sys
           hostPath:
             path: /sys
+            type: Directory
+        - name: cpu
+          hostPath:
+            path: /dev/cpu
             type: Directory
 ---
 apiVersion: v1
