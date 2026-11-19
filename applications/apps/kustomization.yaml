@@ -15,3 +15,4 @@ resources:
   - home-assistant
   - frigate
   - jellyfin
+  - govee2mqtt

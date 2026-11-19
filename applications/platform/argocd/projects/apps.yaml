@@ -41,6 +41,8 @@ spec:
       namespace: frigate
     - server: https://kubernetes.default.svc
       namespace: jellyfin
+    - server: https://kubernetes.default.svc
+      namespace: govee2mqtt
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

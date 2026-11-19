@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: govee2mqtt
+  namespace: govee2mqtt
+  labels:
+    app: govee2mqtt
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: govee2mqtt
+  template:
+    metadata:
+      labels:
+        app: govee2mqtt
+    spec:
+      # Govee devices are discovered over LAN multicast, which does not cross
+      # the pod network. Host networking mirrors the previous NAS container.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: hauler
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: govee2mqtt
+          # Pinned to the image digest that was running on the NAS.
+          image: ghcr.io/wez/govee2mqtt@sha256:57f8e48dc808fd9861ee273a741eee8ab42c734977ad495d47dac14733e9faf6
+          imagePullPolicy: IfNotPresent
+          command:
+            - /app/govee
+          args:
+            - serve
+            - --govee-iot-key=/data/iot.key
+            - --govee-iot-cert=/data/iot.cert
+            - --amazon-root-ca=/app/AmazonRootCA1.pem
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: RUST_BACKTRACE
+              value: full
+            - name: RUS_LOG_STYLE
+              value: always
+            - name: SSL_CERT_FILE
+              value: /etc/ssl/certs/ca-certificates.crt
+            - name: XDG_CACHE_HOME
+              value: /data
+            - name: GOVEE_MQTT_HOST
+              value: rabbitmq.messaging.svc.cluster.local
+            - name: GOVEE_MQTT_PORT
+              value: "1883"
+            - name: GOVEE_MQTT_USER
+              value: govee2mqtt
+            - name: GOVEE_TEMPERATURE_SCALE
+              value: F
+            - name: GOVEE_MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: govee2mqtt-secrets
+                  key: GOVEE_MQTT_PASSWORD
+            - name: GOVEE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: govee2mqtt-secrets
+                  key: GOVEE_API_KEY
+            - name: GOVEE_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: govee2mqtt-secrets
+                  key: GOVEE_EMAIL
+            - name: GOVEE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: govee2mqtt-secrets
+                  key: GOVEE_PASSWORD
+          ports:
+            - name: http
+              containerPort: 8056
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 64Mi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 16Mi
