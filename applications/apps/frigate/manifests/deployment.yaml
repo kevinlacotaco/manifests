@@ -21,6 +21,9 @@ spec:
       hostNetwork: false
       dnsPolicy: ClusterFirst
       automountServiceAccountToken: false
+      # The Intel UHD 630 iGPU only exists on hauler.
+      nodeSelector:
+        kubernetes.io/hostname: hauler
       terminationGracePeriodSeconds: 30
       securityContext:
         fsGroup: 1000
@@ -93,7 +96,7 @@ spec:
             - name: TZ
               value: America/New_York
             - name: LIBVA_DRIVER_NAME
-              value: i965
+              value: iHD
             - name: S6_LOGGING_SCRIPT
               value: "1"
           envFrom:
@@ -155,6 +158,8 @@ spec:
               readOnly: true
             - name: shm
               mountPath: /dev/shm
+            - name: dri
+              mountPath: /dev/dri
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -189,3 +194,7 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 512Mi
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: Directory

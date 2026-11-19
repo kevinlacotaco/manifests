@@ -17,7 +17,24 @@ record:
       default: 10
 
 detect:
-  enabled: False
+  enabled: True
+
+# Intel UHD 630 (hauler) via OpenVINO/Level Zero. The iGPU device is only
+# used if /dev/dri is mounted into the container (see the deployment).
+detectors:
+  ov:
+    type: openvino
+    device: GPU
+    model:
+      path: /openvino-model/ssdlite_mobilenet_v2.xml
+
+# Matches the bundled ssdlite_mobilenet_v2 OpenVINO model.
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
 
 live:
   height: 720
