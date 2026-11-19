@@ -106,5 +106,50 @@ mqtt:
       state_class: "measurement"
       value_template: "{{ value }}"
 
+lovelace:
+  dashboards:
+    home:
+      mode: yaml
+      title: Home
+      icon: mdi:home-outline
+      show_in_sidebar: true
+      filename: dashboards/home.yaml
+    climate:
+      mode: yaml
+      title: Climate & Air
+      icon: mdi:thermometer
+      show_in_sidebar: true
+      filename: dashboards/climate.yaml
+    energy:
+      mode: yaml
+      title: Energy
+      icon: mdi:flash
+      show_in_sidebar: true
+      filename: dashboards/energy.yaml
+    security:
+      mode: yaml
+      title: Security & Cameras
+      icon: mdi:shield-home
+      show_in_sidebar: true
+      filename: dashboards/security.yaml
+    garage:
+      mode: yaml
+      title: Garage & Appliances
+      icon: mdi:garage
+      show_in_sidebar: true
+      filename: dashboards/garage.yaml
+    media:
+      mode: yaml
+      title: Media
+      icon: mdi:speaker-multiple
+      show_in_sidebar: true
+      filename: dashboards/media.yaml
+    systems:
+      mode: yaml
+      title: Systems & Maintenance
+      icon: mdi:server
+      show_in_sidebar: true
+      filename: dashboards/systems.yaml
+
 prometheus:
   requires_auth: false

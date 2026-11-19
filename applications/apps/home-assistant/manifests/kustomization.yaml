@@ -21,3 +21,10 @@ configMapGenerator:
     files:
       - configuration.yaml=config/configuration.yaml.tpl
       - template-generating_solar.yaml=config/templates/generating_solar.yaml.tpl
+      - dashboard-home.yaml=config/dashboards/home.yaml.tpl
+      - dashboard-climate.yaml=config/dashboards/climate.yaml.tpl
+      - dashboard-energy.yaml=config/dashboards/energy.yaml.tpl
+      - dashboard-security.yaml=config/dashboards/security.yaml.tpl
+      - dashboard-garage.yaml=config/dashboards/garage.yaml.tpl
+      - dashboard-media.yaml=config/dashboards/media.yaml.tpl
+      - dashboard-systems.yaml=config/dashboards/systems.yaml.tpl

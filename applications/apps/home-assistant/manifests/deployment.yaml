@@ -73,11 +73,15 @@ spec:
             - sh
             - -ec
             - |
-              mkdir -p /config/templates
+              mkdir -p /config/templates /config/dashboards
               cp -f /git/configuration.yaml /config/configuration.yaml
               for f in /git/template-*.yaml; do
                 [ -e "$f" ] || continue
                 cp -f "$f" "/config/templates/${f##*/template-}"
+              done
+              for f in /git/dashboard-*.yaml; do
+                [ -e "$f" ] || continue
+                cp -f "$f" "/config/dashboards/${f##*/dashboard-}"
               done
           securityContext:
             runAsUser: 0
