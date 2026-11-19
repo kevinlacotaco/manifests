@@ -19,6 +19,11 @@ record:
 detect:
   enabled: True
 
+# Decode camera streams on the Intel UHD 630 instead of the CPU.
+# Requires /dev/dri and LIBVA_DRIVER_NAME=iHD (see deployment).
+ffmpeg:
+  hwaccel_args: preset-vaapi
+
 # Intel UHD 630 (hauler) via OpenVINO/Level Zero. The iGPU device is only
 # used if /dev/dri is mounted into the container (see the deployment).
 detectors:

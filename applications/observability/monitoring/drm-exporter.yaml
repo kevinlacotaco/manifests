@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drm-exporter
+  namespace: monitoring
+  labels:
+    app: drm-exporter
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: drm-exporter
+  template:
+    metadata:
+      labels:
+        app: drm-exporter
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: hauler
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: drm-exporter
+          image: ghcr.io/home-operations/drm-exporter:0.3.6
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DRM_EXPORTER_PORT
+              value: "8081"
+          ports:
+            - name: metrics
+              containerPort: 8081
+              protocol: TCP
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - PERFMON
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: dri
+              mountPath: /dev/dri
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+      volumes:
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: Directory
+        - name: sys
+          hostPath:
+            path: /sys
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drm-exporter
+  namespace: monitoring
+  labels:
+    app: drm-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: drm-exporter
+  ports:
+    - name: metrics
+      port: 8081
+      targetPort: metrics
+      protocol: TCP

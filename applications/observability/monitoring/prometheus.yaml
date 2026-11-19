@@ -527,6 +527,10 @@ spec:
                       description: New CrowdSec alerts, AppSec blocks, or active decisions in the last 10 minutes.
 
         extraScrapeConfigs: |
+          - job_name: drm-exporter
+            static_configs:
+              - targets: ["drm-exporter.monitoring.svc.cluster.local:8081"]
+
           - job_name: grafana
             static_configs:
               - targets: ["grafana.monitoring.svc.cluster.local:80"]

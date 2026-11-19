@@ -14,6 +14,7 @@ resources:
   - grafana-db-sealed-secret.yaml
   - alertmanager-ntfy-sealed-secret.yaml
   - alertmanager-ntfy-relay.yaml
+  - drm-exporter.yaml
   - guardrails.yaml
   - grafana.yaml
   - grafana-ingress.yaml
