@@ -1,0 +1,11 @@
+---
+radios_user: kevin
+radios_groups:
+  - dialout
+  - plugdev
+  - bluetooth
+radios_zigbee_symlink: /dev/zigbee
+radios_zigbee_vendor_id: "{{ node_hardware.zigbee.vendor_id | default('10c4') }}"
+radios_zigbee_product_id: "{{ node_hardware.zigbee.product_id | default('ea60') }}"
+radios_rtl_vendor_id: "{{ node_hardware.rtl433.vendor_id | default('0bda') }}"
+radios_rtl_product_id: "{{ node_hardware.rtl433.product_id | default('2838') }}"

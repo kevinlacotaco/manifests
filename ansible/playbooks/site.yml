@@ -1,7 +1,15 @@
 ---
+# Intentionally limited to the reflashable worker (hauler). Production and
+# radio nodes are managed only with an explicit maintenance playbook.
 - name: Apply homelab Kubernetes node baseline
-  hosts: k3s
+  hosts: k3s_reflashable
   become: true
+  pre_tasks:
+    - name: Fix the local resolver before package downloads
+      ansible.builtin.include_role:
+        name: networking
+        tasks_from: resolv-direct.yml
+      when: homelab_resolv_conf_direct | bool
   roles:
     - common
     - networking

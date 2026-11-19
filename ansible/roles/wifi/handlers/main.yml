@@ -1,0 +1,5 @@
+---
+- name: Reconfigure wlan0
+  ansible.builtin.command:
+    cmd: wpa_cli -i wlan0 reconfigure
+  changed_when: false

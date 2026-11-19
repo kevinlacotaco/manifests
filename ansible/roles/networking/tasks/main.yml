@@ -42,3 +42,7 @@
       FallbackDNS={{ homelab_dns_fallback }}
       Domains={{ homelab_domain }} ~.
   notify: Restart systemd-resolved
+
+- name: Use direct AdGuard resolvers when the resolved stub is unusable
+  ansible.builtin.include_tasks: resolv-direct.yml
+  when: homelab_resolv_conf_direct | bool

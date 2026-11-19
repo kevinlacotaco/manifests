@@ -1,0 +1,92 @@
+---
+# Join K3s workers using the server's generated node token.
+#
+# This file is intentionally untracked for now. Review before committing.
+#
+# Usage:
+#   ansible-playbook -i ansible/inventory/homelab/hosts.yml \
+#     ansible/playbooks/k3s-join.yml \
+#     --limit hauler \
+#     -u kevin --ask-become-pass
+#
+# The token is read from the first server and delegated to the worker, so
+# --limit hauler works without including boulder in the play.
+# Never run this against boulder itself.
+
+- name: Join K3s workers
+  hosts: k3s_workers
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: Fix the local resolver before downloading the K3s installer
+      ansible.builtin.include_role:
+        name: networking
+        tasks_from: resolv-direct.yml
+      when: homelab_resolv_conf_direct | bool
+  vars:
+    k3s_server: "{{ groups['k3s_servers'][0] }}"
+    k3s_agent_args: >-
+      --node-name {{ inventory_hostname }}
+      --node-ip {{ ansible_host }}
+      --flannel-iface {{ k3s_flannel_iface | default(ansible_default_ipv4.interface) }}
+      {% for key, value in (k3s_node_labels | default({})).items() %}--node-label {{ key }}={{ value }} {% endfor %}
+      {% for taint in (k3s_node_taints | default([])) %}--node-taint {{ taint }} {% endfor %}
+  tasks:
+    - name: Check access to the K3s server node token
+      ansible.builtin.stat:
+        path: /var/lib/rancher/k3s/server/node-token
+      delegate_to: "{{ k3s_server }}"
+      register: k3s_token_stat
+
+    - name: Require the K3s server node token
+      ansible.builtin.assert:
+        that:
+          - k3s_token_stat.stat.exists
+        fail_msg: >-
+          Cannot read the K3s node token on {{ k3s_server }}. Check sudo access
+          and that the K3s server is installed there.
+
+    - name: Read the K3s server node token
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      delegate_to: "{{ k3s_server }}"
+      register: k3s_token_slurp
+      no_log: true
+
+    - name: Check whether the K3s agent is already installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s
+      register: k3s_agent_binary
+
+    - name: Download the pinned K3s installer
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /usr/local/share/k3s-install.sh
+        owner: root
+        group: root
+        mode: "0755"
+        force: false
+      when: not k3s_agent_binary.stat.exists
+
+    - name: Install and join the K3s agent
+      ansible.builtin.command:
+        argv:
+          - /usr/local/share/k3s-install.sh
+      args:
+        creates: /usr/local/bin/k3s
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+        K3S_URL: "{{ k3s_server_url }}"
+        K3S_TOKEN: "{{ k3s_token_slurp.content | b64decode | trim }}"
+        INSTALL_K3S_EXEC: "agent {{ k3s_agent_args }}"
+      when: not k3s_agent_binary.stat.exists
+      # The token is passed through the environment, not interpolated into the
+      # shell command or task result. Keep this visible so installer failures
+      # are diagnosable.
+      no_log: false
+
+    - name: Ensure the K3s agent service is enabled and running
+      ansible.builtin.systemd:
+        name: k3s-agent
+        state: started
+        enabled: true

@@ -3,9 +3,17 @@ ansible_user: kevin
 ansible_become: true
 
 homelab_domain: home.arpa
+# AdGuard primary (physical) then AdGuard secondary (cluster). The router will
+# advertise these to DHCP clients and forward its own DNS to them, so do not
+# add the router here; that would create a DNS loop.
 homelab_dns_servers:
+  - 192.168.68.72
   - 192.168.68.71
+# Last-resort public resolver if both AdGuard instances are unreachable.
 homelab_dns_fallback: 1.1.1.1
+
+# Set true on nodes whose systemd-resolved stub listener is unusable.
+homelab_resolv_conf_direct: false
 
 homelab_storage:
   nas_hostname: nas.home.arpa

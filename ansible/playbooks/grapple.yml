@@ -1,0 +1,12 @@
+---
+- name: Apply the homelab baseline to the grapple radio node
+  hosts: grapple
+  become: true
+  roles:
+    - common
+    - networking
+    - wifi
+    - k3s_prerequisites
+    - storage
+    - hardware
+    - radios

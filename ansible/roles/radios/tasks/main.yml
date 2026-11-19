@@ -1,0 +1,107 @@
+---
+- name: Install radio host packages
+  ansible.builtin.apt:
+    name:
+      - rtl-sdr
+      - bluez
+      - pi-bluetooth
+      - usbutils
+      - rfkill
+    state: present
+
+- name: Check whether the radio user exists
+  ansible.builtin.command:
+    cmd: "id -u {{ radios_user }}"
+  register: radios_user_id
+  changed_when: false
+  failed_when: false
+
+- name: Require the radio user
+  ansible.builtin.assert:
+    that:
+      - radios_user_id.rc == 0
+    fail_msg: >-
+      User {{ radios_user }} does not exist. Create the user or override
+      radios_user before running the radios role.
+
+- name: Add the radio user to the device groups
+  ansible.builtin.user:
+    name: "{{ radios_user }}"
+    groups: "{{ radios_groups }}"
+    append: true
+
+- name: Install the Zigbee udev rule
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/99-zigbee.rules
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      SUBSYSTEM=="tty", ATTRS{idVendor}=="{{ radios_zigbee_vendor_id }}", ATTRS{idProduct}=="{{ radios_zigbee_product_id }}", SYMLINK+="zigbee", GROUP="dialout", MODE="0660"
+  notify:
+    - Reload udev rules
+    - Trigger udev
+
+- name: Install the RTL-SDR udev rule
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/99-rtl-sdr.rules
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="{{ radios_rtl_vendor_id }}", ATTRS{idProduct}=="{{ radios_rtl_product_id }}", GROUP="plugdev", MODE="0660", SYMLINK+="rtl_sdr"
+  notify:
+    - Reload udev rules
+    - Trigger udev
+
+- name: Blacklist the RTL-SDR DVB kernel driver
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/blacklist-rtl-sdr.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      blacklist dvb_usb_rtl28xxu
+      blacklist rtl2832
+      blacklist rtl2830
+
+- name: Load i2c-dev at boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/radios.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      i2c-dev
+
+- name: Enable Bluetooth
+  ansible.builtin.systemd:
+    name: bluetooth
+    enabled: true
+    state: started
+
+- name: Enable the onboard Bluetooth serial helper
+  ansible.builtin.systemd:
+    name: hciuart
+    enabled: true
+    state: started
+  failed_when: false
+
+- name: Unblock Bluetooth
+  ansible.builtin.command:
+    cmd: rfkill unblock bluetooth
+  changed_when: false
+
+- name: Apply udev changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Check the Zigbee symlink
+  ansible.builtin.stat:
+    path: "{{ radios_zigbee_symlink }}"
+  register: radios_zigbee_link
+
+- name: Report the Zigbee symlink
+  ansible.builtin.debug:
+    msg: >-
+      {{ radios_zigbee_symlink }} is
+      {{ 'present' if radios_zigbee_link.stat.exists else 'missing; replug the Zigbee dongle' }}

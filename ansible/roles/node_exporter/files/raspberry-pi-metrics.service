@@ -1,0 +1,7 @@
+[Unit]
+Description=Collect Raspberry Pi metrics for node_exporter
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/raspberry-pi-metrics.sh

@@ -1,0 +1,6 @@
+---
+- name: Install Prometheus node_exporter on the physical AdGuard host
+  hosts: adguard
+  become: true
+  roles:
+    - node_exporter

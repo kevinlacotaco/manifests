@@ -1,0 +1,79 @@
+---
+- name: Check AdGuard Home config
+  ansible.builtin.stat:
+    path: "{{ adguard_home_config }}"
+  register: adguard_home_config_stat
+
+- name: Require an existing AdGuard Home config
+  ansible.builtin.assert:
+    that:
+      - adguard_home_config_stat.stat.exists
+    fail_msg: >-
+      AdGuard Home config not found at {{ adguard_home_config }}.
+      Set adguard_home_config in host_vars/adguard-primary.yml.
+
+- name: Ensure backup directory exists
+  ansible.builtin.file:
+    path: "{{ adguard_home_backup_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Back up AdGuard Home config
+  ansible.builtin.copy:
+    src: "{{ adguard_home_config }}"
+    dest: "{{ adguard_home_backup_dir }}/AdGuardHome.yaml.{{ ansible_date_time.iso8601_basic_short }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Install AdGuard Home rewrite manager
+  ansible.builtin.copy:
+    src: manage_rewrites.py
+    dest: /usr/local/sbin/adguard-home-manage-rewrites
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure AdGuard Home DNS rewrites
+  ansible.builtin.command:
+    argv:
+      - /usr/local/sbin/adguard-home-manage-rewrites
+      - "{{ adguard_home_config }}"
+      - "{{ adguard_home_rewrites | to_json }}"
+  register: adguard_home_rewrite_result
+  changed_when: "'changed' in adguard_home_rewrite_result.stdout"
+  notify: Restart AdGuard Home
+
+- name: Install AdGuard Home user manager
+  ansible.builtin.copy:
+    src: manage_users.py
+    dest: /usr/local/sbin/adguard-home-manage-users
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure the AdGuard Home sync user
+  ansible.builtin.command:
+    argv:
+      - /usr/local/sbin/adguard-home-manage-users
+      - "{{ adguard_home_config }}"
+      - "{{ adguard_home_sync_username }}"
+      - "{{ adguard_home_sync_password_hash }}"
+  register: adguard_home_user_result
+  changed_when: "'changed' in adguard_home_user_result.stdout"
+  when: adguard_home_sync_password_hash | length > 0
+  notify: Restart AdGuard Home
+
+- name: Read AdGuard Home service state
+  ansible.builtin.command:
+    cmd: "systemctl is-active {{ adguard_home_service }}"
+  register: adguard_home_service_state
+  changed_when: false
+  failed_when: false
+
+- name: Report AdGuard Home service state
+  ansible.builtin.debug:
+    msg: "{{ adguard_home_service }} is {{ adguard_home_service_state.stdout | default('unknown') }}"

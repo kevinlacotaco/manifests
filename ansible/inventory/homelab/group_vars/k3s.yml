@@ -2,3 +2,9 @@
 # Pin the control plane and workers to the same K3s release.
 k3s_version: "v1.31.4+k3s1"
 k3s_server_url: "https://192.168.68.71:6443"
+
+# Workers override these in host_vars. Flannel must use the interface that
+# actually carries the node IP; grapple uses WiFi, hauler uses Ethernet.
+k3s_flannel_iface: "{{ ansible_default_ipv4.interface }}"
+k3s_node_labels: {}
+k3s_node_taints: []

@@ -1,0 +1,13 @@
+---
+# The physical Raspberry Pi 3B that serves as the primary DNS resolver.
+# The workstation key is installed for `kevin`; sudo still prompts for a
+# password unless passwordless sudo is configured on the host.
+ansible_user: kevin
+
+adguard_home_config: /opt/AdGuardHome/AdGuardHome.yaml
+adguard_home_service: AdGuardHome
+adguard_home_backup_dir: /var/backups/adguardhome
+
+# Dedicated API user for adguardhome-sync; generated bcrypt hash.
+adguard_home_sync_username: adguard-sync
+adguard_home_sync_password_hash: "$2y$10$PD01eCm4Zkn92OZdtf0LvuaixxnXWw6/HpUM0YnTfi/Wx2bY4xyoK"

@@ -1,0 +1,5 @@
+---
+# Hauler's systemd-resolved stub is not accepting normal resolver clients on
+# 127.0.0.53, which breaks kubelet/containerd image pulls after the node joins.
+# Use the AdGuard servers directly on this host.
+homelab_resolv_conf_direct: true

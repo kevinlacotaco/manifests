@@ -1,0 +1,10 @@
+[Unit]
+Description=Collect Raspberry Pi metrics for node_exporter every 30 seconds
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

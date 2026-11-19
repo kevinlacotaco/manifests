@@ -1,0 +1,21 @@
+---
+adguard_home_config: /opt/AdGuardHome/AdGuardHome.yaml
+adguard_home_service: AdGuardHome
+adguard_home_backup_dir: /var/backups/adguardhome
+adguard_home_rewrites:
+  - domain: boulder.home.arpa
+    answer: 192.168.68.71
+  - domain: hauler.home.arpa
+    answer: 192.168.68.102
+  - domain: grapple.home.arpa
+    answer: 192.168.68.53
+  - domain: nas.home.arpa
+    answer: 192.168.68.138
+  - domain: adguard-primary.home.arpa
+    answer: 192.168.68.72
+  - domain: pebble.home.arpa
+    answer: 192.168.68.72
+  - domain: router.home.arpa
+    answer: 192.168.68.1
+adguard_home_sync_username: adguard-sync
+adguard_home_sync_password_hash: ""

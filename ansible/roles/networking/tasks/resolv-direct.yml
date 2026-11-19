@@ -1,0 +1,18 @@
+---
+# Some Ubuntu cloud images leave systemd-resolved's 127.0.0.53 stub bound but
+# refusing normal resolver clients. Use the AdGuard servers directly before
+# any package or installer download depends on Python/curl name resolution.
+- name: Remove the managed resolv.conf stub symlink
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: Write direct resolver configuration
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      {% for server in homelab_dns_servers %}nameserver {{ server }}
+      {% endfor %}search {{ homelab_domain }}

@@ -1,0 +1,10 @@
+---
+- name: Install the Grapple WiFi configuration
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../grapple_wpa_supplicant.conf"
+    dest: /etc/wpa_supplicant/wpa_supplicant.conf
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Reconfigure wlan0

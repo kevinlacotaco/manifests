@@ -1,0 +1,6 @@
+---
+- name: Manage physical AdGuard DNS host
+  hosts: adguard
+  become: true
+  roles:
+    - adguard_home

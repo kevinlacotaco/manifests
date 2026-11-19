@@ -1,4 +1,20 @@
 ---
+# Grapple's systemd-resolved stub (127.0.0.53) times out even though the
+# upstream resolvers answer direct queries. Use the AdGuard servers directly,
+# matching hauler, so apt and k3s can resolve names.
+homelab_resolv_conf_direct: true
+
+k3s_flannel_iface: wlan0
+k3s_node_taints:
+  - "homelab.io/radios=true:NoSchedule"
+k3s_node_labels:
+  homelab.io/radios: "true"
+  homelab.io/zigbee: "true"
+  homelab.io/rtl433: "true"
+  homelab.io/bluetooth: "true"
+
+radios_user: kevin
+
 node_capabilities:
   usb: true
   zigbee: true
