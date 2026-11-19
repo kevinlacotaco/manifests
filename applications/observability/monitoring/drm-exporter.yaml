@@ -37,16 +37,12 @@ spec:
               containerPort: 8081
               protocol: TCP
           securityContext:
+            # Opening /dev/dri/card1 requires the device to be in the container's
+            # device allowlist; a hostPath mount alone is not enough.
+            privileged: true
             runAsUser: 0
             runAsGroup: 0
-            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-              add:
-                - PERFMON
-                - SYS_RAWIO
           resources:
             requests:
               cpu: 10m
@@ -76,7 +72,6 @@ spec:
               readOnly: true
             - name: cpu
               mountPath: /dev/cpu
-              readOnly: true
       volumes:
         - name: dri
           hostPath:
