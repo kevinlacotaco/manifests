@@ -108,43 +108,43 @@ mqtt:
 
 lovelace:
   dashboards:
-    home:
+    home-view:
       mode: yaml
       title: Home
       icon: mdi:home-outline
       show_in_sidebar: true
       filename: dashboards/home.yaml
-    climate:
+    climate-air:
       mode: yaml
       title: Climate & Air
       icon: mdi:thermometer
       show_in_sidebar: true
       filename: dashboards/climate.yaml
-    energy:
+    energy-view:
       mode: yaml
       title: Energy
       icon: mdi:flash
       show_in_sidebar: true
       filename: dashboards/energy.yaml
-    security:
+    security-cameras:
       mode: yaml
       title: Security & Cameras
       icon: mdi:shield-home
       show_in_sidebar: true
       filename: dashboards/security.yaml
-    garage:
+    garage-appliances:
       mode: yaml
       title: Garage & Appliances
       icon: mdi:garage
       show_in_sidebar: true
       filename: dashboards/garage.yaml
-    media:
+    media-view:
       mode: yaml
       title: Media
       icon: mdi:speaker-multiple
       show_in_sidebar: true
       filename: dashboards/media.yaml
-    systems:
+    systems-maintenance:
       mode: yaml
       title: Systems & Maintenance
       icon: mdi:server
