@@ -81,6 +81,30 @@ mqtt:
         suggested_area: "garage"
       state_class: "measurement"
       value_template: "{{ value }}"
+  - sensor:
+      name: "Garage Ambient Temperature"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/263/CA/temperature_C"
+      unit_of_measurement: "°C"
+      unique_id: "garage_ambient_temperature_c"
+      device_class: "temperature"
+      device:
+        identifiers: "263"
+        name: "Garage Ambient"
+        suggested_area: "garage"
+      state_class: "measurement"
+      value_template: "{{ value }}"
+  - sensor:
+      name: "Garage Ambient Humidity"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/263/CA/humidity"
+      unit_of_measurement: "%"
+      unique_id: "garage_ambient_humidity"
+      device_class: "humidity"
+      device:
+        identifiers: "263"
+        name: "Garage Ambient"
+        suggested_area: "garage"
+      state_class: "measurement"
+      value_template: "{{ value }}"
 
 prometheus:
   requires_auth: false
