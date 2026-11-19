@@ -58,6 +58,10 @@ go2rtc:
     attic-4:
       - rtsp://{FRIGATE_ATTIC4_CREDENTIALS}@192.168.68.58/live0
       #- "ffmpeg:attic-4#audio=opus"
+    driveway_main:
+      - rtsp://{FRIGATE_DRIVEWAY_CREDENTIALS}@192.168.68.104:554/stream1
+    driveway_sub:
+      - rtsp://{FRIGATE_DRIVEWAY_CREDENTIALS}@192.168.68.104:554/stream2
     #backyard:
     #  - rtsp://{FRIGATE_BACKYARD_CREDENTIALS}@192.168.68.82/live0
     #  - "ffmpeg:backyard#audio=opus"
@@ -137,3 +141,20 @@ cameras:
     detect:
       width: 2560
       height: 1440
+
+  driveway:
+    ffmpeg:
+      output_args:
+        record: preset-record-generic-audio-copy
+      inputs:
+        - path: rtsp://127.0.0.1:8554/driveway_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:8554/driveway_main
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      width: 640
+      height: 360
