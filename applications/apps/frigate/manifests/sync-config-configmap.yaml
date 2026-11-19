@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frigate-sync-config
+  namespace: frigate
+data:
+  sync.py: |
+    import os
+    import pathlib
+    import shutil
+
+    source = pathlib.Path("/git-config/config.yaml")
+    destination = pathlib.Path("/config/config.yaml")
+    backup = pathlib.Path("/config/config.yaml.bak")
+    temporary = pathlib.Path("/config/.config.yaml.tmp")
+
+    desired = source.read_bytes()
+
+    if destination.exists() and destination.read_bytes() == desired:
+        print(f"{destination} already matches git, nothing to do")
+    else:
+        if destination.exists():
+            shutil.copy2(destination, backup)
+            print(f"backed up previous config to {backup}")
+
+        with open(temporary, "wb") as handle:
+            handle.write(desired)
+            handle.flush()
+            os.fsync(handle.fileno())
+
+        os.chown(temporary, 1000, 1000)
+        os.chmod(temporary, 0o664)
+        os.replace(temporary, destination)
+        print(f"wrote {destination} from {source}")
+
+    # frigate.db, model_cache and media live on the same PVC and are left alone.
+    for path in (destination, pathlib.Path("/config")):
+        try:
+            os.chown(path, 1000, 1000, follow_symlinks=False)
+        except OSError:
+            pass

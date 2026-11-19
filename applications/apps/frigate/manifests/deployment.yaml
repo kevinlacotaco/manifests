@@ -55,6 +55,31 @@ spec:
             - name: scripts
               mountPath: /scripts
               readOnly: true
+        - name: sync-config
+          image: python:3.12-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - /scripts/sync.py
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: git-config
+              mountPath: /git-config
+              readOnly: true
+            - name: sync-scripts
+              mountPath: /scripts
+              readOnly: true
       containers:
         - name: frigate
           image: ghcr.io/blakeblackshear/frigate:0.13.2
@@ -146,6 +171,12 @@ spec:
         - name: scripts
           configMap:
             name: frigate-restore
+        - name: git-config
+          configMap:
+            name: frigate-git-config
+        - name: sync-scripts
+          configMap:
+            name: frigate-sync-config
         - name: cache
           emptyDir:
             medium: Memory

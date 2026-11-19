@@ -6,7 +6,16 @@ resources:
   - guardrails.yaml
   - frigate-secrets-sealed-secret.yaml
   - restore-configmap.yaml
+  - sync-config-configmap.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+
+# Config is maintained in Git under applications/apps/frigate/manifests/config/
+# and copied to /config/config.yaml by the sync-config init container.
+configMapGenerator:
+  - name: frigate-git-config
+    namespace: frigate
+    files:
+      - config.yaml=config/config.yaml.tpl
