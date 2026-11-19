@@ -57,5 +57,3 @@ views:
       entity: media_player.spotify_kevin
     - type: media-control
       entity: media_player.office_tv
-    - type: media-control
-      entity: media_player.googletv5136

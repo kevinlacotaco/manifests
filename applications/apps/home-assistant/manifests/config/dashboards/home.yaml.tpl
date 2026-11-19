@@ -73,7 +73,3 @@ views:
       entity: sensor.ironhide_cpu_usage
     - type: tile
       entity: sensor.ironhide_memory_usage
-    - type: tile
-      entity: sensor.grapple_cpu_usage
-    - type: tile
-      entity: sensor.grapple_memory_usage

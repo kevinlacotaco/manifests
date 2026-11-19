@@ -42,7 +42,7 @@ views:
       entities:
       - entity: sensor.living_room_floor_light_1_power
       - entity: sensor.living_room_floor_light_2_power
-      - entity: sensor.wiz_rgbw_tunable_710ac4_power
+      - entity: sensor.wiz_rgbw_tunable_7f66e8_power
       - entity: sensor.wiz_rgbw_tunable_711fe4_power
       - entity: sensor.wiz_rgbw_tunable_712a38_power
       - entity: sensor.wiz_rgbw_tunable_71394c_power

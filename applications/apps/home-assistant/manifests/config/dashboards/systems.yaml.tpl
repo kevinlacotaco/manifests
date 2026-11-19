@@ -19,12 +19,6 @@ views:
       entity: sensor.ironhide_gpu_nvidia_0_load
     - type: tile
       entity: sensor.ironhide_gpu_nvidia_0_temperature
-    - type: tile
-      entity: sensor.grapple_cpu_usage
-    - type: tile
-      entity: sensor.grapple_memory_usage
-    - type: tile
-      entity: sensor.grapple_temperature_cpu_thermal
   - type: grid
     cards:
     - type: entities
@@ -41,7 +35,6 @@ views:
       - entity: update.0x282c02bfffeae7b7
       - entity: update.0x282c02bfffeae47e
       - entity: update.ironhide_update
-      - entity: update.grapple_update
       - entity: update.master_bedroom_smart_button
       - entity: update.0x282c02bfffec3463
       - entity: update.0x282c02bfffec763f
@@ -58,10 +51,6 @@ views:
       - entity: update.tesla
       - entity: update.mail_and_packages
       - entity: update.smartthinq_lge_sensors
-      - entity: update.custom_vesync
-      - entity: update.roborock
-      - entity: update.passive_ble_monitor_integration
-      - entity: update.waste_collection_schedule
       - entity: update.0x001788010fefe488
       - entity: update.0x001788010fefe30d
       - entity: update.0x001788010fee7aca
@@ -74,7 +63,6 @@ views:
       entities:
       - entity: sensor.master_bedroom_temperature_and_humidity_battery
       - entity: sensor.girls_room_temperature_and_humidity_battery
-      - entity: sensor.willy_s_bedroom_thermometer_battery
       - entity: sensor.guest_bedroom_thermometer_battery
       - entity: sensor.arcee_battery_level
       - entity: sensor.utility_sink_leak_battery
@@ -163,13 +151,6 @@ views:
       - entity: sensor.ironhide_gpu_nvidia_0_load
       - entity: sensor.ironhide_gpu_nvidia_0_memory
       - entity: sensor.ironhide_gpu_nvidia_0_temperature
-      - entity: sensor.grapple_memory_usage
-      - entity: sensor.grapple_cpu_usage
-      - entity: sensor.grapple_disk_dev_root
-      - entity: binary_sensor.grapple_system_updates
-      - entity: binary_sensor.grapple_required_restart
-      - entity: sensor.grapple_disk_io_mmcblk0
-      - entity: sensor.grapple_temperature_cpu_thermal
       - entity: sensor.ironhide_disk_io_sdc
       - entity: sensor.ironhide_disk_dev_sdc
       - entity: sensor.ironhide_disk_dev_sdc1

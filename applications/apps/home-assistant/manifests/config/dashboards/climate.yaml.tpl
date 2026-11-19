@@ -31,12 +31,6 @@ views:
       entity: humidifier.master_bedroom_humidifier
     - type: tile
       entity: humidifier.girls_humidifier
-    - type: tile
-      entity: number.willy_s_humidifier_target_level
-    - type: tile
-      entity: number.master_bedroom_humidifier_target_level
-    - type: tile
-      entity: number.girls_humidifier_target_level
   - type: grid
     cards:
     - type: history-graph
@@ -45,14 +39,13 @@ views:
       entities:
       - entity: sensor.master_bedroom_temperature
       - entity: sensor.girls_room_temperature_and_humidity_temperature
-      - entity: sensor.willy_s_bedroom_thermometer_temperature
       - entity: sensor.guest_bedroom_thermometer_temperature
       - entity: sensor.main_floor_current_temperature
       - entity: sensor.second_floor_current_temperature
-      - entity: sensor.smart_air_quality_monitor_304b95_h5106_tempc
-      - entity: sensor.smart_air_quality_monitor_305187_h5106_tempc
-      - entity: sensor.smart_air_quality_monitor_363056_h5106_tempc
-      - entity: sensor.smart_air_quality_monitor_365b5d_h5106_tempc
+      - entity: sensor.bonus_room_air_quality_temperature
+      - entity: sensor.attic_monitor_temperature
+      - entity: sensor.basement_air_mon_temperature
+      - entity: sensor.master_bedroom_air_mon_temperature
       - entity: sensor.ironhide_temperature_acpitz
       - entity: sensor.ironhide_temperature_nvme_composite
       - entity: sensor.ironhide_temperature_nvme_sensor_1
@@ -67,7 +60,6 @@ views:
       - entity: sensor.ironhide_temperature_coretemp_core_6
       - entity: sensor.ironhide_temperature_coretemp_core_7
       - entity: sensor.ironhide_temperature_iwlwifi_1
-      - entity: sensor.grapple_temperature_cpu_thermal
       - entity: sensor.living_room_light_button_device_temperature
       - entity: sensor.bedroom_light_button_device_temperature
       - entity: sensor.plant_soil_temperature
@@ -84,7 +76,6 @@ views:
       - entity: sensor.master_bedroom_humidity
       - entity: sensor.girls_room_temperature_and_humidity_temperature
       - entity: sensor.bernadettes_room_humidity
-      - entity: sensor.willy_s_bedroom_thermometer_humidity
       - entity: sensor.guest_bedroom_thermometer_humidity
       - entity: sensor.main_floor_current_humidity
       - entity: sensor.second_floor_current_humidity
@@ -98,7 +89,7 @@ views:
       entities:
       - entity: sensor.airnow_pm2_5
       - entity: sensor.airnow_pm2_5_reporting_station
-      - entity: sensor.smart_air_quality_monitor_304b95_h5106_pm25
-      - entity: sensor.smart_air_quality_monitor_365b5d_h5106_pm25
-      - entity: sensor.smart_air_quality_monitor_363056_h5106_pm25
-      - entity: sensor.smart_air_quality_monitor_305187_h5106_pm25
+      - entity: sensor.bonus_room_air_quality_airquality
+      - entity: sensor.master_bedroom_air_mon_airquality
+      - entity: sensor.basement_air_mon_airquality
+      - entity: sensor.attic_monitor_airquality
