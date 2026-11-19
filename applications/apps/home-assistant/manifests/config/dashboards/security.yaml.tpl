@@ -9,27 +9,27 @@ views:
     cards:
     - type: picture-entity
       entity: camera.attic_1
-      camera_view: live
+      camera_view: auto
       show_name: true
       show_state: false
     - type: picture-entity
       entity: camera.attic_2
-      camera_view: live
+      camera_view: auto
       show_name: true
       show_state: false
     - type: picture-entity
       entity: camera.attic_3
-      camera_view: live
+      camera_view: auto
       show_name: true
       show_state: false
     - type: picture-entity
       entity: camera.attic_4
-      camera_view: live
+      camera_view: auto
       show_name: true
       show_state: false
     - type: picture-entity
       entity: camera.driveway
-      camera_view: live
+      camera_view: auto
       show_name: true
       show_state: false
   - type: grid
