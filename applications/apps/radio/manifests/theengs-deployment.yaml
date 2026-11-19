@@ -50,6 +50,10 @@ spec:
                 secretKeyRef:
                   name: radio-mqtt-auth
                   key: password
+            # Theengs scans every BLE advertisement nearby. Keep the raw MQTT
+            # feed, but do not let random devices create Home Assistant entities.
+            - name: HASS_DISCOVERY
+              value: "false"
           securityContext:
             privileged: true
             runAsUser: 0
