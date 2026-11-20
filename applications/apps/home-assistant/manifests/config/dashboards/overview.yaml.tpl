@@ -126,29 +126,21 @@ views:
                 No deliveries pending
               {% endif %}
             secondary: >-
-              {% set delivering = states('sensor.klakotko_gmail_com_mail_packages_delivering') | int(0) %}
-              {% set transit = states('sensor.klakotko_gmail_com_mail_packages_in_transit') | int(0) %}
               {% set ns = namespace(carriers=[]) %}
-              {% for name, entity in [
-                ('Shopify', 'sensor.klakotko_gmail_com_mail_shopify_packages'),
-                ('Amazon', 'sensor.klakotko_gmail_com_mail_amazon_packages'),
-                ('UPS', 'sensor.klakotko_gmail_com_mail_ups_packages'),
-                ('FedEx', 'sensor.klakotko_gmail_com_mail_fedex_packages'),
-                ('USPS', 'sensor.klakotko_gmail_com_mail_usps_packages'),
-                ('DHL', 'sensor.klakotko_gmail_com_mail_dhl_packages')
+              {% for name, packages, delivering in [
+                ('Amazon', 'sensor.klakotko_gmail_com_mail_amazon_packages', 'sensor.klakotko_gmail_com_mail_amazon_packages_delivering'),
+                ('DHL', 'sensor.klakotko_gmail_com_mail_dhl_packages', 'sensor.klakotko_gmail_com_mail_dhl_delivering'),
+                ('FedEx', 'sensor.klakotko_gmail_com_mail_fedex_packages', 'sensor.klakotko_gmail_com_mail_fedex_delivering'),
+                ('Home Depot', 'sensor.klakotko_gmail_com_mail_home_depot_packages', 'sensor.klakotko_gmail_com_mail_home_depot_delivering'),
+                ('Shopify', 'sensor.klakotko_gmail_com_mail_shopify_packages', 'sensor.klakotko_gmail_com_mail_shopify_delivering'),
+                ('UPS', 'sensor.klakotko_gmail_com_mail_ups_packages', 'sensor.klakotko_gmail_com_mail_ups_delivering'),
+                ('USPS', 'sensor.klakotko_gmail_com_mail_usps_packages', 'sensor.klakotko_gmail_com_mail_usps_delivering')
               ] %}
-                {% set count = states(entity) | int(0) %}
-                {% if count > 0 %}
-                  {% set ns.carriers = ns.carriers + [name ~ ' ' ~ count] %}
-                {% endif %}
+                {% set count = states(packages) | int(0) %}
+                {% set out = states(delivering) | int(0) %}
+                {% set ns.carriers = ns.carriers + [name ~ ' ' ~ count ~ ((' (' ~ out ~ ' out)') if out > 0 else '')] %}
               {% endfor %}
-              {% if delivering > 0 %}
-                {{ transit }} in transit{% if ns.carriers %} · {{ ns.carriers | join(' · ') }}{% endif %}
-              {% elif transit > 0 %}
-                {{ ns.carriers | join(' · ') if ns.carriers else 'Tracking active' }}
-              {% else %}
-                All clear
-              {% endif %}
+              {{ ns.carriers | join(' · ') }}
             icon: >-
               {% set delivering = states('sensor.klakotko_gmail_com_mail_packages_delivering') | int(0) %}
               {{ 'mdi:truck-delivery' if delivering > 0 else 'mdi:package-variant-closed' }}
