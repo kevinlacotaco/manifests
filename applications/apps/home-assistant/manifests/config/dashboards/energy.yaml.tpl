@@ -66,6 +66,13 @@ views:
             primary_info: state
             secondary_info: name
           - type: custom:mushroom-entity-card
+            entity: sensor.home_solar_energy_today
+            name: Solar today
+            icon: mdi:solar-power-variant
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
             entity: sensor.my_home_grid_power
             name: Grid
             icon: mdi:transmission-tower

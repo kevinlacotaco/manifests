@@ -32,6 +32,21 @@ homeassistant:
 # Template entities are managed in Git under config/templates/.
 template: !include_dir_merge_list templates
 
+# Daily solar production is the integral of the live solar power sensor.
+sensor:
+  - platform: integration
+    source: sensor.my_home_solar_power
+    name: Home Solar Energy Total
+    unique_id: home_solar_energy_total
+    unit_time: h
+    method: trapezoidal
+    round: 3
+
+utility_meter:
+  home_solar_energy_today:
+    source: sensor.home_solar_energy_total
+    cycle: daily
+
 mqtt:
   - sensor:
       name: "Freezer Temperature"
