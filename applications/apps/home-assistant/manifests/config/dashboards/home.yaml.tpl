@@ -1,108 +1,128 @@
 title: Home
 views:
-  - title: Home
+  - title: Overview
     path: home
-    icon: mdi:home
+    icon: mdi:view-dashboard
     type: sections
     max_columns: 3
     sections:
       - type: grid
         cards:
           - type: heading
-            heading: Home
-            icon: mdi:home
-          - type: custom:mushroom-chips-card
-            alignment: center
-            chips:
-              - type: template
-                icon: mdi:solar-power
-                icon_color: amber
-                content: "{{ states('sensor.my_home_solar_power') | int(0) }} W solar"
-              - type: template
-                icon: mdi:transmission-tower
-                icon_color: blue
-                content: "{{ states('sensor.my_home_grid_power') | int(0) }} W grid"
-              - type: template
-                icon: mdi:home-lightning-bolt
-                icon_color: purple
-                content: "{{ states('sensor.my_home_load_power') | int(0) }} W load"
-              - type: template
-                icon: mdi:shield-home
-                icon_color: >-
-                  {{ 'green' if is_state('binary_sensor.utility_sink_leak', 'off')
-                     and is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'off')
-                     and is_state('binary_sensor.kitchen_sink_leak', 'off')
-                     and is_state('binary_sensor.second_floor_bathroom_leak', 'off')
-                     and is_state('binary_sensor.left_garage_door_contact', 'off')
-                     and is_state('binary_sensor.right_garage_door_contact', 'off')
-                     else 'red' }}
-                content: >-
-                  {{ 'All clear' if is_state('binary_sensor.utility_sink_leak', 'off')
-                     and is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'off')
-                     and is_state('binary_sensor.kitchen_sink_leak', 'off')
-                     and is_state('binary_sensor.second_floor_bathroom_leak', 'off')
-                     and is_state('binary_sensor.left_garage_door_contact', 'off')
-                     and is_state('binary_sensor.right_garage_door_contact', 'off')
-                     else 'Check alerts' }}
-          - type: custom:mushroom-entity-card
-            entity: sensor.my_home_solar_power
-            name: Solar
-            icon: mdi:solar-power
-            icon_color: amber
-            primary_info: state
-            secondary_info: name
-          - type: custom:mushroom-entity-card
-            entity: sensor.my_home_grid_power
-            name: Grid
-            icon: mdi:transmission-tower
+            heading: Overview
+            icon: mdi:view-dashboard
+
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set leaks = (is_state('binary_sensor.utility_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') | int)
+                + (is_state('binary_sensor.kitchen_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.second_floor_bathroom_leak', 'on') | int) %}
+              {% set doors = (is_state('binary_sensor.left_garage_door_contact', 'on') | int)
+                + (is_state('binary_sensor.right_garage_door_contact', 'on') | int) %}
+              {{ 'All clear' if leaks == 0 and doors == 0 else 'Attention needed' }}
+            secondary: >-
+              {% set leaks = (is_state('binary_sensor.utility_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') | int)
+                + (is_state('binary_sensor.kitchen_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.second_floor_bathroom_leak', 'on') | int) %}
+              {% set doors = (is_state('binary_sensor.left_garage_door_contact', 'on') | int)
+                + (is_state('binary_sensor.right_garage_door_contact', 'on') | int) %}
+              {{ leaks }} leak{{ '' if leaks == 1 else 's' }} · {{ doors }} door{{ '' if doors == 1 else 's' }} open
+            icon: >-
+              {% set leaks = (is_state('binary_sensor.utility_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') | int)
+                + (is_state('binary_sensor.kitchen_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.second_floor_bathroom_leak', 'on') | int) %}
+              {% set doors = (is_state('binary_sensor.left_garage_door_contact', 'on') | int)
+                + (is_state('binary_sensor.right_garage_door_contact', 'on') | int) %}
+              {{ 'mdi:shield-check' if leaks == 0 and doors == 0 else 'mdi:shield-alert' }}
+            icon_color: >-
+              {% set leaks = (is_state('binary_sensor.utility_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') | int)
+                + (is_state('binary_sensor.kitchen_sink_leak', 'on') | int)
+                + (is_state('binary_sensor.second_floor_bathroom_leak', 'on') | int) %}
+              {% set doors = (is_state('binary_sensor.left_garage_door_contact', 'on') | int)
+                + (is_state('binary_sensor.right_garage_door_contact', 'on') | int) %}
+              {{ 'green' if leaks == 0 and doors == 0 else 'red' }}
+            tap_action:
+              action: navigate
+              navigation_path: /security-cameras
+
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.main_floor_current_temperature') | float(0) | round(0) }}°F main"
+            secondary: "Upstairs {{ states('sensor.second_floor_current_temperature') | float(0) | round(0) }}°F · Attic {{ states('sensor.attic_monitor_temperature') | float(0) | round(0) }}°F"
+            icon: mdi:home-thermometer
             icon_color: blue
-            primary_info: state
-            secondary_info: name
-          - type: custom:mushroom-entity-card
-            entity: sensor.my_home_load_power
-            name: Home load
-            icon: mdi:home-lightning-bolt
-            icon_color: purple
-            primary_info: state
-            secondary_info: name
+            tap_action:
+              action: navigate
+              navigation_path: /climate-air
+
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.home_solar_energy_today') | float(0) | round(2) }} kWh solar"
+            secondary: >-
+              {% set coverage = states('sensor.home_solar_coverage') %}
+              {% set grid = states('sensor.my_home_grid_power') %}
+              {% if coverage not in ['unknown', 'unavailable'] and grid not in ['unknown', 'unavailable'] %}
+                {{ coverage | float(0) | round(0) }}% covered · grid {{ grid | float(0) | round(2) }} kW
+              {% else %}
+                Live solar data unavailable
+              {% endif %}
+            icon: mdi:solar-power-variant
+            icon_color: amber
+            tap_action:
+              action: navigate
+              navigation_path: /energy-view
+
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.garage_freezer_temperature') | float(0) | round(1) }}°F freezer"
+            secondary: "Fridge {{ states('sensor.garage_fridge_temperature') | float(0) | round(1) }}°F · Detached {{ states('sensor.detached_garage_temperature') | float(0) | round(1) }}°F"
+            icon: mdi:fridge-thermometer
+            icon_color: >-
+              {{ 'red' if (states('sensor.garage_freezer_temperature') | float(0) > 10)
+                 or (states('sensor.garage_fridge_temperature') | float(0) > 46.4)
+                 else 'cyan' }}
+            tap_action:
+              action: navigate
+              navigation_path: /garage-appliances
+
+          - type: custom:mushroom-template-card
+            primary: "CPU {{ states('sensor.ironhide_cpu_usage') | float(0) | round(0) }}% · RAM {{ states('sensor.ironhide_memory_usage') | float(0) | round(0) }}%"
+            secondary: >-
+              {% set updates = states.update | selectattr('state', 'eq', 'on') | list | count %}
+              {{ updates }} update{{ '' if updates == 1 else 's' }} · {{ states('sensor.ironhide_temperature_coretemp_package_id_0') | float(0) | round(0) }}°F
+            icon: mdi:server
+            icon_color: >-
+              {{ 'red' if (states('sensor.ironhide_cpu_usage') | float(0) > 80)
+                 or (states('sensor.ironhide_memory_usage') | float(0) > 80)
+                 or (states('sensor.ironhide_temperature_coretemp_package_id_0') | float(0) > 167)
+                 else 'green' }}
+            tap_action:
+              action: navigate
+              navigation_path: /systems-maintenance
 
       - type: grid
         cards:
           - type: heading
             heading: Climate
             icon: mdi:thermometer
-          - type: custom:mushroom-climate-card
-            entity: climate.living_room_air_conditioner
-            icon: mdi:air-conditioner
-            show_temperature_control: true
-            layout: horizontal
-          - type: custom:mushroom-climate-card
-            entity: climate.office_air_conditioner
-            icon: mdi:air-conditioner
-            show_temperature_control: true
-            layout: horizontal
-          - type: custom:mushroom-climate-card
-            entity: climate.master_air_conditioner
-            icon: mdi:air-conditioner
-            show_temperature_control: true
-            layout: horizontal
-          - type: custom:mushroom-climate-card
-            entity: climate.attic_ac
-            icon: mdi:air-conditioner
-            show_temperature_control: true
-            layout: horizontal
-          - type: custom:mushroom-entity-card
-            entity: humidifier.willy_s_humidifier
-            icon: mdi:air-humidifier
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: humidifier.master_bedroom_humidifier
-            icon: mdi:air-humidifier
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: humidifier.girls_humidifier
-            icon: mdi:air-humidifier
-            icon_color: cyan
+
+          - type: custom:mushroom-chips-card
+            alignment: start
+            chips:
+              - type: template
+                icon: mdi:water-percent
+                icon_color: cyan
+                content: "Main {{ states('sensor.main_floor_current_humidity') | float(0) | round(0) }}%"
+              - type: template
+                icon: mdi:water-percent
+                icon_color: cyan
+                content: "Upstairs {{ states('sensor.second_floor_current_humidity') | float(0) | round(0) }}%"
+              - type: template
+                icon: mdi:water-percent
+                icon_color: cyan
+                content: "Attic {{ states('sensor.attic_monitor_humidity') | float(0) | round(0) }}%"
+
           - type: custom:mini-graph-card
             name: Indoor temperature
             icon: mdi:home-thermometer
@@ -114,14 +134,17 @@ views:
                 name: Main floor
                 color: "#3b82f6"
               - entity: sensor.second_floor_current_temperature
-                name: Second floor
+                name: Upstairs
                 color: "#a855f7"
-              - entity: sensor.master_bedroom_air_mon_temperature
-                name: Master
+              - entity: sensor.kitchen_temperature
+                name: Kitchen
                 color: "#f59e0b"
-              - entity: sensor.girls_room_temperature_and_humidity_temperature
-                name: Girls room
-                color: "#ec4899"
+              - entity: sensor.attic_monitor_temperature
+                name: Attic
+                color: "#ef4444"
+              - entity: sensor.basement_air_mon_temperature
+                name: Basement
+                color: "#64748b"
             show:
               labels: false
               legend: true
@@ -129,48 +152,45 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Energy
-            icon: mdi:flash
-          - type: custom:mini-graph-card
-            name: Energy flow
-            icon: mdi:flash
-            hours_to_show: 48
-            points_per_hour: 1
-            line_width: 2
-            entities:
-              - entity: sensor.my_home_solar_power
-                name: Solar
-                color: "#f59e0b"
-              - entity: sensor.my_home_grid_power
-                name: Grid
-                color: "#3b82f6"
-              - entity: sensor.my_home_load_power
-                name: Load
-                color: "#a855f7"
-            show:
-              labels: false
-              legend: true
-          - type: custom:mushroom-entity-card
-            entity: sensor.my_home_solar_power
-            name: Solar production
-            icon: mdi:solar-power
-            icon_color: amber
-          - type: custom:mushroom-entity-card
-            entity: sensor.my_home_grid_power
-            name: Grid import
-            icon: mdi:transmission-tower
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.my_home_load_power
-            name: Current load
-            icon: mdi:home-lightning-bolt
-            icon_color: purple
-
-      - type: grid
-        cards:
-          - type: heading
-            heading: Security
+            heading: Security & Garage
             icon: mdi:shield-home
+
+          - type: custom:mushroom-chips-card
+            alignment: start
+            chips:
+              - type: template
+                icon: >-
+                  {{ 'mdi:water-alert' if (is_state('binary_sensor.utility_sink_leak', 'on')
+                     or is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on')
+                     or is_state('binary_sensor.kitchen_sink_leak', 'on')
+                     or is_state('binary_sensor.second_floor_bathroom_leak', 'on'))
+                     else 'mdi:water-check' }}
+                icon_color: >-
+                  {{ 'red' if (is_state('binary_sensor.utility_sink_leak', 'on')
+                     or is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on')
+                     or is_state('binary_sensor.kitchen_sink_leak', 'on')
+                     or is_state('binary_sensor.second_floor_bathroom_leak', 'on'))
+                     else 'green' }}
+                content: >-
+                  {{ 'Leak detected' if (is_state('binary_sensor.utility_sink_leak', 'on')
+                     or is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on')
+                     or is_state('binary_sensor.kitchen_sink_leak', 'on')
+                     or is_state('binary_sensor.second_floor_bathroom_leak', 'on'))
+                     else 'Leaks clear' }}
+              - type: template
+                icon: >-
+                  {{ 'mdi:garage-open' if (is_state('binary_sensor.left_garage_door_contact', 'on')
+                     or is_state('binary_sensor.right_garage_door_contact', 'on'))
+                     else 'mdi:garage' }}
+                icon_color: >-
+                  {{ 'orange' if (is_state('binary_sensor.left_garage_door_contact', 'on')
+                     or is_state('binary_sensor.right_garage_door_contact', 'on'))
+                     else 'green' }}
+                content: >-
+                  {{ 'Doors open' if (is_state('binary_sensor.left_garage_door_contact', 'on')
+                     or is_state('binary_sensor.right_garage_door_contact', 'on'))
+                     else 'Doors closed' }}
+
           - type: custom:auto-entities
             show_empty: false
             card:
@@ -193,81 +213,31 @@ views:
                   state: "on"
                 - entity_id: binary_sensor.*leak*
                   state: "on"
-          - type: custom:mushroom-template-card
-            primary: Utility sink
-            secondary: >-
-              {{ 'Leak detected' if is_state('binary_sensor.utility_sink_leak', 'on') else 'Dry' }}
-            icon: >-
-              {{ 'mdi:water-alert' if is_state('binary_sensor.utility_sink_leak', 'on') else 'mdi:water-check' }}
-            icon_color: >-
-              {{ 'red' if is_state('binary_sensor.utility_sink_leak', 'on') else 'green' }}
-            entity: binary_sensor.utility_sink_leak
-          - type: custom:mushroom-template-card
-            primary: First floor bath sink
-            secondary: >-
-              {{ 'Leak detected' if is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') else 'Dry' }}
-            icon: >-
-              {{ 'mdi:water-alert' if is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') else 'mdi:water-check' }}
-            icon_color: >-
-              {{ 'red' if is_state('binary_sensor.first_floor_bathroom_sink_water_leak', 'on') else 'green' }}
-            entity: binary_sensor.first_floor_bathroom_sink_water_leak
-          - type: custom:mushroom-template-card
-            primary: Kitchen sink
-            secondary: >-
-              {{ 'Leak detected' if is_state('binary_sensor.kitchen_sink_leak', 'on') else 'Dry' }}
-            icon: >-
-              {{ 'mdi:water-alert' if is_state('binary_sensor.kitchen_sink_leak', 'on') else 'mdi:water-check' }}
-            icon_color: >-
-              {{ 'red' if is_state('binary_sensor.kitchen_sink_leak', 'on') else 'green' }}
-            entity: binary_sensor.kitchen_sink_leak
-          - type: custom:mushroom-template-card
-            primary: Second floor bath
-            secondary: >-
-              {{ 'Leak detected' if is_state('binary_sensor.second_floor_bathroom_leak', 'on') else 'Dry' }}
-            icon: >-
-              {{ 'mdi:water-alert' if is_state('binary_sensor.second_floor_bathroom_leak', 'on') else 'mdi:water-check' }}
-            icon_color: >-
-              {{ 'red' if is_state('binary_sensor.second_floor_bathroom_leak', 'on') else 'green' }}
-            entity: binary_sensor.second_floor_bathroom_leak
-          - type: custom:mushroom-template-card
-            primary: Left garage door
-            secondary: >-
-              {{ 'Open' if is_state('binary_sensor.left_garage_door_contact', 'on') else 'Closed' }}
-            icon: >-
-              {{ 'mdi:garage-open' if is_state('binary_sensor.left_garage_door_contact', 'on') else 'mdi:garage' }}
-            icon_color: >-
-              {{ 'orange' if is_state('binary_sensor.left_garage_door_contact', 'on') else 'green' }}
-            entity: binary_sensor.left_garage_door_contact
-          - type: custom:mushroom-template-card
-            primary: Right garage door
-            secondary: >-
-              {{ 'Open' if is_state('binary_sensor.right_garage_door_contact', 'on') else 'Closed' }}
-            icon: >-
-              {{ 'mdi:garage-open' if is_state('binary_sensor.right_garage_door_contact', 'on') else 'mdi:garage' }}
-            icon_color: >-
-              {{ 'orange' if is_state('binary_sensor.right_garage_door_contact', 'on') else 'green' }}
-            entity: binary_sensor.right_garage_door_contact
 
-      - type: grid
-        cards:
-          - type: heading
-            heading: Garage
-            icon: mdi:garage
           - type: custom:mushroom-entity-card
             entity: sensor.garage_freezer_temperature
             name: Freezer
             icon: mdi:snowflake-thermometer
             icon_color: blue
+
           - type: custom:mushroom-entity-card
             entity: sensor.garage_fridge_temperature
             name: Fridge
             icon: mdi:fridge-thermometer
             icon_color: cyan
+
           - type: custom:mushroom-entity-card
             entity: sensor.garage_ambient_temperature
-            name: Ambient
+            name: Garage ambient
             icon: mdi:thermometer
             icon_color: amber
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.detached_garage_temperature
+            name: Detached garage
+            icon: mdi:home-thermometer
+            icon_color: green
+
           - type: custom:mini-graph-card
             name: Garage temperatures
             icon: mdi:thermometer
@@ -282,8 +252,11 @@ views:
                 name: Fridge
                 color: "#06b6d4"
               - entity: sensor.garage_ambient_temperature
-                name: Ambient
+                name: Garage
                 color: "#f59e0b"
+              - entity: sensor.detached_garage_temperature
+                name: Detached
+                color: "#22c55e"
             show:
               labels: false
               legend: true
@@ -291,71 +264,28 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Media
-            icon: mdi:speaker
-          - type: custom:mushroom-media-player-card
-            entity: media_player.living_room_tv
-            use_media_info: true
-            show_volume_level: true
-            media_controls:
-              - on_off
-              - play_pause
-              - next
-              - previous
-            volume_controls:
-              - volume_mute
-              - volume_set
-          - type: custom:mushroom-media-player-card
-            entity: media_player.attic_tv
-            use_media_info: true
-            show_volume_level: true
-            media_controls:
-              - on_off
-              - play_pause
-              - next
-              - previous
-            volume_controls:
-              - volume_mute
-              - volume_set
-          - type: custom:mushroom-media-player-card
-            entity: media_player.office_speaker
-            use_media_info: true
-            show_volume_level: true
-            media_controls:
-              - on_off
-              - play_pause
-              - next
-              - previous
-            volume_controls:
-              - volume_mute
-              - volume_set
-
-      - type: grid
-        cards:
-          - type: heading
             heading: Systems
             icon: mdi:server
+
           - type: custom:mushroom-chips-card
             alignment: start
             chips:
               - type: template
                 icon: mdi:cpu-64-bit
                 icon_color: >-
-                  {{ 'red' if states('sensor.ironhide_cpu_usage') | int(0) > 80
-                     else 'green' }}
-                content: "{{ states('sensor.ironhide_cpu_usage') }}% CPU"
+                  {{ 'red' if states('sensor.ironhide_cpu_usage') | float(0) > 80 else 'green' }}
+                content: "CPU {{ states('sensor.ironhide_cpu_usage') | float(0) | round(0) }}%"
               - type: template
                 icon: mdi:memory
                 icon_color: >-
-                  {{ 'red' if states('sensor.ironhide_memory_usage') | int(0) > 80
-                     else 'green' }}
-                content: "{{ states('sensor.ironhide_memory_usage') }}% RAM"
+                  {{ 'red' if states('sensor.ironhide_memory_usage') | float(0) > 80 else 'green' }}
+                content: "RAM {{ states('sensor.ironhide_memory_usage') | float(0) | round(0) }}%"
               - type: template
                 icon: mdi:thermometer
                 icon_color: >-
-                  {{ 'red' if states('sensor.ironhide_temperature_coretemp_package_id_0') | int(0) > 75
-                     else 'green' }}
-                content: "{{ states('sensor.ironhide_temperature_coretemp_package_id_0') }}°C"
+                  {{ 'red' if states('sensor.ironhide_temperature_coretemp_package_id_0') | float(0) > 167 else 'green' }}
+                content: "{{ states('sensor.ironhide_temperature_coretemp_package_id_0') | float(0) | round(0) }}°F"
+
           - type: custom:mini-graph-card
             name: Ironhide load
             icon: mdi:server
@@ -372,6 +302,7 @@ views:
             show:
               labels: false
               legend: true
+
           - type: custom:auto-entities
             show_empty: false
             card:
@@ -382,3 +313,38 @@ views:
               include:
                 - domain: update
                   state: "on"
+
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+              title: Low batteries
+              state_color: true
+            filter:
+              include:
+                - domain: sensor
+                  attributes:
+                    device_class: battery
+                  state: "<25"
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Media
+            icon: mdi:speaker
+
+          - type: custom:mushroom-media-player-card
+            entity: media_player.living_room_tv
+            use_media_info: true
+            show_volume_level: false
+            media_controls:
+              - on_off
+              - play_pause
+
+          - type: custom:mushroom-media-player-card
+            entity: media_player.attic_tv
+            use_media_info: true
+            show_volume_level: false
+            media_controls:
+              - on_off
+              - play_pause
