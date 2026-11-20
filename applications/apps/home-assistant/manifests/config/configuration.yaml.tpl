@@ -146,9 +146,13 @@ mqtt:
       value_template: "{{ value }}"
 
 lovelace:
-  mode: yaml
-  filename: dashboards/overview.yaml
   dashboards:
+    lovelace:
+      mode: yaml
+      filename: dashboards/overview.yaml
+      title: Overview
+      icon: mdi:view-dashboard
+      show_in_sidebar: true
     climate-air:
       mode: yaml
       title: Climate & Air
