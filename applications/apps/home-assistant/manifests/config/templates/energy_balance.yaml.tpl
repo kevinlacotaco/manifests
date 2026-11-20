@@ -1,4 +1,12 @@
-- sensor:
+- trigger:
+    - platform: homeassistant
+      event: start
+    - platform: state
+      entity_id:
+        - sensor.my_home_solar_power
+        - sensor.my_home_grid_power
+        - sensor.my_home_load_power
+  sensor:
     - name: "Home Solar Coverage"
       unique_id: home_solar_coverage
       unit_of_measurement: "%"
