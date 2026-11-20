@@ -114,6 +114,14 @@ views:
               action: navigate
               navigation_path: /systems-maintenance
 
+
+      - type: grid
+        column_span: 3
+        cards:
+          - type: heading
+            heading: Deliveries
+            icon: mdi:truck-delivery
+
           - type: custom:mushroom-template-card
             entity: sensor.klakotko_gmail_com_mail_packages_in_transit
             primary: >-
