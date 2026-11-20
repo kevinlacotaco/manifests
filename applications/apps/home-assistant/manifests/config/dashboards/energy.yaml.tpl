@@ -26,6 +26,38 @@ views:
                 icon: mdi:home-lightning-bolt
                 icon_color: purple
                 content: "{{ states('sensor.my_home_load_power') | int(0) }} W load"
+          - type: custom:mushroom-template-card
+            primary: >
+              {% set coverage = states('sensor.home_solar_coverage') | float(0) %}
+              {{ coverage | round(0) }}% solar
+            secondary: >
+              {% set coverage = states('sensor.home_solar_coverage') | float(0) %}
+              {% set grid = states('sensor.home_grid_import_power') | float(0) %}
+              {% if coverage >= 99.5 %}
+                All energy is covered by solar
+              {% elif coverage <= 0.5 %}
+                All energy is coming from the grid
+              {% else %}
+                Grid is covering {{ grid | round(2) }} kW
+              {% endif %}
+            icon: >
+              {% set coverage = states('sensor.home_solar_coverage') | float(0) %}
+              {% if coverage >= 99.5 %}
+                mdi:weather-sunny
+              {% elif coverage <= 0.5 %}
+                mdi:transmission-tower
+              {% else %}
+                mdi:solar-power-variant
+              {% endif %}
+            icon_color: >
+              {% set coverage = states('sensor.home_solar_coverage') | float(0) %}
+              {% if coverage >= 99.5 %}
+                green
+              {% elif coverage <= 0.5 %}
+                blue
+              {% else %}
+                amber
+              {% endif %}
           - type: custom:mushroom-entity-card
             entity: sensor.my_home_solar_power
             name: Solar
