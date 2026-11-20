@@ -6,6 +6,8 @@
         - sensor.my_home_solar_power
         - sensor.my_home_grid_power
         - sensor.my_home_load_power
+    - platform: time_pattern
+      seconds: "/15"
   sensor:
     - name: "Home Solar Coverage"
       unique_id: home_solar_coverage
