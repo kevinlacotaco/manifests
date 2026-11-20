@@ -31,6 +31,29 @@ data:
     else:
         print("config already restored; refreshing service endpoints")
 
+    # Home Assistant 2026.11 stored a stripped HTTP proxy mask (/32) for
+    # pod-network proxies. Repair the persisted HTTP config before startup so
+    # Traefik can forward client headers without HA returning HTTP 400.
+    http_path = config / ".storage" / "http"
+    if http_path.exists():
+        http = json.loads(http_path.read_text())
+        data = http.get("data", {})
+        stable = data.get("stable")
+        if isinstance(stable, dict):
+            proxies = stable.get("trusted_proxies", [])
+            fixed = [
+                "10.42.0.0/16" if proxy == "10.42.0.0/32" else proxy
+                for proxy in proxies
+            ]
+            stable["trusted_proxies"] = fixed
+            pending = data.get("pending")
+            if isinstance(pending, dict):
+                pending["trusted_proxies"] = fixed
+                pending["error"] = None
+                pending["error_message"] = None
+            http_path.write_text(json.dumps(http, indent=2) + "\n")
+            print("repaired HTTP trusted proxy masks")
+
     # Always repoint the MQTT and Frigate integrations. This makes the
     # stable mqtt.messaging.svc.cluster.local name authoritative even when
     # the backing MQTT broker is replaced.
