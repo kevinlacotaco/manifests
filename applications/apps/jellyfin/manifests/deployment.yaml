@@ -81,6 +81,9 @@ spec:
             - name: media
               mountPath: /media
               readOnly: true
+            - name: youtube
+              mountPath: /media/youtube
+              readOnly: true
             - name: dri
               mountPath: /dev/dri
       volumes:
@@ -94,6 +97,11 @@ spec:
           nfs:
             server: 192.168.68.138
             path: /volume1/media
+            readOnly: true
+        - name: youtube
+          nfs:
+            server: 192.168.68.138
+            path: /volume1/k8s-nfs/youtarr-youtarr-downloads-pvc-3b371447-05af-4fcc-b0a2-559de97a6a13
             readOnly: true
         - name: dri
           hostPath:

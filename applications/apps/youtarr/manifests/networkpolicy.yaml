@@ -79,6 +79,13 @@ spec:
         - protocol: TCP
           port: 32400
     - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: jellyfin
+      ports:
+        - protocol: TCP
+          port: 8096
+    - to:
         - ipBlock:
             cidr: 0.0.0.0/0
       ports:

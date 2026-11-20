@@ -28,6 +28,7 @@ spec:
                   - kube-system
                   - monitoring
                   - home-assistant
+                  - youtarr
         # Pods in this namespace.
         - podSelector: {}
         # Kubelet health probes originate from the node.
