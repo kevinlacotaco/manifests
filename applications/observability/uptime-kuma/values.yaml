@@ -195,8 +195,8 @@ controllers:
             cpu: 25m
             memory: 128Mi
           limits:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 500m
+            memory: 512Mi
 
         lifecycle:
           preStop:
@@ -207,6 +207,11 @@ controllers:
                 - sleep 10
 
         probes:
+          startup:
+            enabled: true
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 60
           liveness:
             enabled: true
           readiness:
