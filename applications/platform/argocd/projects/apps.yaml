@@ -43,6 +43,8 @@ spec:
       namespace: jellyfin
     - server: https://kubernetes.default.svc
       namespace: govee2mqtt
+    - server: https://kubernetes.default.svc
+      namespace: changedetection
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

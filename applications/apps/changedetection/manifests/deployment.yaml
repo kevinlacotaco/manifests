@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: changedetection
+  namespace: changedetection
+spec:
+  replicas: 1
+
+  # changedetection.io stores its state in SQLite in /datastore. A single
+  # writer is mandatory, so never run two pods against this PVC.
+  strategy:
+    type: Recreate
+
+  revisionHistoryLimit: 3
+
+  selector:
+    matchLabels:
+      app: changedetection
+
+  template:
+    metadata:
+      labels:
+        app: changedetection
+
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: changedetection
+          image: dgtlmoon/changedetection.io:0.70.4
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+
+          env:
+            - name: TZ
+              value: America/New_York
+
+            - name: BASE_URL
+              value: https://changedetection.lakotko.synology.me
+
+            # Traefik terminates TLS and forwards the original scheme/host.
+            - name: USE_X_SETTINGS
+              value: "1"
+            - name: USE_X_SETTINGS_PROXY_COUNT
+              value: "1"
+
+            - name: HIDE_REFERER
+              value: "1"
+
+            # The root filesystem is read-only; keep Python's cache and
+            # changedetection scratch files on writable emptyDirs.
+            - name: HOME
+              value: /tmp
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+
+          volumeMounts:
+            - name: data
+              mountPath: /datastore
+            - name: tmp
+              mountPath: /tmp
+
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 60
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 5
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: changedetection-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi

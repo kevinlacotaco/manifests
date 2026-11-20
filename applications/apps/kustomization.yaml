@@ -16,3 +16,4 @@ resources:
   - frigate
   - jellyfin
   - govee2mqtt
+  - changedetection
