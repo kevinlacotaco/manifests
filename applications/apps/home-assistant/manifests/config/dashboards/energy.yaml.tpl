@@ -1,60 +1,161 @@
 title: Energy
 views:
-- title: Energy
-  path: energy
-  icon: mdi:flash
-  type: sections
-  sections:
-  - type: grid
-    cards:
-    - type: markdown
-      content: "### Home demand"
-    - type: tile
-      entity: sensor.my_home_grid_power
-    - type: tile
-      entity: sensor.my_home_load_power
-    - type: tile
-      entity: sensor.my_home_solar_power
-  - type: grid
-    cards:
-    - type: history-graph
-      title: Grid, load, and solar
-      hours_to_show: 48
-      entities:
-      - entity: sensor.my_home_grid_power
-      - entity: sensor.my_home_load_power
-      - entity: sensor.my_home_solar_power
-  - type: grid
-    cards:
-    - type: entities
-      title: Air conditioner energy
-      state_color: true
-      entities:
-      - entity: sensor.living_room_air_conditioner_energy_current
-      - entity: sensor.office_air_conditioner_energy_current
-      - entity: sensor.master_air_conditioner_energy_current
-      - entity: sensor.attic_ac_energy_current
-  - type: grid
-    cards:
-    - type: entities
-      title: Plugs and lights
-      state_color: true
-      entities:
-      - entity: sensor.living_room_floor_light_1_power
-      - entity: sensor.living_room_floor_light_2_power
-      - entity: sensor.wiz_rgbw_tunable_7f66e8_power
-      - entity: sensor.wiz_rgbw_tunable_711fe4_power
-      - entity: sensor.wiz_rgbw_tunable_712a38_power
-      - entity: sensor.wiz_rgbw_tunable_71394c_power
-      - entity: sensor.garage_plug_power
-      - entity: sensor.garage_plug_energy
-      - entity: sensor.madisons_bedroom_plug_power
-      - entity: sensor.madisons_bedroom_plug_energy
-      - entity: sensor.attic_plug_power
-      - entity: sensor.attic_plug_energy
-      - entity: sensor.string_lights_energy
-      - entity: sensor.string_lights_power
-      - entity: sensor.christmas_tree_energy
-      - entity: sensor.christmas_tree_power
-      - entity: sensor.bonus_room_plug_power
-      - entity: sensor.bonus_room_plug_energy
+  - title: Energy
+    path: energy
+    icon: mdi:flash
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Energy
+            icon: mdi:flash
+          - type: custom:mushroom-chips-card
+            alignment: center
+            chips:
+              - type: template
+                icon: mdi:solar-power
+                icon_color: amber
+                content: "{{ states('sensor.my_home_solar_power') | int(0) }} W solar"
+              - type: template
+                icon: mdi:transmission-tower
+                icon_color: blue
+                content: "{{ states('sensor.my_home_grid_power') | int(0) }} W grid"
+              - type: template
+                icon: mdi:home-lightning-bolt
+                icon_color: purple
+                content: "{{ states('sensor.my_home_load_power') | int(0) }} W load"
+          - type: custom:mushroom-entity-card
+            entity: sensor.my_home_solar_power
+            name: Solar
+            icon: mdi:solar-power
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.my_home_grid_power
+            name: Grid
+            icon: mdi:transmission-tower
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.my_home_load_power
+            name: Home load
+            icon: mdi:home-lightning-bolt
+            icon_color: purple
+            primary_info: state
+            secondary_info: name
+          - type: custom:mini-graph-card
+            name: Solar, grid, and load
+            icon: mdi:chart-line
+            hours_to_show: 48
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.my_home_solar_power
+                name: Solar
+                color: "#f59e0b"
+              - entity: sensor.my_home_grid_power
+                name: Grid
+                color: "#3b82f6"
+              - entity: sensor.my_home_load_power
+                name: Load
+                color: "#a855f7"
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Air conditioners
+            icon: mdi:air-conditioner
+          - type: custom:mushroom-entity-card
+            entity: sensor.living_room_air_conditioner_energy_current
+            name: Living room AC
+            icon: mdi:air-conditioner
+            icon_color: cyan
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.office_air_conditioner_energy_current
+            name: Office AC
+            icon: mdi:air-conditioner
+            icon_color: cyan
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.master_air_conditioner_energy_current
+            name: Master AC
+            icon: mdi:air-conditioner
+            icon_color: cyan
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.attic_ac_energy_current
+            name: Attic AC
+            icon: mdi:air-conditioner
+            icon_color: cyan
+            primary_info: state
+            secondary_info: name
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Plugs & lights
+            icon: mdi:power-plug
+          - type: custom:mushroom-entity-card
+            entity: sensor.living_room_floor_light_1_power
+            name: Living room floor light 1
+            icon: mdi:floor-lamp
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.living_room_floor_light_2_power
+            name: Living room floor light 2
+            icon: mdi:floor-lamp
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.garage_plug_power
+            name: Garage plug
+            icon: mdi:power-plug
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.attic_plug_power
+            name: Attic plug
+            icon: mdi:power-plug
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.bonus_room_plug_power
+            name: Bonus room plug
+            icon: mdi:power-plug
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.madisons_bedroom_plug_power
+            name: Madison's bedroom plug
+            icon: mdi:power-plug
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.string_lights_power
+            name: String lights
+            icon: mdi:string-lights
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.christmas_tree_power
+            name: Christmas tree
+            icon: mdi:pine-tree
+            icon_color: green
+            primary_info: state
+            secondary_info: name

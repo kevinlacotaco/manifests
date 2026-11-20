@@ -1,95 +1,183 @@
 title: Climate & Air
 views:
-- title: Climate & Air
-  path: climate
-  icon: mdi:thermometer
-  type: sections
-  sections:
-  - type: grid
-    cards:
-    - type: markdown
-      content: "### Air conditioners"
-    - type: tile
-      entity: climate.living_room_air_conditioner
-    - type: tile
-      entity: climate.office_air_conditioner
-    - type: tile
-      entity: climate.master_air_conditioner
-    - type: tile
-      entity: climate.attic_ac
-    - type: tile
-      entity: climate.main_floor
-    - type: tile
-      entity: climate.second_floor
-  - type: grid
-    cards:
-    - type: markdown
-      content: "### Humidifiers"
-    - type: tile
-      entity: humidifier.willy_s_humidifier
-    - type: tile
-      entity: humidifier.master_bedroom_humidifier
-    - type: tile
-      entity: humidifier.girls_humidifier
-  - type: grid
-    cards:
-    - type: history-graph
-      title: Temperatures
-      hours_to_show: 24
-      entities:
-      - entity: sensor.master_bedroom_temperature
-      - entity: sensor.girls_room_temperature_and_humidity_temperature
-      - entity: sensor.guest_bedroom_thermometer_temperature
-      - entity: sensor.main_floor_current_temperature
-      - entity: sensor.second_floor_current_temperature
-      - entity: sensor.bonus_room_air_quality_temperature
-      - entity: sensor.attic_monitor_temperature
-      - entity: sensor.basement_air_mon_temperature
-      - entity: sensor.master_bedroom_air_mon_temperature
-      - entity: sensor.ironhide_temperature_acpitz
-      - entity: sensor.ironhide_temperature_nvme_composite
-      - entity: sensor.ironhide_temperature_nvme_sensor_1
-      - entity: sensor.ironhide_temperature_nvme_sensor_2
-      - entity: sensor.ironhide_temperature_coretemp_package_id_0
-      - entity: sensor.ironhide_temperature_coretemp_core_0
-      - entity: sensor.ironhide_temperature_coretemp_core_1
-      - entity: sensor.ironhide_temperature_coretemp_core_2
-      - entity: sensor.ironhide_temperature_coretemp_core_3
-      - entity: sensor.ironhide_temperature_coretemp_core_4
-      - entity: sensor.ironhide_temperature_coretemp_core_5
-      - entity: sensor.ironhide_temperature_coretemp_core_6
-      - entity: sensor.ironhide_temperature_coretemp_core_7
-      - entity: sensor.ironhide_temperature_iwlwifi_1
-      - entity: sensor.living_room_light_button_device_temperature
-      - entity: sensor.bedroom_light_button_device_temperature
-      - entity: sensor.plant_soil_temperature
-      - entity: sensor.0xffffb40e0605dd6a_temperature
-  - type: grid
-    cards:
-    - type: history-graph
-      title: Humidity
-      hours_to_show: 24
-      entities:
-      - entity: sensor.willy_s_humidifier_current_humidity
-      - entity: sensor.master_bedroom_humidifier_current_humidity
-      - entity: sensor.girls_humidifier_current_humidity
-      - entity: sensor.master_bedroom_humidity
-      - entity: sensor.girls_room_temperature_and_humidity_temperature
-      - entity: sensor.bernadettes_room_humidity
-      - entity: sensor.guest_bedroom_thermometer_humidity
-      - entity: sensor.main_floor_current_humidity
-      - entity: sensor.second_floor_current_humidity
-      - entity: sensor.plant_soil_humidity
-      - entity: sensor.0xffffb40e0605dd6a_humidity
-  - type: grid
-    cards:
-    - type: history-graph
-      title: Air quality (PM2.5)
-      hours_to_show: 24
-      entities:
-      - entity: sensor.airnow_pm2_5
-      - entity: sensor.airnow_pm2_5_reporting_station
-      - entity: sensor.bonus_room_air_quality_airquality
-      - entity: sensor.master_bedroom_air_mon_airquality
-      - entity: sensor.basement_air_mon_airquality
-      - entity: sensor.attic_monitor_airquality
+  - title: Climate & Air
+    path: climate
+    icon: mdi:thermometer
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Climate & Air
+            icon: mdi:thermometer
+          - type: custom:mushroom-chips-card
+            alignment: center
+            chips:
+              - type: template
+                icon: mdi:home-thermometer
+                icon_color: blue
+                content: "{{ states('sensor.main_floor_current_temperature') }}°F main"
+              - type: template
+                icon: mdi:home-thermometer-outline
+                icon_color: purple
+                content: "{{ states('sensor.second_floor_current_temperature') }}°F upstairs"
+              - type: template
+                icon: mdi:water-percent
+                icon_color: cyan
+                content: "{{ states('sensor.main_floor_current_humidity') }}% humidity"
+              - type: template
+                icon: mdi:blur
+                icon_color: green
+                content: "PM2.5 {{ states('sensor.airnow_pm2_5') }}"
+          - type: custom:mushroom-climate-card
+            entity: climate.living_room_air_conditioner
+            icon: mdi:air-conditioner
+            show_temperature_control: true
+            layout: horizontal
+          - type: custom:mushroom-climate-card
+            entity: climate.office_air_conditioner
+            icon: mdi:air-conditioner
+            show_temperature_control: true
+            layout: horizontal
+          - type: custom:mushroom-climate-card
+            entity: climate.master_air_conditioner
+            icon: mdi:air-conditioner
+            show_temperature_control: true
+            layout: horizontal
+          - type: custom:mushroom-climate-card
+            entity: climate.attic_ac
+            icon: mdi:air-conditioner
+            show_temperature_control: true
+            layout: horizontal
+          - type: custom:mushroom-climate-card
+            entity: climate.main_floor
+            icon: mdi:thermostat
+            show_temperature_control: true
+            layout: horizontal
+          - type: custom:mushroom-climate-card
+            entity: climate.second_floor
+            icon: mdi:thermostat
+            show_temperature_control: true
+            layout: horizontal
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Humidifiers
+            icon: mdi:air-humidifier
+          - type: custom:mushroom-entity-card
+            entity: humidifier.willy_s_humidifier
+            icon: mdi:air-humidifier
+            icon_color: cyan
+          - type: custom:mushroom-entity-card
+            entity: humidifier.master_bedroom_humidifier
+            icon: mdi:air-humidifier
+            icon_color: cyan
+          - type: custom:mushroom-entity-card
+            entity: humidifier.girls_humidifier
+            icon: mdi:air-humidifier
+            icon_color: cyan
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Temperature
+            icon: mdi:thermometer-lines
+          - type: custom:mini-graph-card
+            name: Upstairs
+            icon: mdi:home-thermometer
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.second_floor_current_temperature
+                name: Second floor
+                color: "#a855f7"
+              - entity: sensor.master_bedroom_temperature
+                name: Master bedroom
+                color: "#ec4899"
+              - entity: sensor.girls_room_temperature_and_humidity_temperature
+                name: Girls room
+                color: "#f97316"
+              - entity: sensor.guest_bedroom_thermometer_temperature
+                name: Guest bedroom
+                color: "#14b8a6"
+              - entity: sensor.bonus_room_air_quality_temperature
+                name: Bonus room
+                color: "#84cc16"
+          - type: custom:mini-graph-card
+            name: Main floor & basement
+            icon: mdi:home-thermometer-outline
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.main_floor_current_temperature
+                name: Main floor
+                color: "#3b82f6"
+              - entity: sensor.basement_air_mon_temperature
+                name: Basement
+                color: "#64748b"
+              - entity: sensor.attic_monitor_temperature
+                name: Attic
+                color: "#ef4444"
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Humidity
+            icon: mdi:water-percent
+          - type: custom:mini-graph-card
+            name: Indoor humidity
+            icon: mdi:water-percent
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.main_floor_current_humidity
+                name: Main floor
+                color: "#3b82f6"
+              - entity: sensor.second_floor_current_humidity
+                name: Second floor
+                color: "#a855f7"
+              - entity: sensor.master_bedroom_humidity
+                name: Master bedroom
+                color: "#ec4899"
+              - entity: sensor.bernadettes_room_humidity
+                name: Girls room
+                color: "#f97316"
+              - entity: sensor.guest_bedroom_thermometer_humidity
+                name: Guest bedroom
+                color: "#14b8a6"
+              - entity: sensor.basement_air_mon_humidity
+                name: Basement
+                color: "#64748b"
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Air quality
+            icon: mdi:blur
+          - type: custom:mini-graph-card
+            name: PM2.5
+            icon: mdi:blur
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.airnow_pm2_5
+                name: Outside
+                color: "#22c55e"
+              - entity: sensor.bonus_room_air_quality_airquality
+                name: Bonus room
+                color: "#84cc16"
+              - entity: sensor.master_bedroom_air_mon_airquality
+                name: Master bedroom
+                color: "#ec4899"
+              - entity: sensor.basement_air_mon_airquality
+                name: Basement
+                color: "#64748b"
+              - entity: sensor.attic_monitor_airquality
+                name: Attic
+                color: "#ef4444"

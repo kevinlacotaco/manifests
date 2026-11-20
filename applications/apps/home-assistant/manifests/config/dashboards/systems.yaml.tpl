@@ -1,168 +1,240 @@
 title: Systems & Maintenance
 views:
-- title: Systems & Maintenance
-  path: systems
-  icon: mdi:server
-  type: sections
-  sections:
-  - type: grid
-    cards:
-    - type: markdown
-      content: "### Hosts"
-    - type: tile
-      entity: sensor.ironhide_cpu_usage
-    - type: tile
-      entity: sensor.ironhide_memory_usage
-    - type: tile
-      entity: sensor.ironhide_temperature_coretemp_package_id_0
-    - type: tile
-      entity: sensor.ironhide_gpu_nvidia_0_load
-    - type: tile
-      entity: sensor.ironhide_gpu_nvidia_0_temperature
-  - type: grid
-    cards:
-    - type: entities
-      title: Updates
-      state_color: true
-      entities:
-      - entity: update.frigate_server
-      - entity: update.0x282c02bfffea6f5d
-      - entity: update.dryer_vibration_sensor
-      - entity: update.right_garage_door
-      - entity: update.0x282c02bfffec941f
-      - entity: update.hoist_dsm_update
-      - entity: update.first_floor_bathroom_sink
-      - entity: update.0x282c02bfffeae7b7
-      - entity: update.0x282c02bfffeae47e
-      - entity: update.ironhide_update
-      - entity: update.master_bedroom_smart_button
-      - entity: update.0x282c02bfffec3463
-      - entity: update.0x282c02bfffec763f
-      - entity: update.plant_soil
-      - entity: update.0xffffb40e0605dd6a
-      - entity: update.0xffffb40e0603a716
-      - entity: update.string_lights
-      - entity: update.christmas_tree
-      - entity: update.0x282c02bfffec61e0
-      - entity: update.garmin_connect
-      - entity: update.frigate
-      - entity: update.local_tuya
-      - entity: update.tp_link_deco
-      - entity: update.tesla
-      - entity: update.mail_and_packages
-      - entity: update.smartthinq_lge_sensors
-      - entity: update.0x001788010fefe488
-      - entity: update.0x001788010fefe30d
-      - entity: update.0x001788010fee7aca
-      - entity: update.0x001788010ff05dc7
-  - type: grid
-    cards:
-    - type: entities
-      title: Batteries
-      state_color: true
-      entities:
-      - entity: sensor.master_bedroom_temperature_and_humidity_battery
-      - entity: sensor.girls_room_temperature_and_humidity_battery
-      - entity: sensor.guest_bedroom_thermometer_battery
-      - entity: sensor.arcee_battery_level
-      - entity: sensor.utility_sink_leak_battery
-      - entity: sensor.dryer_vibration_battery
-      - entity: sensor.right_garage_door_battery
-      - entity: sensor.left_garage_door_battery
-      - entity: sensor.first_floor_bathroom_sink_battery
-      - entity: sensor.kitchen_sink_leak_battery
-      - entity: sensor.second_floor_bathroom_leak_battery
-      - entity: sensor.office_ir_blaster_battery
-      - entity: sensor.living_room_light_button_battery
-      - entity: sensor.bedroom_light_button_battery
-      - entity: sensor.master_bedroom_smart_button_battery
-      - entity: sensor.pixel_8_battery_level
-      - entity: sensor.plant_soil_battery
-      - entity: sensor.0xffffb40e0605dd6a_battery
-  - type: grid
-    cards:
-    - type: entities
-      title: Consumables and maintenance
-      state_color: true
-      entities:
-      - entity: sensor.mfc_j4335dw_black_ink_remaining
-      - entity: sensor.mfc_j4335dw_cyan_ink_remaining
-      - entity: sensor.mfc_j4335dw_magenta_ink_remaining
-      - entity: sensor.mfc_j4335dw_yellow_ink_remaining
-      - entity: sensor.roborock_q5_2_filter_time_left
-      - entity: sensor.roborock_q5_filter_time_left
-      - entity: sensor.living_room_ac_filter_life
-      - entity: sensor.office_air_conditioner_filter_remaining_life
-      - entity: button.roborock_q5_2_reset_sensor_consumable
-      - entity: button.roborock_q5_2_reset_filter_consumable
-      - entity: button.roborock_q5_2_reset_side_brush_consumable
-      - entity: button.roborock_q5_2_reset_main_brush_consumable
-      - entity: button.roborock_q5_reset_sensor_consumable
-      - entity: button.roborock_q5_reset_filter_consumable
-      - entity: button.roborock_q5_reset_side_brush_consumable
-      - entity: button.roborock_q5_reset_main_brush_consumable
-      - entity: sensor.roborock_q5_2_filter_left
-      - entity: sensor.roborock_q5_filter_left
-      - entity: sensor.master_air_conditioner_filter_remaining_life
-      - entity: sensor.attic_ac_filter_remaining_life
-      - entity: binary_sensor.utility_sink_leak_battery_low
-      - entity: binary_sensor.dryer_vibration_battery_low
-      - entity: binary_sensor.right_garage_door_battery_low
-      - entity: binary_sensor.0x282c02bfffec941f_battery_low
-      - entity: binary_sensor.first_floor_bathroom_sink_battery_low
-      - entity: binary_sensor.kitchen_sink_leak_battery_low
-      - entity: binary_sensor.second_floor_bathroom_leak_battery_low
-      - entity: binary_sensor.master_bedroom_smart_button_battery_low
-      - entity: binary_sensor.guest_bedroom_mfc_j4335dw_door_open
-      - entity: binary_sensor.guest_bedroom_mfc_j4335dw_paper_jam
-      - entity: binary_sensor.guest_bedroom_mfc_j4335dw_no_paper
-      - entity: binary_sensor.guest_bedroom_mfc_j4335dw_low_ink
-      - entity: binary_sensor.guest_bedroom_mfc_j4335dw_no_ink
-  - type: grid
-    cards:
-    - type: entities
-      title: Host telemetry
-      state_color: true
-      entities:
-      - entity: sensor.ironhide_disk_io_nvme0n1
-      - entity: sensor.ironhide_disk_io_sdb
-      - entity: sensor.ironhide_disk_io_sda
-      - entity: sensor.ironhide_cpu_usage
-      - entity: binary_sensor.ironhide_system_updates
-      - entity: sensor.ironhide_memory_usage
-      - entity: binary_sensor.ironhide_required_restart
-      - entity: sensor.ironhide_temperature_acpitz
-      - entity: sensor.ironhide_temperature_nvme_composite
-      - entity: sensor.ironhide_temperature_nvme_sensor_1
-      - entity: sensor.ironhide_temperature_nvme_sensor_2
-      - entity: sensor.ironhide_temperature_coretemp_package_id_0
-      - entity: sensor.ironhide_temperature_coretemp_core_0
-      - entity: sensor.ironhide_temperature_coretemp_core_1
-      - entity: sensor.ironhide_temperature_coretemp_core_2
-      - entity: sensor.ironhide_temperature_coretemp_core_3
-      - entity: sensor.ironhide_temperature_coretemp_core_4
-      - entity: sensor.ironhide_temperature_coretemp_core_5
-      - entity: sensor.ironhide_temperature_coretemp_core_6
-      - entity: sensor.ironhide_temperature_coretemp_core_7
-      - entity: sensor.ironhide_temperature_iwlwifi_1
-      - entity: sensor.ironhide_disk_dev_nvme0n1p2
-      - entity: sensor.ironhide_disk_dev_nvme0n1p1
-      - entity: sensor.ironhide_disk_dev_sdb1
-      - entity: sensor.ironhide_gpu_nvidia_0_load
-      - entity: sensor.ironhide_gpu_nvidia_0_memory
-      - entity: sensor.ironhide_gpu_nvidia_0_temperature
-      - entity: sensor.ironhide_disk_io_sdc
-      - entity: sensor.ironhide_disk_dev_sdc
-      - entity: sensor.ironhide_disk_dev_sdc1
-      - entity: sensor.ironhide_disk_dev_sdc4
-      - entity: sensor.ironhide_disk_dev_sda2
-      - entity: sensor.ironhide_disk_io_sdd
-      - entity: sensor.ironhide_disk_dev_sdd1
-      - entity: sensor.ironhide_disk_io_sde
-      - entity: sensor.ironhide_disk_dev_sdd
-      - entity: sensor.ironhide_disk_dev_sde1
-      - entity: sensor.backup_manager_state
-      - entity: sensor.backup_next_scheduled_automatic_backup
-      - entity: sensor.backup_last_successful_automatic_backup
-      - entity: sensor.backup_last_attempted_automatic_backup
-      - entity: sensor.backup_last_successful_automatic_backup_size
+  - title: Systems & Maintenance
+    path: systems
+    icon: mdi:server
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Systems & Maintenance
+            icon: mdi:server
+          - type: custom:mushroom-chips-card
+            alignment: center
+            chips:
+              - type: template
+                icon: mdi:cpu-64-bit
+                icon_color: blue
+                content: "{{ states('sensor.ironhide_cpu_usage') }}% CPU"
+              - type: template
+                icon: mdi:memory
+                icon_color: purple
+                content: "{{ states('sensor.ironhide_memory_usage') }}% RAM"
+              - type: template
+                icon: mdi:thermometer
+                icon_color: amber
+                content: "{{ states('sensor.ironhide_temperature_coretemp_package_id_0') }}°C"
+              - type: template
+                icon: mdi:backup-restore
+                icon_color: green
+                content: "Backup {{ states('sensor.backup_manager_state') }}"
+          - type: custom:mushroom-entity-card
+            entity: sensor.ironhide_cpu_usage
+            name: CPU usage
+            icon: mdi:cpu-64-bit
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.ironhide_memory_usage
+            name: Memory usage
+            icon: mdi:memory
+            icon_color: purple
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.ironhide_temperature_coretemp_package_id_0
+            name: Package temperature
+            icon: mdi:thermometer
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.ironhide_gpu_nvidia_0_load
+            name: GPU load
+            icon: mdi:expansion-card
+            icon_color: green
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.ironhide_gpu_nvidia_0_temperature
+            name: GPU temperature
+            icon: mdi:thermometer
+            icon_color: red
+            primary_info: state
+            secondary_info: name
+          - type: custom:mini-graph-card
+            name: Ironhide load
+            icon: mdi:chart-line
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.ironhide_cpu_usage
+                name: CPU
+                color: "#3b82f6"
+              - entity: sensor.ironhide_memory_usage
+                name: Memory
+                color: "#a855f7"
+              - entity: sensor.ironhide_gpu_nvidia_0_load
+                name: GPU
+                color: "#22c55e"
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Backups
+            icon: mdi:backup-restore
+          - type: custom:mushroom-entity-card
+            entity: sensor.backup_manager_state
+            name: Backup state
+            icon: mdi:backup-restore
+            icon_color: green
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.backup_next_scheduled_automatic_backup
+            name: Next backup
+            icon: mdi:calendar-clock
+            icon_color: blue
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.backup_last_successful_automatic_backup
+            name: Last successful
+            icon: mdi:check-circle
+            icon_color: green
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.backup_last_attempted_automatic_backup
+            name: Last attempted
+            icon: mdi:clock-outline
+            icon_color: amber
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.backup_last_successful_automatic_backup_size
+            name: Backup size
+            icon: mdi:database
+            icon_color: purple
+            primary_info: state
+            secondary_info: name
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Updates
+            icon: mdi:package-up
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+              title: Updates available
+              state_color: true
+            filter:
+              include:
+                - domain: update
+                  state: "on"
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Batteries
+            icon: mdi:battery
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+              title: Batteries (lowest first)
+              state_color: true
+            filter:
+              include:
+                - domain: sensor
+                  attributes:
+                    device_class: battery
+            sort:
+              method: state
+              numeric: true
+              reverse: false
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Consumables
+            icon: mdi:printer
+          - type: entities
+            title: Ink and filters
+            state_color: true
+            entities:
+              - entity: sensor.mfc_j4335dw_black_ink_remaining
+              - entity: sensor.mfc_j4335dw_cyan_ink_remaining
+              - entity: sensor.mfc_j4335dw_magenta_ink_remaining
+              - entity: sensor.mfc_j4335dw_yellow_ink_remaining
+              - entity: sensor.roborock_q5_2_filter_time_left
+              - entity: sensor.roborock_q5_filter_time_left
+              - entity: sensor.living_room_ac_filter_life
+              - entity: sensor.office_air_conditioner_filter_remaining_life
+              - entity: sensor.master_air_conditioner_filter_remaining_life
+              - entity: sensor.attic_ac_filter_remaining_life
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Host telemetry
+            icon: mdi:server
+          - type: custom:mini-graph-card
+            name: Host temperatures
+            icon: mdi:thermometer-lines
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.ironhide_temperature_coretemp_package_id_0
+                name: CPU package
+                color: "#ef4444"
+              - entity: sensor.ironhide_temperature_nvme_composite
+                name: NVMe composite
+                color: "#3b82f6"
+              - entity: sensor.ironhide_temperature_nvme_sensor_1
+                name: NVMe sensor 1
+                color: "#06b6d4"
+              - entity: sensor.ironhide_temperature_nvme_sensor_2
+                name: NVMe sensor 2
+                color: "#a855f7"
+              - entity: sensor.ironhide_temperature_acpitz
+                name: ACPI
+                color: "#f59e0b"
+          - type: custom:mini-graph-card
+            name: Disk usage
+            icon: mdi:harddisk
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
+              - entity: sensor.ironhide_disk_dev_nvme0n1p2
+                name: NVMe root
+                color: "#3b82f6"
+              - entity: sensor.ironhide_disk_dev_sdb1
+                name: sdb1
+                color: "#22c55e"
+              - entity: sensor.ironhide_disk_dev_sdc1
+                name: sdc1
+                color: "#f59e0b"
+              - entity: sensor.ironhide_disk_dev_sdd1
+                name: sdd1
+                color: "#ef4444"
+              - entity: sensor.ironhide_disk_dev_sde1
+                name: sde1
+                color: "#a855f7"
+          - type: entities
+            title: Host status
+            state_color: true
+            entities:
+              - entity: sensor.ironhide_disk_io_nvme0n1
+              - entity: sensor.ironhide_disk_io_sdb
+              - entity: sensor.ironhide_gpu_nvidia_0_memory
+              - entity: binary_sensor.ironhide_system_updates
+              - entity: binary_sensor.ironhide_required_restart
