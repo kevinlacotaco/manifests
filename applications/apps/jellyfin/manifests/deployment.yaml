@@ -82,7 +82,7 @@ spec:
               mountPath: /media
               readOnly: true
             - name: youtube
-              mountPath: /media/youtube
+              mountPath: /youtube
               readOnly: true
             - name: dri
               mountPath: /dev/dri
