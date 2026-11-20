@@ -38,9 +38,10 @@ spec:
         # Kubelet health probes originate from the node.
         - ipBlock:
             cidr: 192.168.68.71/32
-        # Home Assistant runs with hostNetwork and may land on either node.
+        # Home Assistant runs with hostNetwork; its traffic is SNATed to the
+        # node's flannel address, so allow the k3s pod CIDR as well.
         - ipBlock:
-            cidr: 192.168.68.102/32
+            cidr: 10.42.0.0/16
 
 ---
 apiVersion: networking.k8s.io/v1
