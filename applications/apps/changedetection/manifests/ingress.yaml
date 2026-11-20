@@ -4,7 +4,7 @@ metadata:
   name: changedetection
   namespace: changedetection
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: auth-authelia-forwardauth@kubernetescrd
+    # LAN-only: no DSM reverse proxy and no external auth middleware.
     gethomepage.dev/enabled: "true"
     gethomepage.dev/name: "changedetection.io"
     gethomepage.dev/group: "Applications"
