@@ -197,12 +197,6 @@ views:
             name: Driveway person
             icon: mdi:account-alert
             icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: binary_sensor.driveway_cat_occupancy
-            name: Driveway cat
-            icon: mdi:cat
-            icon_color: purple
-
       - type: grid
         cards:
           - type: heading
@@ -218,6 +212,15 @@ views:
               {{ 'orange' if is_state('binary_sensor.left_garage_door_contact', 'on') else 'green' }}
             entity: binary_sensor.left_garage_door_contact
           - type: custom:mushroom-template-card
+            primary: Left garage door battery
+            secondary: >-
+              {{ states('sensor.left_garage_door_battery') }}%
+            icon: >-
+              {{ 'mdi:battery-alert' if states('sensor.left_garage_door_battery') | float(100) < 20 else 'mdi:battery' }}
+            icon_color: >-
+              {{ 'red' if states('sensor.left_garage_door_battery') | float(100) < 20 else 'green' }}
+            entity: sensor.left_garage_door_battery
+          - type: custom:mushroom-template-card
             primary: Right garage door
             secondary: >-
               {{ 'Open' if is_state('binary_sensor.right_garage_door_contact', 'on') else 'Closed' }}
@@ -226,8 +229,12 @@ views:
             icon_color: >-
               {{ 'orange' if is_state('binary_sensor.right_garage_door_contact', 'on') else 'green' }}
             entity: binary_sensor.right_garage_door_contact
-          - type: custom:mushroom-entity-card
+          - type: custom:mushroom-template-card
+            primary: Right garage door battery
+            secondary: >-
+              {{ 'Low' if is_state('binary_sensor.right_garage_door_battery_low', 'on') else 'OK' }}
+            icon: >-
+              {{ 'mdi:battery-alert' if is_state('binary_sensor.right_garage_door_battery_low', 'on') else 'mdi:battery' }}
+            icon_color: >-
+              {{ 'red' if is_state('binary_sensor.right_garage_door_battery_low', 'on') else 'green' }}
             entity: binary_sensor.right_garage_door_battery_low
-            name: Right garage door battery
-            icon: mdi:battery-alert
-            icon_color: red
