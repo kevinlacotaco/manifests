@@ -22,7 +22,7 @@ configMapGenerator:
       - configuration.yaml=config/configuration.yaml.tpl
       - template-generating_solar.yaml=config/templates/generating_solar.yaml.tpl
       - template-energy_balance.yaml=config/templates/energy_balance.yaml.tpl
-      - dashboard-home.yaml=config/dashboards/home.yaml.tpl
+      - dashboard-overview.yaml=config/dashboards/overview.yaml.tpl
       - dashboard-climate.yaml=config/dashboards/climate.yaml.tpl
       - dashboard-energy.yaml=config/dashboards/energy.yaml.tpl
       - dashboard-security.yaml=config/dashboards/security.yaml.tpl

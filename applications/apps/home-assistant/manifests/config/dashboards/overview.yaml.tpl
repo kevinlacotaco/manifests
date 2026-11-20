@@ -1,7 +1,7 @@
-title: Home
+title: Overview
 views:
   - title: Overview
-    path: home
+    path: overview
     icon: mdi:view-dashboard
     type: sections
     max_columns: 3
