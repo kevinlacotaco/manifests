@@ -82,6 +82,25 @@ views:
       - type: grid
         cards:
           - type: heading
+            heading: Kitchen
+            icon: mdi:silverware-fork-knife
+          - type: custom:mushroom-template-card
+            entity: sensor.kitchen_temperature
+            primary: "{{ states('sensor.kitchen_temperature') | float(0) | round(1) }}°F"
+            secondary: "{{ states('sensor.kitchen_humidity') | float(0) | round(0) }}% humidity"
+            icon: mdi:thermometer
+            icon_color: amber
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-entity-card
+            entity: sensor.kitchen_temperature_humidity_battery
+            name: Sensor battery
+            icon: mdi:battery
+            icon_color: green
+
+      - type: grid
+        cards:
+          - type: heading
             heading: Temperature
             icon: mdi:thermometer-lines
           - type: custom:mini-graph-card
@@ -116,6 +135,9 @@ views:
               - entity: sensor.main_floor_current_temperature
                 name: Main floor
                 color: "#3b82f6"
+              - entity: sensor.kitchen_temperature
+                name: Kitchen
+                color: "#f59e0b"
               - entity: sensor.basement_air_mon_temperature
                 name: Basement
                 color: "#64748b"
@@ -150,6 +172,9 @@ views:
               - entity: sensor.guest_bedroom_thermometer_humidity
                 name: Guest bedroom
                 color: "#14b8a6"
+              - entity: sensor.kitchen_humidity
+                name: Kitchen
+                color: "#f59e0b"
               - entity: sensor.basement_air_mon_humidity
                 name: Basement
                 color: "#64748b"
