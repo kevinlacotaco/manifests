@@ -65,13 +65,15 @@ views:
             icon_color: amber
             primary_info: state
             secondary_info: name
-          - type: custom:mushroom-entity-card
+          - type: custom:mushroom-template-card
             entity: sensor.home_solar_energy_today
-            name: Solar today
+            primary: >
+              {{ states('sensor.home_solar_energy_today') | float(0) | round(2) }} kWh
+            secondary: Solar generated today
             icon: mdi:solar-power-variant
             icon_color: amber
-            primary_info: state
-            secondary_info: name
+            tap_action:
+              action: more-info
           - type: custom:mushroom-entity-card
             entity: sensor.my_home_grid_power
             name: Grid
