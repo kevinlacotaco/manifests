@@ -56,7 +56,7 @@ spec:
               name: speedtest-tracker-secrets
               key: ADMIN_PASSWORD
         - name: APP_URL
-          value: https://speedtest.lakotko.synology.me
+          value: http://speedtest-tracker.speedtest-tracker.svc.cluster.local
         - name: APP_TIMEZONE
           value: America/New_York
         - name: DISPLAY_TIMEZONE

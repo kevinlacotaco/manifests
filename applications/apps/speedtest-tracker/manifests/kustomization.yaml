@@ -10,7 +10,6 @@ resources:
   - pvc-v2.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
   - speedtest-ntfy-sealed-secret.yaml
   - speedtest-api-token-sealed-secret.yaml
   - cronjob-summary.yaml

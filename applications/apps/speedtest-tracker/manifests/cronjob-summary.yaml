@@ -94,7 +94,6 @@ spec:
                     --header="Tags: speedtest" \
                     --header="Priority: default" \
                     --header="Content-Type: text/plain" \
-                    --header="Click: https://speedtest.lakotko.synology.me" \
                     --post-data="$MSG" \
                     "http://ntfy-ntfy.ntfy.svc.cluster.local/speedtest" >/dev/null
               resources:
