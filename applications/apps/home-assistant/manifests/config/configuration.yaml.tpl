@@ -129,7 +129,7 @@ mqtt:
       device:
         identifiers: "3951"
         name: "Detached Garage Ambient"
-        suggested_area: "garage"
+        suggested_area: "Detached Garage"
       state_class: "measurement"
       value_template: "{{ value }}"
   - sensor:
@@ -141,7 +141,7 @@ mqtt:
       device:
         identifiers: "3951"
         name: "Detached Garage Ambient"
-        suggested_area: "garage"
+        suggested_area: "Detached Garage"
       state_class: "measurement"
       value_template: "{{ value }}"
 
