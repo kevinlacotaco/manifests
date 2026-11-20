@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - guardrails.yaml
+  - sealed-secret.yaml
+  - pvc-db.yaml
+  - pvc-appdata.yaml
+  - pvc-downloads.yaml
+  - mariadb-service.yaml
+  - mariadb-deployment.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - networkpolicy.yaml

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: youtarr
+  namespace: youtarr
+  annotations:
+    # LAN-only: no DSM reverse proxy and no external auth middleware.
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Youtarr"
+    gethomepage.dev/group: "Applications"
+    gethomepage.dev/icon: "youtube.png"
+    gethomepage.dev/href: "https://youtarr.lakotko.synology.me"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: youtarr.lakotko.synology.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: youtarr
+                port:
+                  name: http

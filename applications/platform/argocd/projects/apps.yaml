@@ -45,6 +45,8 @@ spec:
       namespace: govee2mqtt
     - server: https://kubernetes.default.svc
       namespace: changedetection
+    - server: https://kubernetes.default.svc
+      namespace: youtarr
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace

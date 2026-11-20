@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtarr
+  namespace: youtarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: youtarr
+  template:
+    metadata:
+      labels:
+        app: youtarr
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: prepare-data
+          image: alpine:3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              mkdir -p /appdata/config /appdata/jobs /appdata/images /downloads
+              chown -R 1000:1000 /appdata /downloads
+              chmod 0755 /appdata /downloads
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - FOWNER
+                - DAC_OVERRIDE
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - name: appdata
+              mountPath: /appdata
+            - name: downloads
+              mountPath: /downloads
+      containers:
+        - name: youtarr
+          image: dialmaster/youtarr:v1.93.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: DB_HOST
+              value: youtarr-db
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: youtarr
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-secrets
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              value: youtarr
+            - name: YOUTUBE_OUTPUT_DIR
+              value: /usr/src/app/data
+            - name: AUTH_ENABLED
+              value: "true"
+            - name: AUTH_PRESET_USERNAME
+              value: admin
+            - name: AUTH_PRESET_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-secrets
+                  key: AUTH_PRESET_PASSWORD
+            - name: TRUST_PROXY
+              value: "true"
+            - name: LOG_LEVEL
+              value: info
+            - name: YOUTARR_UID
+              value: "1000"
+            - name: YOUTARR_GID
+              value: "1000"
+          ports:
+            - name: http
+              containerPort: 3011
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            failureThreshold: 60
+            periodSeconds: 5
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            failureThreshold: 3
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: appdata
+              mountPath: /app/config
+              subPath: config
+            - name: appdata
+              mountPath: /app/jobs
+              subPath: jobs
+            - name: appdata
+              mountPath: /app/server/images
+              subPath: images
+            - name: downloads
+              mountPath: /usr/src/app/data
+      volumes:
+        - name: appdata
+          persistentVolumeClaim:
+            claimName: youtarr-appdata
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: youtarr-downloads

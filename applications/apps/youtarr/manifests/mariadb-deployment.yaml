@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtarr-db
+  namespace: youtarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: youtarr-db
+  template:
+    metadata:
+      labels:
+        app: youtarr-db
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        runAsNonRoot: true
+        fsGroup: 999
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mariadb
+          image: mariadb:10.11
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MARIADB_DATABASE
+              value: youtarr
+            - name: MARIADB_USER
+              value: youtarr
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-secrets
+                  key: DB_PASSWORD
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: youtarr-secrets
+                  key: DB_ROOT_PASSWORD
+            - name: MARIADB_AUTO_UPGRADE
+              value: "1"
+          ports:
+            - name: mysql
+              containerPort: 3306
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - healthcheck.sh --connect --innodb_initialized
+            failureThreshold: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - healthcheck.sh --connect --innodb_initialized
+            failureThreshold: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - healthcheck.sh --connect --innodb_initialized
+            failureThreshold: 4
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: db
+              mountPath: /var/lib/mysql
+            - name: run
+              mountPath: /run/mysqld
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: youtarr-db
+        - name: run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

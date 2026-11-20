@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: youtarr-appdata
+  namespace: youtarr
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: synology-nfs-subdir
+  resources:
+    requests:
+      storage: 10Gi

@@ -54,6 +54,9 @@ data:
         - domain: router.home.arpa
           answer: 192.168.68.1
           enabled: true
+        - domain: youtarr.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
 
     http:
       address: 0.0.0.0:3000
