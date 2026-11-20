@@ -159,6 +159,8 @@ views:
               {{ 'green' if delivering > 0 else ('blue' if transit > 0 else 'grey') }}
             tap_action:
               action: more-info
+            grid_options:
+              columns: 12
 
       - type: grid
         cards:
