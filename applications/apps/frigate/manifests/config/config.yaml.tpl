@@ -49,15 +49,23 @@ go2rtc:
     attic-1:
       - rtsp://{FRIGATE_ATTIC1_CREDENTIALS}@192.168.68.74/live0
       #- "ffmpeg:attic-1#audio=opus"
+    attic-1-detect:
+      - "ffmpeg:attic-1#video=h264#width=1280#height=720#hardware=vaapi"
     attic-2:
       - rtsp://{FRIGATE_ATTIC2_CREDENTIALS}@192.168.68.76/live0
       #- "ffmpeg:attic-2#audio=opus"
+    attic-2-detect:
+      - "ffmpeg:attic-2#video=h264#width=1280#height=720#hardware=vaapi"
     attic-3:
       - rtsp://{FRIGATE_ATTIC3_CREDENTIALS}@192.168.68.57/live0
       #- "ffmpeg:attic-3#audio=opus"
+    attic-3-detect:
+      - "ffmpeg:attic-3#video=h264#width=1280#height=720#hardware=vaapi"
     attic-4:
       - rtsp://{FRIGATE_ATTIC4_CREDENTIALS}@192.168.68.58/live0
       #- "ffmpeg:attic-4#audio=opus"
+    attic-4-detect:
+      - "ffmpeg:attic-4#video=h264#width=1280#height=720#hardware=vaapi"
     driveway_main:
       - rtsp://{FRIGATE_DRIVEWAY_CREDENTIALS}@192.168.68.104:554/stream1
     driveway_sub:
@@ -98,10 +106,13 @@ cameras:
           input_args: preset-rtsp-restream
           roles:
             - record
+        - path: rtsp://127.0.0.1:8554/attic-1-detect
+          input_args: preset-rtsp-restream
+          roles:
             - detect
     detect:
-      width: 2560
-      height: 1440
+      width: 1280
+      height: 720
   attic-2:
     ffmpeg:
       output_args:
@@ -111,10 +122,13 @@ cameras:
           input_args: preset-rtsp-restream
           roles:
             - record
+        - path: rtsp://127.0.0.1:8554/attic-2-detect
+          input_args: preset-rtsp-restream
+          roles:
             - detect
     detect:
-      width: 2560
-      height: 1440
+      width: 1280
+      height: 720
   attic-3:
     ffmpeg:
       output_args:
@@ -124,10 +138,13 @@ cameras:
           input_args: preset-rtsp-restream
           roles:
             - record
+        - path: rtsp://127.0.0.1:8554/attic-3-detect
+          input_args: preset-rtsp-restream
+          roles:
             - detect
     detect:
-      width: 2560
-      height: 1440
+      width: 1280
+      height: 720
   attic-4:
     ffmpeg:
       output_args:
@@ -137,10 +154,13 @@ cameras:
           input_args: preset-rtsp-restream
           roles:
             - record
+        - path: rtsp://127.0.0.1:8554/attic-4-detect
+          input_args: preset-rtsp-restream
+          roles:
             - detect
     detect:
-      width: 2560
-      height: 1440
+      width: 1280
+      height: 720
 
   driveway:
     # Temporarily disabled to check whether the camera's IR light stops
