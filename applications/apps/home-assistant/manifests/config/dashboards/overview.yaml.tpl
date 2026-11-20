@@ -113,6 +113,52 @@ views:
               action: navigate
               navigation_path: /systems-maintenance
 
+          - type: custom:mushroom-template-card
+            entity: sensor.klakotko_gmail_com_mail_packages_in_transit
+            primary: >-
+              {% set delivering = states('sensor.klakotko_gmail_com_mail_packages_delivering') | int(0) %}
+              {% set transit = states('sensor.klakotko_gmail_com_mail_packages_in_transit') | int(0) %}
+              {% if delivering > 0 %}
+                {{ delivering }} out for delivery
+              {% elif transit > 0 %}
+                {{ transit }} package{{ '' if transit == 1 else 's' }} in transit
+              {% else %}
+                No deliveries pending
+              {% endif %}
+            secondary: >-
+              {% set delivering = states('sensor.klakotko_gmail_com_mail_packages_delivering') | int(0) %}
+              {% set transit = states('sensor.klakotko_gmail_com_mail_packages_in_transit') | int(0) %}
+              {% set ns = namespace(carriers=[]) %}
+              {% for name, entity in [
+                ('Shopify', 'sensor.klakotko_gmail_com_mail_shopify_packages'),
+                ('Amazon', 'sensor.klakotko_gmail_com_mail_amazon_packages'),
+                ('UPS', 'sensor.klakotko_gmail_com_mail_ups_packages'),
+                ('FedEx', 'sensor.klakotko_gmail_com_mail_fedex_packages'),
+                ('USPS', 'sensor.klakotko_gmail_com_mail_usps_packages'),
+                ('DHL', 'sensor.klakotko_gmail_com_mail_dhl_packages')
+              ] %}
+                {% set count = states(entity) | int(0) %}
+                {% if count > 0 %}
+                  {% set ns.carriers = ns.carriers + [name ~ ' ' ~ count] %}
+                {% endif %}
+              {% endfor %}
+              {% if delivering > 0 %}
+                {{ transit }} in transit{% if ns.carriers %} · {{ ns.carriers | join(' · ') }}{% endif %}
+              {% elif transit > 0 %}
+                {{ ns.carriers | join(' · ') if ns.carriers else 'Tracking active' }}
+              {% else %}
+                All clear
+              {% endif %}
+            icon: >-
+              {% set delivering = states('sensor.klakotko_gmail_com_mail_packages_delivering') | int(0) %}
+              {{ 'mdi:truck-delivery' if delivering > 0 else 'mdi:package-variant-closed' }}
+            icon_color: >-
+              {% set delivering = states('sensor.klakotko_gmail_com_mail_packages_delivering') | int(0) %}
+              {% set transit = states('sensor.klakotko_gmail_com_mail_packages_in_transit') | int(0) %}
+              {{ 'green' if delivering > 0 else ('blue' if transit > 0 else 'grey') }}
+            tap_action:
+              action: more-info
+
       - type: grid
         cards:
           - type: heading
