@@ -71,7 +71,8 @@ spec:
                   i=1
                   MSG=""
                   while [ "$i" -le 10 ]; do
-                    if MSG="$(psql -v ON_ERROR_STOP=1 -Atc "SELECT format('Speedtest %s - down %s Mbps, up %s Mbps, ping %s ms (healthy=%s, id=%s)', to_char(created_at, 'YYYY-MM-DD HH24:MI'), round(download / 1000000.0, 1), round(upload / 1000000.0, 1), round(ping::numeric, 1), COALESCE(healthy::text, 'unknown'), id) FROM results WHERE status = 'completed' AND healthy IS TRUE ORDER BY created_at DESC, id DESC LIMIT 1;")"; then
+                    # Ookla stores download/upload as bytes per second; convert to Mbps.
+                    if MSG="$(psql -v ON_ERROR_STOP=1 -Atc "SELECT format('Speedtest %s - down %s Mbps, up %s Mbps, ping %s ms (healthy=%s, id=%s)', to_char(created_at, 'YYYY-MM-DD HH24:MI'), round(download * 8 / 1000000.0, 1), round(upload * 8 / 1000000.0, 1), round(ping::numeric, 1), COALESCE(healthy::text, 'unknown'), id) FROM results WHERE status = 'completed' AND healthy IS TRUE ORDER BY created_at DESC, id DESC LIMIT 1;")"; then
                       break
                     fi
                     echo "psql attempt ${i} failed; retrying" >&2
