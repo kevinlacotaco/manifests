@@ -7,6 +7,7 @@ views:
     max_columns: 3
     sections:
       - type: grid
+        column_span: 2
         cards:
           - type: heading
             heading: Overview
