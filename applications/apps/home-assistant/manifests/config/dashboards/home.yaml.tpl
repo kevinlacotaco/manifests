@@ -50,8 +50,13 @@ views:
               navigation_path: /security-cameras
 
           - type: custom:mushroom-template-card
-            primary: "{{ states('sensor.main_floor_current_temperature') | float(0) | round(0) }}°F main"
-            secondary: "Upstairs {{ states('sensor.second_floor_current_temperature') | float(0) | round(0) }}°F · Attic {{ states('sensor.attic_monitor_temperature') | float(0) | round(0) }}°F"
+            primary: >-
+              {% set main = states('sensor.main_floor_current_temperature') %}
+              {{ ((main | float | round(0)) ~ '°F main') if is_number(main) else 'Main temp unavailable' }}
+            secondary: >-
+              {% set upstairs = states('sensor.second_floor_current_temperature') %}
+              {% set attic = states('sensor.attic_monitor_temperature') %}
+              Upstairs {{ ((upstairs | float | round(0)) ~ '°F') if is_number(upstairs) else '—' }} · Attic {{ ((attic | float | round(0)) ~ '°F') if is_number(attic) else '—' }}
             icon: mdi:home-thermometer
             icon_color: blue
             tap_action:
@@ -59,7 +64,9 @@ views:
               navigation_path: /climate-air
 
           - type: custom:mushroom-template-card
-            primary: "{{ states('sensor.home_solar_energy_today') | float(0) | round(2) }} kWh solar"
+            primary: >-
+              {% set today = states('sensor.home_solar_energy_today') %}
+              {{ ((today | float | round(2)) ~ ' kWh solar') if is_number(today) else 'Solar total unavailable' }}
             secondary: >-
               {% set coverage = states('sensor.home_solar_coverage') %}
               {% set grid = states('sensor.my_home_grid_power') %}
@@ -75,8 +82,13 @@ views:
               navigation_path: /energy-view
 
           - type: custom:mushroom-template-card
-            primary: "{{ states('sensor.garage_freezer_temperature') | float(0) | round(1) }}°F freezer"
-            secondary: "Fridge {{ states('sensor.garage_fridge_temperature') | float(0) | round(1) }}°F · Detached {{ states('sensor.detached_garage_temperature') | float(0) | round(1) }}°F"
+            primary: >-
+              {% set freezer = states('sensor.garage_freezer_temperature') %}
+              {{ ((freezer | float | round(1)) ~ '°F freezer') if is_number(freezer) else 'Freezer unavailable' }}
+            secondary: >-
+              {% set fridge = states('sensor.garage_fridge_temperature') %}
+              {% set detached = states('sensor.detached_garage_temperature') %}
+              Fridge {{ ((fridge | float | round(1)) ~ '°F') if is_number(fridge) else '—' }} · Detached {{ ((detached | float | round(1)) ~ '°F') if is_number(detached) else '—' }}
             icon: mdi:fridge-thermometer
             icon_color: >-
               {{ 'red' if (states('sensor.garage_freezer_temperature') | float(0) > 10)
@@ -113,15 +125,21 @@ views:
               - type: template
                 icon: mdi:water-percent
                 icon_color: cyan
-                content: "Main {{ states('sensor.main_floor_current_humidity') | float(0) | round(0) }}%"
+                content: >-
+                  {% set h = states('sensor.main_floor_current_humidity') %}
+                  Main {{ ((h | float | round(0)) ~ '%') if is_number(h) else '—' }}
               - type: template
                 icon: mdi:water-percent
                 icon_color: cyan
-                content: "Upstairs {{ states('sensor.second_floor_current_humidity') | float(0) | round(0) }}%"
+                content: >-
+                  {% set h = states('sensor.second_floor_current_humidity') %}
+                  Upstairs {{ ((h | float | round(0)) ~ '%') if is_number(h) else '—' }}
               - type: template
                 icon: mdi:water-percent
                 icon_color: cyan
-                content: "Attic {{ states('sensor.attic_monitor_humidity') | float(0) | round(0) }}%"
+                content: >-
+                  {% set h = states('sensor.attic_monitor_humidity') %}
+                  Attic {{ ((h | float | round(0)) ~ '%') if is_number(h) else '—' }}
 
           - type: custom:mini-graph-card
             name: Indoor temperature
