@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-config-backup-egress
+  namespace: backup
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: app-config-backup
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # kubectl talks to the Kubernetes API through the in-cluster service.
+    # Some CNIs evaluate policy after DNAT to the API node, so allow the
+    # node addresses and the kube-apiserver port as well.
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 192.168.68.71/32
+        - ipBlock:
+            cidr: 192.168.68.102/32
+      ports:
+        - protocol: TCP
+          port: 6443
+    # The staging directory is on the NFS-backed Kopia repo PVC.
+    - to:
+        - ipBlock:
+            cidr: 192.168.68.138/32
+      ports:
+        - protocol: TCP
+          port: 2049
+        - protocol: UDP
+          port: 2049

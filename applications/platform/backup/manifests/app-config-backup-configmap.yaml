@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-backup
+  namespace: backup
+data:
+  backup.sh: |
+    #!/bin/sh
+    set -eu
+
+    stage="/repo/staging/apps"
+    mkdir -p "$stage"
+
+    backup() {
+      namespace="$1"
+      selector="$2"
+      container="$3"
+      source_dir="$4"
+      name="$5"
+      shift 5
+
+      pod="$(kubectl -n "$namespace" get pods -l "$selector" \
+        --field-selector=status.phase=Running \
+        -o jsonpath='{.items[0].metadata.name}')"
+      if [ -z "$pod" ]; then
+        echo "error: no running pod for $namespace ($selector)" >&2
+        return 1
+      fi
+
+      tmp="$stage/$name.tgz.tmp"
+      out="$stage/$name.tgz"
+      echo "snapshot $namespace/$pod:$source_dir -> $out"
+      kubectl -n "$namespace" exec "$pod" -c "$container" -- \
+        tar czf - -C "$source_dir" "$@" > "$tmp"
+      tar tzf "$tmp" >/dev/null
+      mv "$tmp" "$out"
+      ls -lh "$out"
+    }
+
+    backup home-assistant app=home-assistant home-assistant /config home-assistant-config .
+    backup jellyfin app=jellyfin jellyfin /config jellyfin-config .
+    backup frigate app=frigate frigate /config frigate-config .
+    backup changedetection app=changedetection changedetection /datastore changedetection-data .
+    backup youtarr app=youtarr youtarr /app youtarr-appdata config jobs server/images
