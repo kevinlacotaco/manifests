@@ -27,6 +27,10 @@ views:
                 icon_color: amber
                 content: "{{ states('sensor.garage_ambient_temperature') }}°F ambient"
               - type: template
+                icon: mdi:garage-variant
+                icon_color: green
+                content: "{{ states('sensor.detached_garage_temperature') }}°F detached"
+              - type: template
                 icon: "{{ 'mdi:garage-open' if is_state('binary_sensor.left_garage_door_contact', 'on') or is_state('binary_sensor.right_garage_door_contact', 'on') else 'mdi:garage' }}"
                 icon_color: "{{ 'red' if is_state('binary_sensor.left_garage_door_contact', 'on') or is_state('binary_sensor.right_garage_door_contact', 'on') else 'green' }}"
                 content: "{{ 'Door open' if is_state('binary_sensor.left_garage_door_contact', 'on') or is_state('binary_sensor.right_garage_door_contact', 'on') else 'Doors closed' }}"
@@ -51,6 +55,20 @@ views:
             icon_color: amber
             primary_info: state
             secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.detached_garage_temperature
+            name: Detached garage
+            icon: mdi:garage-variant
+            icon_color: green
+            primary_info: state
+            secondary_info: name
+          - type: custom:mushroom-entity-card
+            entity: sensor.detached_garage_humidity
+            name: Detached garage humidity
+            icon: mdi:water-percent
+            icon_color: teal
+            primary_info: state
+            secondary_info: name
 
       - type: grid
         cards:
@@ -73,6 +91,9 @@ views:
               - entity: sensor.garage_ambient_temperature
                 name: Ambient
                 color: "#f59e0b"
+              - entity: sensor.detached_garage_temperature
+                name: Detached
+                color: "#22c55e"
 
       - type: grid
         cards:
@@ -95,6 +116,9 @@ views:
               - entity: sensor.garage_ambient_humidity
                 name: Ambient
                 color: "#f59e0b"
+              - entity: sensor.detached_garage_humidity
+                name: Detached
+                color: "#22c55e"
 
       - type: grid
         cards:

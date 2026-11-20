@@ -120,6 +120,30 @@ mqtt:
         suggested_area: "garage"
       state_class: "measurement"
       value_template: "{{ value }}"
+  - sensor:
+      name: "Detached Garage Temperature"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/3951/CA/temperature_C"
+      unit_of_measurement: "°C"
+      unique_id: "detached_garage_temperature_c"
+      device_class: "temperature"
+      device:
+        identifiers: "3951"
+        name: "Detached Garage Ambient"
+        suggested_area: "garage"
+      state_class: "measurement"
+      value_template: "{{ value }}"
+  - sensor:
+      name: "Detached Garage Humidity"
+      state_topic: "rtl_433/grapple/devices/Acurite-Tower/3951/CA/humidity"
+      unit_of_measurement: "%"
+      unique_id: "detached_garage_humidity"
+      device_class: "humidity"
+      device:
+        identifiers: "3951"
+        name: "Detached Garage Ambient"
+        suggested_area: "garage"
+      state_class: "measurement"
+      value_template: "{{ value }}"
 
 lovelace:
   dashboards:
