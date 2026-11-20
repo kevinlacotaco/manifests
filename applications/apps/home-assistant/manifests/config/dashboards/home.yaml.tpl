@@ -208,6 +208,12 @@ views:
                   {{ 'Doors open' if (is_state('binary_sensor.left_garage_door_contact', 'on')
                      or is_state('binary_sensor.right_garage_door_contact', 'on'))
                      else 'Doors closed' }}
+              - type: template
+                icon: mdi:thermometer
+                icon_color: amber
+                content: >-
+                  {% set garage = states('sensor.garage_ambient_temperature') %}
+                  Garage {{ ((garage | float | round(0)) ~ '°F') if is_number(garage) else '—' }}
 
           - type: custom:auto-entities
             show_empty: false
@@ -231,30 +237,6 @@ views:
                   state: "on"
                 - entity_id: binary_sensor.*leak*
                   state: "on"
-
-          - type: custom:mushroom-entity-card
-            entity: sensor.garage_freezer_temperature
-            name: Freezer
-            icon: mdi:snowflake-thermometer
-            icon_color: blue
-
-          - type: custom:mushroom-entity-card
-            entity: sensor.garage_fridge_temperature
-            name: Fridge
-            icon: mdi:fridge-thermometer
-            icon_color: cyan
-
-          - type: custom:mushroom-entity-card
-            entity: sensor.garage_ambient_temperature
-            name: Garage ambient
-            icon: mdi:thermometer
-            icon_color: amber
-
-          - type: custom:mushroom-entity-card
-            entity: sensor.detached_garage_temperature
-            name: Detached garage
-            icon: mdi:home-thermometer
-            icon_color: green
 
           - type: custom:mini-graph-card
             name: Garage temperatures
