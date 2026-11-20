@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - guardrails.yaml
+  - jellyfin-admin-sealed-secret.yaml
+  - jellyfin-homeassistant-sealed-secret.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml

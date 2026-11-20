@@ -5,6 +5,9 @@ resources:
   - namespace.yaml
   - guardrails.yaml
   - home-assistant-mqtt-sealed-secret.yaml
+  - mealie-api-token-sealed-secret.yaml
+  - paperless-api-token-sealed-secret.yaml
+  - uptime-kuma-api-key-sealed-secret.yaml
   - restore-configmap.yaml
   - pvc.yaml
   - deployment.yaml

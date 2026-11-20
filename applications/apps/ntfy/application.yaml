@@ -19,6 +19,12 @@ spec:
       targetRevision: main
       ref: values
 
+    - repoURL: git@github.com:kevinlacotaco/manifests.git
+      targetRevision: main
+      path: applications/apps/ntfy/manifests
+      directory:
+        recurse: false
+
   destination:
     server: https://kubernetes.default.svc
     namespace: ntfy

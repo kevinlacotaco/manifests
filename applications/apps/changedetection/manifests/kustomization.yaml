@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - guardrails.yaml
   - networkpolicy.yaml
+  - changedetection-ha-token-sealed-secret.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml
