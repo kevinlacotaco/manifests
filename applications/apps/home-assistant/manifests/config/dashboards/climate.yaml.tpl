@@ -141,6 +141,13 @@ views:
               - entity: sensor.basement_air_mon_temperature
                 name: Basement
                 color: "#64748b"
+          - type: custom:mini-graph-card
+            name: Attic
+            icon: mdi:home-thermometer
+            hours_to_show: 24
+            points_per_hour: 2
+            line_width: 2
+            entities:
               - entity: sensor.attic_monitor_temperature
                 name: Attic
                 color: "#ef4444"
