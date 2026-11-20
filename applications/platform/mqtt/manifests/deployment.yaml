@@ -43,7 +43,7 @@ spec:
               chmod 0600 /mosquitto/config/mosquitto.conf
               rm -f /mosquitto/auth/passwd
               first=1
-              for user in mqttuser radio frigate homeassistant govee2mqtt; do
+              for user in mqttuser radio frigate homeassistant govee2mqtt ironhide; do
                 if [ "$first" = "1" ]; then
                   mosquitto_passwd -c -b /mosquitto/auth/passwd "$user" "$(cat "/auth-src/$user")"
                   first=0

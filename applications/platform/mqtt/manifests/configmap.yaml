@@ -39,3 +39,8 @@ data:
 
     user govee2mqtt
     topic readwrite #
+
+    # LNXlink on the ironhide workstation publishes host telemetry and
+    # Home Assistant discovery.
+    user ironhide
+    topic readwrite #
