@@ -220,7 +220,10 @@ spec:
                       description: The filesystem has less than 15% free space.
 
                   - alert: NodeFilesystemReadOnly
-                    expr: node_filesystem_readonly{fstype!~"tmpfs|overlay|squashfs|iso9660"} == 1
+                    # NFS volumes mounted read-only into pods (Jellyfin media,
+                    # backup jobs) are intentional. Each pod gets a new kubelet
+                    # mount path, so alerting on them only produces noise.
+                    expr: node_filesystem_readonly{fstype!~"tmpfs|overlay|squashfs|iso9660",mountpoint!~"/var/lib/kubelet/pods/.+/volumes/kubernetes.io~nfs/.+"} == 1
                     for: 5m
                     labels:
                       severity: warning
