@@ -70,6 +70,14 @@ data:
             url = "http://frigate.frigate.svc.cluster.local:5000"
             entry["title"] = "frigate.frigate.svc.cluster.local:5000"
             entry["data"]["url"] = url
+            options = entry.setdefault("options", {})
+            # The old NAS migration left an RTSP template pointing at
+            # 192.168.68.138 and enabled WebRTC with an unreachable go2rtc
+            # candidate. Let the integration derive rtsp://<frigate host>:8554
+            # from the current service URL and use HLS, which works through the
+            # ClusterIP service.
+            options["rtsp_url_template"] = ""
+            options["enable_webrtc"] = False
     entries_path.write_text(json.dumps(entries, indent=2) + "\n")
 
     marker.write_text("restored\n")
