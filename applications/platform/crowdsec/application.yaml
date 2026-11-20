@@ -23,6 +23,25 @@ spec:
           # shared PostgreSQL instance instead. The password is expanded from
           # the DB_PASSWORD env var in the lapi section below.
           config:
+            # Trusted homelab sources. The NAS reverse proxy forwards external
+            # clients with X-Forwarded-For, but Uptime Kuma/monitoring hairpin
+            # traffic can appear as the home WAN address. Whitelist the current
+            # WAN IP so a Kuma restart cannot cause a self-ban during socket.io
+            # reconnects. Update this if the ISP changes the WAN address.
+            parsers:
+              s02-enrich:
+                homelab-whitelist.yaml: |
+                  name: homelab/whitelist
+                  description: "Trusted homelab and home WAN sources"
+                  whitelist:
+                    reason: "trusted homelab source"
+                    ip:
+                      - "24.2.226.180"
+                    cidr:
+                      - "127.0.0.0/8"
+                      - "192.168.0.0/16"
+                      - "10.0.0.0/8"
+                      - "172.16.0.0/12"
             config.yaml.local: |
               db_config:
                 type: postgresql
