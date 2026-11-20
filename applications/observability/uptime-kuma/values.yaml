@@ -209,9 +209,10 @@ controllers:
         probes:
           startup:
             enabled: true
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 60
+            spec:
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              failureThreshold: 60
           liveness:
             enabled: true
           readiness:
