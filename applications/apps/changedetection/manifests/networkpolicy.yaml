@@ -73,9 +73,15 @@ spec:
         - protocol: TCP
           port: 53
 
-    # Home Assistant is hostNetwork today; allow the node addresses so
-    # Apprise can post changedetection notifications to the HA API.
+    # Home Assistant is hostNetwork today; its Service still fronts the API.
+    # Allow the Service CIDR, the namespace, and both node addresses so the
+    # Apprise Home Assistant target keeps working if HA reschedules.
     - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: home-assistant
+        - ipBlock:
+            cidr: 10.43.0.0/16
         - ipBlock:
             cidr: 192.168.68.71/32
         - ipBlock:
