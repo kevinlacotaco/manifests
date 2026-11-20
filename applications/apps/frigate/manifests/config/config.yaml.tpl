@@ -143,6 +143,9 @@ cameras:
       height: 1440
 
   driveway:
+    # Temporarily disabled to check whether the camera's IR light stops
+    # turning on. The go2rtc streams stay defined but have no consumers.
+    enabled: False
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
