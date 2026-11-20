@@ -27,11 +27,16 @@ spec:
                 values:
                   - kube-system
                   - monitoring
+                  - home-assistant
         # Pods in this namespace (web, worker, and Valkey).
         - podSelector: {}
         # Kubelet health probes originate from the node.
         - ipBlock:
             cidr: 192.168.68.71/32
+        # Home Assistant runs with hostNetwork, so its pod traffic is SNATed
+        # to the node/flannel address rather than the pod CIDR.
+        - ipBlock:
+            cidr: 10.42.0.0/16
 
 ---
 apiVersion: networking.k8s.io/v1
