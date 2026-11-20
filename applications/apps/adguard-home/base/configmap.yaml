@@ -57,6 +57,9 @@ data:
         - domain: youtarr.lakotko.synology.me
           answer: 192.168.68.71
           enabled: true
+        - domain: jellyfin.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
 
     http:
       address: 0.0.0.0:3000
