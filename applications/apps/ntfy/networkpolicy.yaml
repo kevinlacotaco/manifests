@@ -19,7 +19,7 @@ spec:
     - Ingress
   ingress:
     - from:
-        # Traefik and other platform ingress controllers.
+        # Traefik, monitoring, and Home Assistant (ntfy integration).
         - namespaceSelector:
             matchExpressions:
               - key: kubernetes.io/metadata.name
@@ -27,6 +27,7 @@ spec:
                 values:
                   - kube-system
                   - monitoring
+                  - home-assistant
         # Pods in this namespace.
         - podSelector: {}
         # Speedtest Tracker webhooks publish to ntfy.

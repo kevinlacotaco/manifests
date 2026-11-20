@@ -19,7 +19,7 @@ spec:
     - Ingress
   ingress:
     - from:
-        # Traefik and monitoring (Uptime Kuma probes).
+        # Traefik, monitoring (Uptime Kuma probes), and Home Assistant.
         - namespaceSelector:
             matchExpressions:
               - key: kubernetes.io/metadata.name
@@ -27,6 +27,7 @@ spec:
                 values:
                   - kube-system
                   - monitoring
+                  - home-assistant
         # Pods in this namespace.
         - podSelector: {}
         # Kubelet health probes originate from the node.
