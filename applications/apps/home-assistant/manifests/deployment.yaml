@@ -34,7 +34,7 @@ spec:
             - /scripts/restore.py
           env:
             - name: MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: MQTT_USERNAME
               valueFrom:
                 secretKeyRef:

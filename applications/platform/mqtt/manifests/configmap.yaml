@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+  namespace: messaging
+data:
+  mosquitto.conf: |
+    persistence true
+    persistence_location /mosquitto/data/
+    autosave_interval 300
+
+    log_dest stdout
+    log_type error
+    log_type warning
+    log_type notice
+    connection_messages true
+
+    allow_anonymous false
+    password_file /mosquitto/auth/passwd
+    acl_file /mosquitto/config/acl
+
+    listener 1883
+    protocol mqtt
+
+  acl: |
+    # Homelab MQTT users. The broker is internal-only; clients are separated
+    # by Kubernetes NetworkPolicy rather than per-topic MQTT ACLs.
+    user mqttuser
+    topic readwrite #
+
+    user radio
+    topic readwrite #
+
+    user frigate
+    topic readwrite #
+
+    user homeassistant
+    topic readwrite #
+
+    user govee2mqtt
+    topic readwrite #

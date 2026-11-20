@@ -27,7 +27,7 @@ spec:
         - port: 15692
           protocol: TCP
     # MQTT is reachable only through the Traefik TCP entrypoint and the
-    # in-cluster radio, Frigate, and Home Assistant namespaces.
+    # in-cluster radio, Frigate, Home Assistant, and Govee namespaces.
     - from:
         - ipBlock:
             cidr: 192.168.68.0/24
@@ -43,6 +43,9 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: home-assistant
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: govee2mqtt
         # Allow the trusted monitoring namespace to check the MQTT listener.
         # The RabbitMQ kustomization injects its component label into
         # podSelectors, so use a namespace selector instead of a pod label.

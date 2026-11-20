@@ -3,7 +3,7 @@
 # {FRIGATE_*} placeholders are substituted by Frigate from the frigate-secrets
 # Secret. Never commit real credentials here.
 mqtt:
-  host: rabbitmq.messaging.svc.cluster.local
+  host: mqtt.messaging.svc.cluster.local
   user: frigate
   password: "{FRIGATE_MQTT_PASSWORD}"
 

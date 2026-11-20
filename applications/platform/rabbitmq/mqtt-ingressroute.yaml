@@ -9,5 +9,7 @@ spec:
   routes:
     - match: HostSNI(`*`)
       services:
-        - name: rabbitmq
+        # Stable broker entrypoint. The backing Service can be repointed from
+        # Mosquitto to another broker without changing external clients.
+        - name: mqtt
           port: 1883

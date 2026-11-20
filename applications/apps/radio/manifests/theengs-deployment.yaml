@@ -37,7 +37,7 @@ spec:
             - name: LOG_LEVEL
               value: INFO
             - name: MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: MQTT_PORT
               value: "1883"
             - name: MQTT_USERNAME
@@ -96,7 +96,7 @@ spec:
             - /scripts/watchdog.sh
           env:
             - name: MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: MQTT_PORT
               value: "1883"
             - name: MQTT_TOPIC

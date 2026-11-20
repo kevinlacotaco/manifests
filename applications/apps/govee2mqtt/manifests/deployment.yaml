@@ -55,7 +55,7 @@ spec:
             - name: XDG_CACHE_HOME
               value: /data
             - name: GOVEE_MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: GOVEE_MQTT_PORT
               value: "1883"
             - name: GOVEE_MQTT_USER

@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: messaging
+  labels:
+    app: mosquitto
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 1883
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        - name: prepare-auth
+          image: eclipse-mosquitto:2.0.23
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              set -eu
+              mkdir -p /mosquitto/config
+              cp /config-src/mosquitto.conf /mosquitto/config/mosquitto.conf
+              cp /config-src/acl /mosquitto/config/acl
+              chown 1883:1883 /mosquitto/config /mosquitto/config/mosquitto.conf /mosquitto/config/acl
+              chmod 0700 /mosquitto/config /mosquitto/config/acl
+              chmod 0600 /mosquitto/config/mosquitto.conf
+              rm -f /mosquitto/auth/passwd
+              first=1
+              for user in mqttuser radio frigate homeassistant govee2mqtt; do
+                if [ "$first" = "1" ]; then
+                  mosquitto_passwd -c -b /mosquitto/auth/passwd "$user" "$(cat "/auth-src/$user")"
+                  first=0
+                else
+                  mosquitto_passwd -b /mosquitto/auth/passwd "$user" "$(cat "/auth-src/$user")"
+                fi
+              done
+              chown 1883:1883 /mosquitto/auth/passwd
+              chmod 600 /mosquitto/auth/passwd
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - FOWNER
+                - DAC_OVERRIDE
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - name: config-src
+              mountPath: /config-src
+              readOnly: true
+            - name: config
+              mountPath: /mosquitto/config
+            - name: auth
+              mountPath: /mosquitto/auth
+            - name: auth-src
+              mountPath: /auth-src
+              readOnly: true
+
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2.0.23
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              protocol: TCP
+          securityContext:
+            runAsUser: 1883
+            runAsGroup: 1883
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          readinessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config
+              readOnly: true
+            - name: auth
+              mountPath: /mosquitto/auth
+            - name: data
+              mountPath: /mosquitto/data
+
+      volumes:
+        - name: config-src
+          configMap:
+            name: mosquitto-config
+        - name: config
+          emptyDir: {}
+        - name: auth
+          emptyDir: {}
+        - name: auth-src
+          secret:
+            secretName: mosquitto-auth
+        - name: data
+          persistentVolumeClaim:
+            claimName: mosquitto-data

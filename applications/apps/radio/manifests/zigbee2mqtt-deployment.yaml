@@ -55,6 +55,10 @@ spec:
                   -e "s|__MQTT_USER__|${MQTT_USER}|g" \
                   -e "s|__MQTT_PASSWORD__|${MQTT_PASSWORD}|g" \
                   /config/configuration.yaml.tpl > /data/configuration.yaml
+              else
+                # Keep an existing installation pointed at the stable MQTT
+                # service even when the backing broker changes.
+                sed -i "s|server: mqtt://.*|server: mqtt://${MQTT_HOST}:1883|" /data/configuration.yaml
               fi
               for f in database.db coordinator_backup.json state.json; do
                 if [ ! -f "/data/$f" ] && [ -f "/seed/$f" ]; then
@@ -66,7 +70,7 @@ spec:
               chmod 0600 /data/configuration.yaml 2>/dev/null || true
           env:
             - name: MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: MQTT_USER
               valueFrom:
                 secretKeyRef:
@@ -164,7 +168,7 @@ spec:
             - /scripts/watchdog.sh
           env:
             - name: MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: MQTT_PORT
               value: "1883"
             - name: MQTT_TOPIC

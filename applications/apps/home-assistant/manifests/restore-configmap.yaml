@@ -12,26 +12,28 @@ data:
 
     config = pathlib.Path("/config")
     marker = config / ".restored-from-nas"
-    if marker.exists():
-        print("config already restored")
-        raise SystemExit(0)
 
-    print("extracting /backup/migration/homeassistant-config.tgz")
-    with tarfile.open("/backup/migration/homeassistant-config.tgz", "r:gz") as archive:
-        archive.extractall(config)
+    if not marker.exists():
+        print("extracting /backup/migration/homeassistant-config.tgz")
+        with tarfile.open("/backup/migration/homeassistant-config.tgz", "r:gz") as archive:
+            archive.extractall(config)
 
-    # Trust the in-cluster Traefik proxy in addition to the old NAS proxy.
-    config_yaml = config / "configuration.yaml"
-    text = config_yaml.read_text()
-    anchors = ["    - 192.168.68.71\n", "    - 10.42.0.0/16\n"]
-    for extra in anchors:
-        if extra not in text:
-            text = text.replace("    - 192.168.68.138\n", "    - 192.168.68.138\n" + extra, 1)
-    if "\nprometheus:" not in "\n" + text:
-        text += "\nprometheus:\n  requires_auth: false\n"
-    config_yaml.write_text(text)
+        # Trust the in-cluster Traefik proxy in addition to the old NAS proxy.
+        config_yaml = config / "configuration.yaml"
+        text = config_yaml.read_text()
+        anchors = ["    - 192.168.68.71\n", "    - 10.42.0.0/16\n"]
+        for extra in anchors:
+            if extra not in text:
+                text = text.replace("    - 192.168.68.138\n", "    - 192.168.68.138\n" + extra, 1)
+        if "\nprometheus:" not in "\n" + text:
+            text += "\nprometheus:\n  requires_auth: false\n"
+        config_yaml.write_text(text)
+    else:
+        print("config already restored; refreshing service endpoints")
 
-    # Repoint the MQTT and Frigate integrations at their new in-cluster services.
+    # Always repoint the MQTT and Frigate integrations. This makes the
+    # stable mqtt.messaging.svc.cluster.local name authoritative even when
+    # the backing MQTT broker is replaced.
     entries_path = config / ".storage" / "core.config_entries"
     entries = json.loads(entries_path.read_text())
     for entry in entries["data"]["entries"]:

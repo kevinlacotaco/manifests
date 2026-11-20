@@ -166,12 +166,12 @@ controllers:
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'CrowdSec LAPI')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port, expiry_notification)
-            SELECT 'RabbitMQ MQTT', 1, 1, 60, 'port', 2000, 2, 60, 'RabbitMQ MQTT listener', 'rabbitmq.messaging.svc.cluster.local', 1883, 1
-            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'RabbitMQ MQTT')
+            SELECT 'MQTT broker', 1, 1, 60, 'port', 2000, 2, 60, 'MQTT broker listener', 'mqtt.messaging.svc.cluster.local', 1883, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'MQTT broker')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor_notification (monitor_id, notification_id)
             SELECT m.id, n.id FROM monitor m, notification n
-            WHERE n.name = CASE WHEN m.name IN ('Argo CD','Grafana','Prometheus','Alertmanager','Loki','Uptime Kuma','AdGuard Home','AdGuard DNS','AdGuard Pi DNS','Kubernetes API','PostgreSQL','RabbitMQ AMQP','Traefik','Kuma ingress','Authelia','Kopia backups','CrowdSec LAPI','RabbitMQ MQTT') THEN 'platform' ELSE 'apps' END
+            WHERE n.name = CASE WHEN m.name IN ('Argo CD','Grafana','Prometheus','Alertmanager','Loki','Uptime Kuma','AdGuard Home','AdGuard DNS','AdGuard Pi DNS','Kubernetes API','PostgreSQL','RabbitMQ AMQP','Traefik','Kuma ingress','Authelia','Kopia backups','CrowdSec LAPI','MQTT broker') THEN 'platform' ELSE 'apps' END
               AND NOT EXISTS (SELECT 1 FROM monitor_notification mn WHERE mn.monitor_id = m.id AND mn.notification_id = n.id);
             UPDATE monitor SET maxretries = 2, retry_interval = 60;
             COMMIT;

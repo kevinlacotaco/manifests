@@ -21,7 +21,8 @@ data:
 
     config_yaml = config / "config.yaml"
     text = config_yaml.read_text()
-    text = text.replace("host: mosquitto", "host: rabbitmq.messaging.svc.cluster.local")
+    text = text.replace("host: mosquitto", "host: mqtt.messaging.svc.cluster.local")
+    text = text.replace("host: rabbitmq.messaging.svc.cluster.local", "host: mqtt.messaging.svc.cluster.local")
     text = text.replace("192.168.68.138:8555", "192.168.68.71:8555")
     config_yaml.write_text(text)
 

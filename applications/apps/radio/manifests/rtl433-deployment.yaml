@@ -32,7 +32,7 @@ spec:
             - "-R40"
             - "-Mtime:utc"
             - "-f433920000"
-            - "-Fmqtt://rabbitmq.messaging.svc.cluster.local:1883,user=$(MQTT_USER),pass=$(MQTT_PASSWORD),retain=0,devices=rtl_433/grapple/devices[/type][/model][/id][/subtype]/C[channel:0],events=rtl_433/grapple/events"
+            - "-Fmqtt://mqtt.messaging.svc.cluster.local:1883,user=$(MQTT_USER),pass=$(MQTT_PASSWORD),retain=0,devices=rtl_433/grapple/devices[/type][/model][/id][/subtype]/C[channel:0],events=rtl_433/grapple/events"
           env:
             - name: MQTT_USER
               valueFrom:
@@ -84,7 +84,7 @@ spec:
             - /scripts/watchdog.sh
           env:
             - name: MQTT_HOST
-              value: rabbitmq.messaging.svc.cluster.local
+              value: mqtt.messaging.svc.cluster.local
             - name: MQTT_PORT
               value: "1883"
             - name: MQTT_TOPIC
