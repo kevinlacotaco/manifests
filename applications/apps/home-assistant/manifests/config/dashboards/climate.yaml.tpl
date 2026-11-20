@@ -94,7 +94,7 @@ views:
               - entity: sensor.second_floor_current_temperature
                 name: Second floor
                 color: "#a855f7"
-              - entity: sensor.master_bedroom_temperature
+              - entity: sensor.master_bedroom_air_mon_temperature
                 name: Master bedroom
                 color: "#ec4899"
               - entity: sensor.girls_room_temperature_and_humidity_temperature
@@ -141,7 +141,7 @@ views:
               - entity: sensor.second_floor_current_humidity
                 name: Second floor
                 color: "#a855f7"
-              - entity: sensor.master_bedroom_humidity
+              - entity: sensor.master_bedroom_air_mon_humidity
                 name: Master bedroom
                 color: "#ec4899"
               - entity: sensor.bernadettes_room_humidity
@@ -169,15 +169,6 @@ views:
               - entity: sensor.airnow_pm2_5
                 name: Outside
                 color: "#22c55e"
-              - entity: sensor.bonus_room_air_quality_airquality
-                name: Bonus room
-                color: "#84cc16"
-              - entity: sensor.master_bedroom_air_mon_airquality
-                name: Master bedroom
+              - entity: sensor.vital_200s_series_pm2_5
+                name: Indoor
                 color: "#ec4899"
-              - entity: sensor.basement_air_mon_airquality
-                name: Basement
-                color: "#64748b"
-              - entity: sensor.attic_monitor_airquality
-                name: Attic
-                color: "#ef4444"

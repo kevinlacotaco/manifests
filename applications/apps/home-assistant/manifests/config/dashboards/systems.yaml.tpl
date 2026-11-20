@@ -217,18 +217,12 @@ views:
               - entity: sensor.ironhide_disk_dev_nvme0n1p2
                 name: NVMe root
                 color: "#3b82f6"
+              - entity: sensor.ironhide_disk_dev_nvme0n1p1
+                name: NVMe boot
+                color: "#06b6d4"
               - entity: sensor.ironhide_disk_dev_sdb1
                 name: sdb1
                 color: "#22c55e"
-              - entity: sensor.ironhide_disk_dev_sdc1
-                name: sdc1
-                color: "#f59e0b"
-              - entity: sensor.ironhide_disk_dev_sdd1
-                name: sdd1
-                color: "#ef4444"
-              - entity: sensor.ironhide_disk_dev_sde1
-                name: sde1
-                color: "#a855f7"
           - type: entities
             title: Host status
             state_color: true

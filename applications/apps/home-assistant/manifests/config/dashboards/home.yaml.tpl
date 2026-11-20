@@ -116,7 +116,7 @@ views:
               - entity: sensor.second_floor_current_temperature
                 name: Second floor
                 color: "#a855f7"
-              - entity: sensor.master_bedroom_temperature
+              - entity: sensor.master_bedroom_air_mon_temperature
                 name: Master
                 color: "#f59e0b"
               - entity: sensor.girls_room_temperature_and_humidity_temperature
