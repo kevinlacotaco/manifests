@@ -49,6 +49,16 @@ spec:
       namespace: kyverno
     - server: https://kubernetes.default.svc
       namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: home-assistant
+    - server: https://kubernetes.default.svc
+      namespace: jellyfin
+    - server: https://kubernetes.default.svc
+      namespace: frigate
+    - server: https://kubernetes.default.svc
+      namespace: changedetection
+    - server: https://kubernetes.default.svc
+      namespace: youtarr
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
