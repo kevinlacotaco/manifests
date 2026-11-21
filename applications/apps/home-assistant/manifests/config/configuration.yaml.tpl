@@ -62,11 +62,12 @@ sql:
     db_url: sqlite:////config/home-assistant_v2.db
     query: >
       WITH d AS (
-        SELECT last_updated_ts - (strftime('%s','now') - 2592000) AS t, CAST(state AS REAL) AS y
-        FROM states
-        WHERE entity_id = 'sensor.windsor_heating_oil_300_399_credit'
-          AND state GLOB '[0-9]*'
-          AND last_updated_ts >= strftime('%s','now') - 2592000
+        SELECT s.last_updated_ts - (strftime('%s','now') - 2592000) AS t, CAST(s.state AS REAL) AS y
+        FROM states s
+        JOIN states_meta sm ON sm.metadata_id = s.metadata_id
+        WHERE sm.entity_id = 'sensor.windsor_heating_oil_300_399_credit'
+          AND s.state GLOB '[0-9]*'
+          AND s.last_updated_ts >= strftime('%s','now') - 2592000
       ), a AS (
         SELECT COUNT(*) AS n,
                SUM(t) AS sx,
