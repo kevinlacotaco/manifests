@@ -35,6 +35,11 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: speedtest-tracker
           podSelector: {}
+        # changedetection.io publishes diff notifications to ntfy.
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: changedetection
+          podSelector: {}
         # Kubelet health probes originate from the node.
         - ipBlock:
             cidr: 192.168.68.71/32

@@ -90,6 +90,20 @@ spec:
         - protocol: TCP
           port: 8123
 
+    # Publish change notifications to ntfy. Include the Service and pod
+    # CIDRs because policy may be evaluated before or after DNAT.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ntfy
+        - ipBlock:
+            cidr: 10.43.0.0/16
+        - ipBlock:
+            cidr: 10.42.0.0/16
+      ports:
+        - protocol: TCP
+          port: 80
+
     # Outbound web fetching. Keep cluster and LAN ranges excluded.
     - to:
         - ipBlock:
