@@ -62,7 +62,7 @@ sql:
     db_url: sqlite:////config/home-assistant_v2.db
     query: >
       WITH d AS (
-        SELECT last_updated_ts AS t, CAST(state AS REAL) AS y
+        SELECT last_updated_ts - (strftime('%s','now') - 2592000) AS t, CAST(state AS REAL) AS y
         FROM states
         WHERE entity_id = 'sensor.windsor_heating_oil_300_399_credit'
           AND state GLOB '[0-9]*'
@@ -82,7 +82,6 @@ sql:
       WHERE n >= 2 AND (n * sxx - sx * sx) <> 0
     column: forecast
     unit_of_measurement: "$/gal"
-    scan_interval: 3600
 
 mqtt:
   - sensor:
