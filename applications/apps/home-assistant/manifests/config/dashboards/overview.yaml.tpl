@@ -313,6 +313,28 @@ views:
       - type: grid
         cards:
           - type: heading
+            heading: Media
+            icon: mdi:speaker
+
+          - type: custom:mushroom-media-player-card
+            entity: media_player.living_room_tv
+            use_media_info: true
+            show_volume_level: false
+            media_controls:
+              - on_off
+              - play_pause
+
+          - type: custom:mushroom-media-player-card
+            entity: media_player.attic_tv
+            use_media_info: true
+            show_volume_level: false
+            media_controls:
+              - on_off
+              - play_pause
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
             heading: Systems
             icon: mdi:server
 
@@ -375,25 +397,3 @@ views:
                   attributes:
                     device_class: battery
                   state: "<25"
-
-      - type: grid
-        cards:
-          - type: heading
-            heading: Media
-            icon: mdi:speaker
-
-          - type: custom:mushroom-media-player-card
-            entity: media_player.living_room_tv
-            use_media_info: true
-            show_volume_level: false
-            media_controls:
-              - on_off
-              - play_pause
-
-          - type: custom:mushroom-media-player-card
-            entity: media_player.attic_tv
-            use_media_info: true
-            show_volume_level: false
-            media_controls:
-              - on_off
-              - play_pause
