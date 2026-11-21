@@ -41,6 +41,14 @@ sensor:
     unit_time: h
     method: trapezoidal
     round: 3
+  - platform: rest
+    name: Windsor Heating Oil 300-399 Credit
+    unique_id: windsor_heating_oil_300_399_credit
+    resource: https://www.cashheatingoil.com/windsor_ct_oil_prices/06095
+    scan_interval: 3600
+    value_template: >-
+      {{ value | regex_findall('(?s)Credit Card Prices.*?300-399\s*</td>\s*<td>\s*\$([0-9.]+)') | first | default('unknown') }}
+    unit_of_measurement: "$/gal"
 
 utility_meter:
   home_solar_energy_today:
