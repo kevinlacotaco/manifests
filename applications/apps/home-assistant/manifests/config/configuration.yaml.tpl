@@ -59,7 +59,7 @@ mqtt:
   - sensor:
       name: "Freezer Temperature"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/14216/CA/temperature_C"
-      unit_of_measurement: "°C"
+      unit_of_measurement: "°F"
       unique_id: "freezer_temperature_c"
       device_class: "temperature"
       device:
@@ -67,7 +67,7 @@ mqtt:
         name: "Garage Freezer"
         suggested_area: "garage"
       state_class: "measurement"
-      value_template: "{{ value }}"
+      value_template: "{{ (value | float * 9/5 + 32) | round(2) }}"
   - sensor:
       name: "Freezer Humidity"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/14216/CA/humidity"
@@ -83,7 +83,7 @@ mqtt:
   - sensor:
       name: "Garage Fridge Temperature"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/6407/CA/temperature_C"
-      unit_of_measurement: "°C"
+      unit_of_measurement: "°F"
       unique_id: "garage_fridge_temperature_c"
       device_class: "temperature"
       device:
@@ -91,7 +91,7 @@ mqtt:
         name: "Garage Fridge"
         suggested_area: "garage"
       state_class: "measurement"
-      value_template: "{{ value }}"
+      value_template: "{{ (value | float * 9/5 + 32) | round(2) }}"
   - sensor:
       name: "Garage Fridge Humidity"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/6407/CA/humidity"
@@ -107,7 +107,7 @@ mqtt:
   - sensor:
       name: "Garage Ambient Temperature"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/263/CA/temperature_C"
-      unit_of_measurement: "°C"
+      unit_of_measurement: "°F"
       unique_id: "garage_ambient_temperature_c"
       device_class: "temperature"
       device:
@@ -115,7 +115,7 @@ mqtt:
         name: "Garage Ambient"
         suggested_area: "garage"
       state_class: "measurement"
-      value_template: "{{ value }}"
+      value_template: "{{ (value | float * 9/5 + 32) | round(2) }}"
   - sensor:
       name: "Garage Ambient Humidity"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/263/CA/humidity"
@@ -131,7 +131,7 @@ mqtt:
   - sensor:
       name: "Detached Garage Temperature"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/3951/CA/temperature_C"
-      unit_of_measurement: "°C"
+      unit_of_measurement: "°F"
       unique_id: "detached_garage_temperature_c"
       device_class: "temperature"
       device:
@@ -139,7 +139,7 @@ mqtt:
         name: "Detached Garage Ambient"
         suggested_area: "Detached Garage"
       state_class: "measurement"
-      value_template: "{{ value }}"
+      value_template: "{{ (value | float * 9/5 + 32) | round(2) }}"
   - sensor:
       name: "Detached Garage Humidity"
       state_topic: "rtl_433/grapple/devices/Acurite-Tower/3951/CA/humidity"
