@@ -23,7 +23,7 @@ spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
-        kubernetes.io/hostname: hauler
+        kubernetes.io/hostname: boulder
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
       securityContext:

@@ -23,6 +23,8 @@ spec:
     - from:
         - ipBlock:
             cidr: 192.168.68.102/32
+        - ipBlock:
+            cidr: 192.168.68.71/32
       ports:
         - port: 8056
           protocol: TCP
@@ -65,6 +67,13 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: messaging
+        # Host-network pods can resolve the mqtt Service to a ClusterIP.
+        # Allow both the Service CIDR and the pod CIDR in case policy is
+        # evaluated after DNAT.
+        - ipBlock:
+            cidr: 10.43.0.0/16
+        - ipBlock:
+            cidr: 10.42.0.0/16
       ports:
         - protocol: TCP
           port: 1883
