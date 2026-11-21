@@ -200,3 +200,37 @@ views:
             icon_color: green
             primary_info: state
             secondary_info: name
+  - type: grid
+    cards:
+      - type: heading
+        heading: Heating Oil
+        icon: mdi:oil
+      - type: custom:mushroom-entity-card
+        entity: sensor.windsor_heating_oil_300_399_credit
+        name: 300–399 gal Credit
+        icon: mdi:oil
+        icon_color: amber
+        secondary_info: state
+      - type: statistics-graph
+        title: 30-day price history
+        entities:
+          - sensor.windsor_heating_oil_300_399_credit
+        days_to_show: 30
+        chart_type: line
+        stat_types:
+          - mean
+          - min
+          - max
+        grid_options:
+          columns: 12
+      - type: custom:mushroom-template-card
+        entity: sensor.windsor_heating_oil_forecast_7d
+        primary: >-
+          {% if is_number(states('sensor.windsor_heating_oil_forecast_7d')) %}
+          {{ states('sensor.windsor_heating_oil_forecast_7d') | float | round(2) }} $/gal
+          {% else %}
+          Collecting history
+          {% endif %}
+        secondary: 7-day linear trend
+        icon: mdi:chart-timeline-variant
+        icon_color: blue

@@ -49,11 +49,40 @@ sensor:
     value_template: >-
       {{ value | regex_findall('(?s)Credit Card Prices.*?300-399\s*</td>\s*<td>\s*\$([0-9.]+)') | first | default('unknown') }}
     unit_of_measurement: "$/gal"
+    state_class: measurement
 
 utility_meter:
   home_solar_energy_today:
     source: sensor.home_solar_energy_total
     cycle: daily
+
+sql:
+  - name: Windsor Heating Oil Forecast 7d
+    unique_id: windsor_heating_oil_forecast_7d
+    db_url: sqlite:////config/home-assistant_v2.db
+    query: >
+      WITH d AS (
+        SELECT last_updated_ts AS t, CAST(state AS REAL) AS y
+        FROM states
+        WHERE entity_id = 'sensor.windsor_heating_oil_300_399_credit'
+          AND state GLOB '[0-9]*'
+          AND last_updated_ts >= strftime('%s','now') - 2592000
+      ), a AS (
+        SELECT COUNT(*) AS n,
+               SUM(t) AS sx,
+               SUM(y) AS sy,
+               SUM(t * t) AS sxx,
+               SUM(t * y) AS sxy,
+               MAX(t) AS max_t
+        FROM d
+      )
+      SELECT ROUND((sy / n) + ((n * sxy - sx * sy) / (n * sxx - sx * sx))
+             * (max_t + 604800 - (sx / n)), 2) AS forecast
+      FROM a
+      WHERE n >= 2 AND (n * sxx - sx * sx) <> 0
+    column: forecast
+    unit_of_measurement: "$/gal"
+    scan_interval: 3600
 
 mqtt:
   - sensor:
