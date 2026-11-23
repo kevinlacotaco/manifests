@@ -59,11 +59,16 @@ spec:
                 - 1.3.6.1.4.1.6574.3
                 - 1.3.6.1.2.1.31.1.1
                 - 1.3.6.1.2.1.2.2.1.8
+                - 1.3.6.1.2.1.1.3
               metrics:
                 - name: synology_system_status
                   oid: 1.3.6.1.4.1.6574.1.1
                   type: gauge
                   help: Synology system status
+                - name: synology_sys_uptime
+                  oid: 1.3.6.1.2.1.1.3
+                  type: gauge
+                  help: Synology system uptime in hundredths of a second
                 - name: synology_temperature_celsius
                   oid: 1.3.6.1.4.1.6574.1.2
                   type: gauge

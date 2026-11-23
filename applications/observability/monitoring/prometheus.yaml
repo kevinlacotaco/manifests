@@ -356,6 +356,62 @@ spec:
                       summary: PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending
                       description: The persistent volume claim has been pending for 15 minutes.
 
+              - name: homelab-synology
+                rules:
+                  - alert: SynologyDiskUnhealthy
+                    expr: synology_disk_status != 1
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: storage
+                    annotations:
+                      summary: Synology disk {{ $labels.diskIndex }} is unhealthy
+                      description: SMART/disk status reports a non-normal state.
+                  - alert: SynologyDiskTemperatureHigh
+                    expr: synology_disk_temperature_celsius > 55
+                    for: 10m
+                    labels:
+                      severity: warning
+                      component: storage
+                    annotations:
+                      summary: Synology disk {{ $labels.diskIndex }} is hot
+                      description: Disk temperature is above 55 C.
+                  - alert: SynologyVolumeUnhealthy
+                    expr: synology_raid_status != 1
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: storage
+                    annotations:
+                      summary: Synology RAID/volume status abnormal
+                      description: Storage pool or volume status is not normal.
+                  - alert: SynologySystemUnhealthy
+                    expr: synology_system_status != 1
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: storage
+                    annotations:
+                      summary: Synology system status abnormal
+                      description: NAS system status is not normal.
+                  - alert: SynologyPowerOrThermalUnhealthy
+                    expr: (synology_power_status != 1) or (synology_thermal_status != 1)
+                    for: 5m
+                    labels:
+                      severity: critical
+                      component: storage
+                    annotations:
+                      summary: Synology power or thermal status abnormal
+                      description: NAS power or thermal status is not normal.
+                  - alert: SynologyRebooted
+                    expr: synology_sys_uptime < 60000
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: storage
+                    annotations:
+                      summary: Synology NAS rebooted
+                      description: SNMP sysUpTime is below 10 minutes.
               - name: homelab-argocd
                 rules:
                   - alert: ArgoAppOutOfSync
