@@ -21,11 +21,11 @@ views:
               - type: template
                 icon: mdi:television
                 icon_color: blue
-                content: "Living room {{ states('media_player.living_room_tv') }}"
+                content: "Living room {{ states('media_player.living_room_tv_2') }}"
               - type: template
                 icon: mdi:television
                 icon_color: purple
-                content: "Attic {{ states('media_player.attic_tv') }}"
+                content: "Attic {{ states('media_player.attic_tv_2') }}"
               - type: template
                 icon: mdi:spotify
                 icon_color: green
@@ -37,7 +37,7 @@ views:
             heading: Attic
             icon: mdi:home-roof
           - type: custom:mushroom-media-player-card
-            entity: media_player.attic_tv
+            entity: media_player.attic_tv_2
             use_media_info: true
             show_volume_level: true
             media_controls:
@@ -133,7 +133,7 @@ views:
               - volume_mute
               - volume_set
           - type: custom:mushroom-media-player-card
-            entity: media_player.living_room_tv
+            entity: media_player.living_room_tv_2
             use_media_info: true
             show_volume_level: true
             media_controls:

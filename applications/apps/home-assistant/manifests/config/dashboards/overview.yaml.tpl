@@ -317,7 +317,7 @@ views:
             icon: mdi:speaker
 
           - type: custom:mushroom-media-player-card
-            entity: media_player.living_room_tv
+            entity: media_player.living_room_tv_2
             use_media_info: true
             show_volume_level: false
             media_controls:
@@ -325,7 +325,7 @@ views:
               - play_pause
 
           - type: custom:mushroom-media-player-card
-            entity: media_player.attic_tv
+            entity: media_player.attic_tv_2
             use_media_info: true
             show_volume_level: false
             media_controls:
