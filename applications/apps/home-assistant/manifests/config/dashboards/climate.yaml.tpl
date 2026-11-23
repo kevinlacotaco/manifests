@@ -40,11 +40,34 @@ views:
             icon: mdi:air-conditioner
             show_temperature_control: true
             layout: horizontal
-          - type: custom:mushroom-climate-card
-            entity: climate.master_air_conditioner
-            icon: mdi:air-conditioner
-            show_temperature_control: true
-            layout: horizontal
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: climate.master_bedroom_master_air_conditioner
+                state_not: "unavailable"
+              - condition: state
+                entity: climate.master_bedroom_master_air_conditioner
+                state_not: "unknown"
+            card:
+              type: custom:mushroom-climate-card
+              entity: climate.master_bedroom_master_air_conditioner
+              icon: mdi:air-conditioner
+              show_temperature_control: true
+              layout: horizontal
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: climate.madison_s_bedroom_maddie_air_conditioner
+                state_not: "unavailable"
+              - condition: state
+                entity: climate.madison_s_bedroom_maddie_air_conditioner
+                state_not: "unknown"
+            card:
+              type: custom:mushroom-climate-card
+              entity: climate.madison_s_bedroom_maddie_air_conditioner
+              icon: mdi:air-conditioner
+              show_temperature_control: true
+              layout: horizontal
           - type: custom:mushroom-climate-card
             entity: climate.attic_ac
             icon: mdi:air-conditioner

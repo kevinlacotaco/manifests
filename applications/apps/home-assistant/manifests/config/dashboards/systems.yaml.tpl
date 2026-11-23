@@ -177,7 +177,8 @@ views:
               - entity: sensor.roborock_q5_filter_time_left
               - entity: sensor.living_room_ac_filter_life
               - entity: sensor.office_air_conditioner_filter_remaining_life
-              - entity: sensor.master_air_conditioner_filter_remaining_life
+              - entity: sensor.master_bedroom_master_air_conditioner_filter_remaining_life
+              - entity: sensor.madison_s_bedroom_maddie_air_conditioner_filter_remaining_life
               - entity: sensor.attic_ac_filter_remaining_life
 
       - type: grid
