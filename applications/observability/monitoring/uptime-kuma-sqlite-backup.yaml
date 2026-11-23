@@ -27,6 +27,14 @@ spec:
             fsGroup: 0
             seccompProfile:
               type: RuntimeDefault
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: uptime-kuma
+                      app.kubernetes.io/instance: uptime-kuma
+                  topologyKey: kubernetes.io/hostname
           containers:
             - name: sqlite-backup
               image: louislam/uptime-kuma:1.23.16
