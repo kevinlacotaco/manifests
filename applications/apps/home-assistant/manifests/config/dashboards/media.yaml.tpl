@@ -222,15 +222,3 @@ views:
             volume_controls:
               - volume_mute
               - volume_set
-          - type: custom:mushroom-media-player-card
-            entity: media_player.office_tv
-            use_media_info: true
-            show_volume_level: true
-            media_controls:
-              - on_off
-              - play_pause
-              - next
-              - previous
-            volume_controls:
-              - volume_mute
-              - volume_set
