@@ -105,39 +105,6 @@ views:
                 name: Load
                 color: "#a855f7"
 
-      - type: grid
-        cards:
-          - type: heading
-            heading: Air conditioners
-            icon: mdi:air-conditioner
-          - type: custom:mushroom-entity-card
-            entity: sensor.living_room_air_conditioner_energy_current
-            name: Living room AC
-            icon: mdi:air-conditioner
-            icon_color: cyan
-            primary_info: state
-            secondary_info: name
-          - type: custom:mushroom-entity-card
-            entity: sensor.office_air_conditioner_energy_current
-            name: Office AC
-            icon: mdi:air-conditioner
-            icon_color: cyan
-            primary_info: state
-            secondary_info: name
-          - type: custom:mushroom-entity-card
-            entity: sensor.master_air_conditioner_energy_current
-            name: Master AC
-            icon: mdi:air-conditioner
-            icon_color: cyan
-            primary_info: state
-            secondary_info: name
-          - type: custom:mushroom-entity-card
-            entity: sensor.attic_ac_energy_current
-            name: Attic AC
-            icon: mdi:air-conditioner
-            icon_color: cyan
-            primary_info: state
-            secondary_info: name
 
       - type: grid
         cards:
