@@ -30,7 +30,7 @@ spec:
           type: RuntimeDefault
       initContainers:
         - name: runner-register
-          image: code.forgejo.org/forgejo/runner:13.2.1
+          image: code.forgejo.org/forgejo/runner:13.2.2
           imagePullPolicy: IfNotPresent
           workingDir: /data
           command:
@@ -100,7 +100,7 @@ spec:
               mountPath: /tmp
       containers:
         - name: runner
-          image: code.forgejo.org/forgejo/runner:13.2.1
+          image: code.forgejo.org/forgejo/runner:13.2.2
           imagePullPolicy: IfNotPresent
           workingDir: /data
           command:
