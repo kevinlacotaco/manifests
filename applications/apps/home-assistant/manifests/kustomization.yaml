@@ -32,3 +32,4 @@ configMapGenerator:
       - dashboard-garage.yaml=config/dashboards/garage.yaml.tpl
       - dashboard-media.yaml=config/dashboards/media.yaml.tpl
       - dashboard-systems.yaml=config/dashboards/systems.yaml.tpl
+      - dashboard-deliveries.yaml=config/dashboards/deliveries.yaml.tpl

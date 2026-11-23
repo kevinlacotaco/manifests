@@ -227,5 +227,11 @@ lovelace:
       show_in_sidebar: true
       filename: dashboards/systems.yaml
 
+    deliveries-view:
+      mode: yaml
+      title: Deliveries
+      icon: mdi:truck-delivery
+      show_in_sidebar: true
+      filename: dashboards/deliveries.yaml
 prometheus:
   requires_auth: false
