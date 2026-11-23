@@ -123,10 +123,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 1Gi
             limits:
               cpu: "1"
-              memory: 1Gi
+              memory: 2Gi
           service:
             type: ClusterIP
 
@@ -283,6 +283,16 @@ spec:
                     annotations:
                       summary: Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} is waiting
                       description: Container is waiting with reason {{ $labels.reason }}.
+
+                  - alert: KubeContainerOOMKilled
+                    expr: (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1) and (increase(kube_pod_container_status_restarts_total[15m]) > 0)
+                    for: 1m
+                    labels:
+                      severity: warning
+                      component: workload
+                    annotations:
+                      summary: Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} was OOMKilled
+                      description: Container was OOMKilled and has restarted recently.
 
                   - alert: DeploymentUnavailable
                     expr: kube_deployment_status_replicas_unavailable > 0
