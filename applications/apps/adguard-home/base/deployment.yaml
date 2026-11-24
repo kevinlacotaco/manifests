@@ -24,6 +24,9 @@ spec:
       labels:
         app: adguard-home
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: boulder
+
       securityContext:
         fsGroup: 1000
 
