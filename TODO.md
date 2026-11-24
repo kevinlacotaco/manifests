@@ -14,7 +14,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Verify Postgres `fsGroup` on the CSI volume.
 - [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
 - [ ] Store Kopia repo password and Renovate GitHub App private key offline; remove plaintext working copies.
-- [ ] Run restore tests for Postgres, Authelia, SQLite backups, and Kopia; add offsite replication.
+- [x] Run restore tests for Postgres, Authelia, SQLite backups, and Kopia.
+- [ ] Add offsite replication for the Kopia repository.
 - [x] Review Kyverno Audit findings and add narrow `PolicyException` resources for legitimate host-access workloads.
 - [ ] Move the Kyverno policies from `Audit` to `Enforce` after a final review.
 - [ ] Migrate the Kyverno `ClusterPolicy` and `PolicyException` resources to the CEL-based APIs.
@@ -26,7 +27,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Decide on Authelia OIDC/SSO for Mealie/Argo CD.
 - [ ] Configure the Forgejo → GitHub push mirror with a GitHub PAT and verify a mirrored repository.
 - [ ] Tighten egress for `monitoring` and `argocd`; review `ntfy` egress and Traefik `trustedIPs` pod CIDR.
-- [ ] Add a second AdGuard instance or MetalLB VIP before router DHCP cutover.
+- [x] Add a second AdGuard instance or MetalLB VIP before router DHCP cutover.
 - [ ] Add DNS-specific and TLS-cert-expiry monitoring if not already covered.
 
 ## P2 — Reliability and observability
