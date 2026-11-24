@@ -13,8 +13,12 @@ data:
         fallthrough
       }
     }
-  jellyfin.override: |
-    hosts {
-      192.168.68.71 jellyfin.lakotko.synology.me
-      fallthrough
+  jellyfin.server: |
+    jellyfin.lakotko.synology.me:53 {
+      errors
+      hosts {
+        192.168.68.71 jellyfin.lakotko.synology.me
+        fallthrough
+      }
+      forward . /etc/resolv.conf
     }
