@@ -10,7 +10,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Add the Synology reverse proxy rule for `paperless.lakotko.synology.me` to Traefik and verify the external OIDC login end to end.
 - [ ] Add the Synology reverse proxy rule for `git.lakotko.synology.me` to Traefik and verify external Forgejo access.
 - [x] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
-- [ ] Add permanent Traefik dashboard IngressRoute using `api@internal` behind Authelia/TLS.
+- [x] Serve the Traefik dashboard at `https://traefik.lakotko.synology.me` with BasicAuth, the trusted wildcard, and no dedicated `8080` Service port.
 - [x] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
 - [x] Serve Grafana at `https://grafana.lakotko.synology.me` with the trusted wildcard and remove the dedicated Traefik `3000` entrypoint.
 - [x] Verify Postgres `fsGroup` on the CSI volume.

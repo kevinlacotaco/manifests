@@ -10,6 +10,7 @@ resources:
   - entry-points.yaml
   - dashboard.yaml
   - dashboard-sealed-secret.yaml
+  - traefik-tls-sync.yaml
   - crowdsec-bouncer-middleware.yaml
   - crowdsec-bouncer-key-sealed-secret.yaml
   - geoblock-middleware.yaml

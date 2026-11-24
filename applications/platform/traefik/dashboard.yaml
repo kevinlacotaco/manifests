@@ -28,12 +28,12 @@ metadata:
     gethomepage.dev/name: "Traefik"
     gethomepage.dev/group: "Edge"
     gethomepage.dev/icon: "traefik.png"
-    gethomepage.dev/href: "http://192.168.68.71:8080/dashboard/"
+    gethomepage.dev/href: "https://traefik.lakotko.synology.me/dashboard/"
 spec:
   entryPoints:
-    - traefik
+    - websecure
   routes:
-    - match: PathPrefix(`/`)
+    - match: Host(`traefik.lakotko.synology.me`)
       kind: Rule
       middlewares:
         - name: traefik-dashboard-allowlist
@@ -41,3 +41,5 @@ spec:
       services:
         - name: api@internal
           kind: TraefikService
+  tls:
+    secretName: traefik-lakotko-tls

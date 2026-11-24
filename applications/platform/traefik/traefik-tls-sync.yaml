@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-tls-sync
+  namespace: kube-system
+---
+# Read-only access to the DSM-managed wildcard certificate in argocd.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: traefik-tls-source-reader
+  namespace: argocd
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - argocd-lakotko-tls
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: traefik-tls-source-reader
+  namespace: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: traefik-tls-source-reader
+subjects:
+  - kind: ServiceAccount
+    name: traefik-tls-sync
+    namespace: kube-system
+---
+# The Traefik certificate Secret is runtime-managed by the CronJob below so
+# the private key never enters Git. The initial Secret must exist; the job
+# only refreshes it. Prune=false keeps Argo from deleting the untracked Secret.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: traefik-tls-sync
+  namespace: kube-system
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - traefik-lakotko-tls
+    verbs:
+      - get
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: traefik-tls-sync
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: traefik-tls-sync
+subjects:
+  - kind: ServiceAccount
+    name: traefik-tls-sync
+    namespace: kube-system
+---
+# The Synology DSM task argocd-tls-sync writes the trusted wildcard
+# certificate to argocd/argocd-lakotko-tls. This job mirrors that Secret into
+# kube-system for the Traefik dashboard IngressRoute without exposing the key
+# in Git.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: traefik-tls-sync
+  namespace: kube-system
+spec:
+  schedule: "30 2 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: traefik-tls-sync
+        spec:
+          restartPolicy: Never
+          serviceAccountName: traefik-tls-sync
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sync
+              image: alpine/k8s:1.31.4
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: HOME
+                  value: /tmp
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -euo pipefail
+                  kubectl get secret -n argocd argocd-lakotko-tls \
+                    -o go-template='{"apiVersion":"v1","kind":"Secret","metadata":{"name":"traefik-lakotko-tls","namespace":"kube-system","labels":{"app.kubernetes.io/name":"traefik","app.kubernetes.io/part-of":"kube-system"},"annotations":{"argocd.argoproj.io/sync-options":"Prune=false"}},"type":"kubernetes.io/tls","data":{"tls.crt":"{{ index .data "tls.crt" }}","tls.key":"{{ index .data "tls.key" }}"}}' \
+                    | kubectl apply --server-side --force-conflicts -f -
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+          volumes:
+            - name: tmp
+              emptyDir: {}

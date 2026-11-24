@@ -88,7 +88,7 @@ Run this checklist when you come back to the cluster after a while:
    | Grafana | `https://grafana.<your-domain>` |
    | Uptime Kuma | `https://kuma.<your-domain>` |
    | AdGuard Home | `http://<node-ip>:<adguard-web-nodeport>` |
-   | Traefik dashboard | `http://<node-ip>:8080/dashboard/` |
+   | Traefik dashboard | `https://traefik.<your-domain>/dashboard/` |
 
    `<node-hostname>` may need an entry in your workstation's `/etc/hosts`:
 
@@ -982,7 +982,7 @@ The Synology reverse proxy must forward `git.<your-domain>` to Traefik at
 | AdGuard web | `http://<node-ip>:<adguard-web-nodeport>` |
 | AdGuard DNS (UDP) | `<node-ip>:<adguard-dns-udp-nodeport>` |
 | AdGuard DNS (TCP) | `<node-ip>:<adguard-dns-tcp-nodeport>` |
-| Traefik dashboard | `http://<node-ip>:8080/dashboard/` |
+| Traefik dashboard | `https://traefik.<your-domain>/dashboard/` |
 | Synology NAS | `<nas-ip>` |
 
 ### Synology SNMP metrics
@@ -1051,6 +1051,21 @@ The IngressRoute uses `monitoring/grafana-lakotko-tls`, a copy of the trusted
 `*.<your-domain>` Secret. The DSM task `argocd-tls-sync` remains the
 source of truth in `argocd/argocd-lakotko-tls`; the in-cluster CronJob
 `monitoring/grafana-tls-sync` mirrors it into `monitoring` daily so the
+private key never enters Git. The target Secret must exist before the job can
+update it; both RBAC roles are namespaced and scoped to the single Secret.
+
+### Traefik dashboard access and TLS
+
+The Traefik dashboard is served on the `websecure` entry point at
+`https://traefik.<your-domain>/dashboard/`. It keeps the existing BasicAuth
+and LAN allowlist. The dedicated `traefik` entry point on port `8080` remains
+internal for `/ping` health probes and is no longer published as a Service
+port.
+
+The IngressRoute uses `kube-system/traefik-lakotko-tls`, a copy of the trusted
+`*.<your-domain>` Secret. The DSM task `argocd-tls-sync` remains the source of
+truth in `argocd/argocd-lakotko-tls`; the in-cluster CronJob
+`kube-system/traefik-tls-sync` mirrors it into `kube-system` daily so the
 private key never enters Git. The target Secret must exist before the job can
 update it; both RBAC roles are namespaced and scoped to the single Secret.
 
@@ -1346,8 +1361,11 @@ fixed.
   plaintext credentials.
 - SealedSecrets are safe to commit; plaintext Secrets are not.
 - The pre-commit hook runs `gitleaks`, but it is not a substitute for care.
-- The Traefik dashboard is enabled with `--api.insecure=true`. Keep it on the
-  trusted LAN; do not expose it to the internet.
+- The Traefik dashboard is served at `https://traefik.<your-domain>` on the
+  `websecure` entrypoint and protected by BasicAuth and an IP allowlist. It is
+  LAN-only; do not expose it to the internet. The dedicated `traefik`
+  entrypoint remains internal to the pod for health probes and is not
+  published as a Service port.
 - Argo CD is running with `server.insecure: "true"` because TLS terminates at
   Traefik. It is reachable only through the `websecure` entrypoint; do not add
   a direct Argo CD port.

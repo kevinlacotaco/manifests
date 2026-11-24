@@ -42,8 +42,9 @@ spec:
             names:
               User-Agent: keep
     additionalArguments:
-      # The dashboard is served by an authenticated IngressRoute on the traefik
-      # entrypoint; the insecure API must stay disabled.
+      # The dashboard is served by an authenticated IngressRoute on websecure.
+      # The traefik entrypoint stays internal for /ping probes; the insecure API
+      # must remain disabled.
       - "--api.dashboard=true"
       # k3s servicelb (klipper-lb) masquerades LoadBalancer traffic, so Traefik sees
       # the svclb pod IP rather than the Synology source. Trust the cluster pod CIDR.
@@ -56,8 +57,10 @@ spec:
     ports:
       traefik:
         port: 8080
+        # Keep the entrypoint inside the pod for /ping health probes, but do
+        # not publish it as a Traefik Service port.
         expose:
-          default: true
+          default: false
         exposedPort: 8080
         protocol: TCP
       mqtt:
