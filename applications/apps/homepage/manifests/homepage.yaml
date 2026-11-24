@@ -250,3 +250,15 @@ spec:
                 name: homepage
                 port:
                   name: http
+    # LAN-only alias: AdGuard rewrites this name to 192.168.68.71. It is not
+    # added to public DNS, Cloudflare Tunnel, or the DSM reverse proxy.
+    - host: homepage.lakotko.synology.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  name: http
