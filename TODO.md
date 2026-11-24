@@ -9,7 +9,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Confirm Donetick TOTP login and remove any direct Synology bypass.
 - [ ] Add the Synology reverse proxy rule for `paperless.lakotko.synology.me` to Traefik and verify the external OIDC login end to end.
 - [ ] Add the Synology reverse proxy rule for `git.lakotko.synology.me` to Traefik and verify external Forgejo access.
-- [ ] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
+- [x] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
+- [ ] Add permanent Traefik dashboard IngressRoute using `api@internal` behind Authelia/TLS.
 - [ ] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
 - [x] Verify Postgres `fsGroup` on the CSI volume.
 - [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
