@@ -12,6 +12,12 @@ The cluster is managed by **Argo CD** using an **app-of-apps** pattern:
   (`synology-nfs-subdir`).
 - Ingress is Traefik, and secrets are managed with Sealed Secrets.
 
+> **Placeholders:** This public README uses placeholders such as
+> `<your-domain>`, `<node-ip>`, `<nas-ip>`, `<node-hostname>`,
+> `<internal-domain>`, and `<...-nodeport>` for private infrastructure.
+> Real values should live in a private ops note; substitute your own values
+> when following these instructions.
+
 The goal of this repo is that `main` is always deployable. Argo CD does the
 actual deployment; `kubectl apply` is only for bootstrapping or emergency
 debugging.
@@ -78,16 +84,16 @@ Run this checklist when you come back to the cluster after a while:
 
    | What | URL |
    | --- | --- |
-   | Argo CD | <https://argocd.lakotko.synology.me> |
-   | Grafana | <https://grafana.lakotko.synology.me> |
-   | Uptime Kuma | <https://kuma.lakotko.synology.me> |
-   | AdGuard Home | <http://192.168.68.71:31628> |
-   | Traefik dashboard | <http://192.168.68.71:8080/dashboard/> |
+   | Argo CD | `https://argocd.<your-domain>` |
+   | Grafana | `https://grafana.<your-domain>` |
+   | Uptime Kuma | `https://kuma.<your-domain>` |
+   | AdGuard Home | `http://<node-ip>:<adguard-web-nodeport>` |
+   | Traefik dashboard | `http://<node-ip>:8080/dashboard/` |
 
-   `boulder.local` may need an entry in your workstation's `/etc/hosts`:
+   `<node-hostname>` may need an entry in your workstation's `/etc/hosts`:
 
    ```text
-   192.168.68.71 boulder.local
+   <node-ip> <node-hostname>
    ```
 
 ---
@@ -240,7 +246,7 @@ required.
 The cluster API is expected at:
 
 ```text
-https://192.168.68.71:6443
+https://<node-ip>:6443
 ```
 
 The kubeconfig is normally at `~/.kube/config`, with context name `default`.
@@ -277,10 +283,10 @@ From your workstation:
 ```sh
 cp ~/.kube/config ~/.kube/config.bak.$(date +%Y%m%d)
 
-ssh <user>@192.168.68.71 'sudo cat /etc/rancher/k3s/k3s.yaml' > ~/.kube/config
+ssh <user>@<node-ip> 'sudo cat /etc/rancher/k3s/k3s.yaml' > ~/.kube/config
 
 # k3s writes 127.0.0.1; point it at the server's LAN address instead.
-sed -i 's#https://127.0.0.1:6443#https://192.168.68.71:6443#' ~/.kube/config
+sed -i 's#https://127.0.0.1:6443#https://<node-ip>:6443#' ~/.kube/config
 chmod 600 ~/.kube/config
 
 kubectl config use-context default
@@ -288,14 +294,14 @@ kubectl get nodes -o wide
 ```
 
 Replace `<user>` with your SSH user. If `sudo` requires a TTY, use
-`ssh -t <user>@192.168.68.71 'sudo cat /etc/rancher/k3s/k3s.yaml'`.
+`ssh -t <user>@<node-ip> 'sudo cat /etc/rancher/k3s/k3s.yaml'`.
 
 #### Option B: rotate an expired k3s certificate
 
 On the server:
 
 ```sh
-ssh <user>@192.168.68.71
+ssh <user>@<node-ip>
 
 sudo k3s certificate rotate
 sudo systemctl restart k3s
@@ -308,7 +314,7 @@ You can also verify the cluster directly on the server without copying
 anything:
 
 ```sh
-ssh <user>@192.168.68.71 'sudo k3s kubectl get nodes -o wide'
+ssh <user>@<node-ip> 'sudo k3s kubectl get nodes -o wide'
 ```
 
 ### If you use multiple kubeconfigs
@@ -334,21 +340,21 @@ Trusted Let's Encrypt wildcard certificate, routed on the Traefik `websecure`
 entry point:
 
 ```text
-https://argocd.lakotko.synology.me
+https://argocd.<your-domain>
 ```
 
 The certificate is the Synology system-default wildcard
-(`*.lakotko.synology.me`). It is copied into the `argocd/argocd-lakotko-tls`
+(`*.<your-domain>`). It is copied into the `argocd/argocd-lakotko-tls`
 Secret by a root DSM Task Scheduler job; see
 [Argo CD certificate sync](#argo-cd-certificate-sync).
 
 Fallback route retained:
 
 ```text
-https://argocd.home.arpa               # self-signed IngressRoute
+https://argocd.<internal-domain>  # self-signed IngressRoute
 ```
 
-The legacy `boulder.local:8081` Traefik `argocd` entrypoint and IngressRoute
+The legacy `<node-hostname>:8081` Traefik `argocd` entrypoint and IngressRoute
 have been removed. Argo CD is served only through the `websecure` entrypoint.
 
 ### Argo CD certificate sync
@@ -359,10 +365,10 @@ The DSM Task Scheduler task `argocd-tls-sync` runs daily as root on the NAS. It:
    `RSA-privkey.pem`.
 2. Aborts if the certificate and key do not match.
 3. Computes a SHA-256 checksum of the pair and skips the update when the
-   `argocd.lakotko.synology.me/cert-sha256` annotation on the Secret already
+   `argocd.<your-domain>/cert-sha256` annotation on the Secret already
    matches.
 4. Writes `argocd/argocd-lakotko-tls` directly over the Kubernetes API at
-   `https://192.168.68.71:6443`, verifying the API server against the cluster
+   `https://<node-ip>:6443`, verifying the API server against the cluster
    CA.
 
 The job uses the namespace-scoped ServiceAccount `argocd-tls-sync`, whose Role
@@ -384,8 +390,8 @@ intentionally has no `create` verb) can update it:
 
 ```sh
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
-  -subj "/CN=argocd.lakotko.synology.me" \
-  -addext "subjectAltName=DNS:argocd.lakotko.synology.me" \
+  -subj "/CN=argocd.<your-domain>" \
+  -addext "subjectAltName=DNS:argocd.<your-domain>" \
   -keyout /tmp/argocd-tls.key -out /tmp/argocd-tls.crt
 kubectl -n argocd create secret tls argocd-lakotko-tls \
   --cert=/tmp/argocd-tls.crt --key=/tmp/argocd-tls.key
@@ -435,7 +441,7 @@ curl -sSL -o /tmp/argocd \
 sudo install -m 755 /tmp/argocd /usr/local/bin/argocd
 
 argocd version --client
-argocd login argocd.lakotko.synology.me --username admin
+argocd login argocd.<your-domain> --username admin
 ```
 
 TLS terminates at Traefik, so use the trusted HTTPS hostname.
@@ -682,7 +688,7 @@ first.
 
 ### RabbitMQ MQTT
 
-RabbitMQ exposes MQTT on `192.168.68.71:1883` through Traefik. The dedicated
+RabbitMQ exposes MQTT on `<node-ip>:1883` through Traefik. The dedicated
 non-admin user is `mqttuser`; its password is stored in the sealed
 `messaging/rabbitmq-mqtt-auth` Secret:
 
@@ -791,9 +797,9 @@ plaintext secret with the new controller certificate.
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
 | `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload; pinned image and probes |
 | `authelia` | `auth` | Git path `applications/platform/authelia/manifests` | 2 replicas; Postgres storage; Redis sessions; OIDC provider |
-| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI at `https://argocd.lakotko.synology.me`; old `argocd-*` release and duplicate RBAC removed |
+| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI at `https://argocd.<your-domain>`; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
-| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | Postgres storage; 10Gi iSCSI retained for plugins/rollback; UI at `https://grafana.lakotko.synology.me` |
+| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | Postgres storage; 10Gi iSCSI retained for plugins/rollback; UI at `https://grafana.<your-domain>` |
 | `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; PolicyExceptions enabled in `kyverno` |
 | `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits; 0 current failures |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
@@ -821,7 +827,7 @@ Additional resources not represented as child Applications:
 | `rabbitmq` RabbitmqCluster | `messaging` | 1 replica, 20Gi iSCSI |
 | `synology-iscsi` StorageClass | cluster-wide | Synology CSI, iSCSI, Retain |
 | `traefik` HelmChartConfig | `kube-system` | Extra entry points and dashboard |
-| `coredns-custom` ConfigMap | `kube-system` | `hoist.local` -> `192.168.68.138` |
+| `coredns-custom` ConfigMap | `kube-system` | `<nas-hostname>` -> `<nas-ip>` |
 | `postgres` StatefulSet | `database` | Managed by the `postgresql` child Application |
 | `postgres-init-apps` Job | `database` | Creates the `mealie`, `donetick`, `paperless`, `speedtest`, and `authelia` roles/databases |
 | `postgres-app-secrets` | `database` | Sealed app DB passwords used by the init Job |
@@ -928,19 +934,19 @@ Postgres dump is included in the central backup CronJob, and
 Paperless-ngx uses the Authelia OIDC provider directly; there is no
 forward-auth middleware on its Ingress. The Authelia client is
 `paperless-ngx` with callback
-`https://paperless.lakotko.synology.me/accounts/oidc/authelia/login/callback/`
+`https://paperless.<your-domain>/accounts/oidc/authelia/login/callback/`
 and scopes `openid`, `profile`, `email`, and `groups`.
 
 Users in Authelia's `admins` group are promoted to Paperless superuser on
 login. The local `paperless-admin` account remains as break-glass access; its
 password is in the `paperless-secrets` SealedSecret. The Synology reverse proxy
-must forward `paperless.lakotko.synology.me` to Traefik at
-`http://192.168.68.71:80` and preserve the Host header, like the Mealie and
+must forward `paperless.<your-domain>` to Traefik at
+`http://<node-ip>:80` and preserve the Host header, like the Mealie and
 Donetick rules.
 
 ### Forgejo
 
-Forgejo runs at `git.lakotko.synology.me` with native login rather than Authelia
+Forgejo runs at `git.<your-domain>` with native login rather than Authelia
 forward-auth, so git-over-HTTPS, API tokens, and runner registration work
 normally. It uses Postgres database `forgejo` and a 20Gi NFS volume
 (`forgejo-data`) for repositories, attachments, and LFS objects.
@@ -954,30 +960,30 @@ workflows with access to cluster credentials.
 GitHub push mirroring is configured per repository in Forgejo with a GitHub
 personal access token; the token is stored in Forgejo's database, not in Git.
 
-The Synology reverse proxy must forward `git.lakotko.synology.me` to Traefik at
-`http://192.168.68.71:80` and preserve the Host header.
+The Synology reverse proxy must forward `git.<your-domain>` to Traefik at
+`http://<node-ip>:80` and preserve the Host header.
 
 ### Endpoints and ports
 
 | Endpoint | Address |
 | --- | --- |
-| Kubernetes API | `https://192.168.68.71:6443` |
-| Argo CD | `https://argocd.lakotko.synology.me` |
-| Grafana | `https://grafana.lakotko.synology.me` |
-| Uptime Kuma | `https://kuma.lakotko.synology.me` |
-| Mealie | `https://meals.lakotko.synology.me` |
-| Donetick | `https://tasks.lakotko.synology.me` |
-| Paperless-ngx | `https://paperless.lakotko.synology.me` |
-| Forgejo | `https://git.lakotko.synology.me` |
-| Homepage | `https://home.lakotko.synology.me` |
-| ntfy | `https://ntfy.lakotko.synology.me` |
-| RabbitMQ MQTT | `mqtt://192.168.68.71:1883` |
+| Kubernetes API | `https://<node-ip>:6443` |
+| Argo CD | `https://argocd.<your-domain>` |
+| Grafana | `https://grafana.<your-domain>` |
+| Uptime Kuma | `https://kuma.<your-domain>` |
+| Mealie | `https://meals.<your-domain>` |
+| Donetick | `https://tasks.<your-domain>` |
+| Paperless-ngx | `https://paperless.<your-domain>` |
+| Forgejo | `https://git.<your-domain>` |
+| Homepage | `https://home.<your-domain>` |
+| ntfy | `https://ntfy.<your-domain>` |
+| RabbitMQ MQTT | `mqtt://<node-ip>:1883` |
 | RabbitMQ management | `http://localhost:15672` after `kubectl -n messaging port-forward svc/rabbitmq 15672:15672` |
-| AdGuard web | `http://192.168.68.71:31628` |
-| AdGuard DNS (UDP) | `192.168.68.71:30915` |
-| AdGuard DNS (TCP) | `192.168.68.71:30916` |
-| Traefik dashboard | `http://192.168.68.71:8080/dashboard/` |
-| Synology NAS | `192.168.68.138` |
+| AdGuard web | `http://<node-ip>:<adguard-web-nodeport>` |
+| AdGuard DNS (UDP) | `<node-ip>:<adguard-dns-udp-nodeport>` |
+| AdGuard DNS (TCP) | `<node-ip>:<adguard-dns-tcp-nodeport>` |
+| Traefik dashboard | `http://<node-ip>:8080/dashboard/` |
+| Synology NAS | `<nas-ip>` |
 
 ### Synology SNMP metrics
 
@@ -987,7 +993,7 @@ DSM, enable SNMP under **Control Panel > Terminal & SNMP > SNMP**, create user
 the Kubernetes node/network. The username and passwords are stored in the
 `snmp-exporter-auth` SealedSecret in `monitoring`.
 
-`prometheus-snmp-exporter` scrapes `192.168.68.138` with module `synology`.
+`prometheus-snmp-exporter` scrapes `<nas-ip>` with module `synology`.
 Prometheus records:
 
 - System: `synology_cpu_utilization_percent`,
@@ -1036,13 +1042,13 @@ Grafana also provisions five compact operational dashboards from
 ### Grafana access and TLS
 
 Grafana is served on the Traefik `websecure` entry point at
-`https://grafana.lakotko.synology.me`. It no longer uses a dedicated Traefik
+`https://grafana.<your-domain>`. It no longer uses a dedicated Traefik
 entry point on port `3000`, so the only exposed Grafana port is `443` through
 Traefik. Grafana keeps its own admin login and stays LAN-only; the AdGuard
-rewrite sends the hostname to `192.168.68.71`.
+rewrite sends the hostname to `<node-ip>`.
 
 The IngressRoute uses `monitoring/grafana-lakotko-tls`, a copy of the trusted
-`*.lakotko.synology.me` Secret. The DSM task `argocd-tls-sync` remains the
+`*.<your-domain>` Secret. The DSM task `argocd-tls-sync` remains the
 source of truth in `argocd/argocd-lakotko-tls`; the in-cluster CronJob
 `monitoring/grafana-tls-sync` mirrors it into `monitoring` daily so the
 private key never enters Git. The target Secret must exist before the job can
@@ -1053,7 +1059,7 @@ update it; both RBAC roles are namespaced and scoped to the single Secret.
 | StorageClass | Backing store | Typical use |
 | --- | --- | --- |
 | `synology-iscsi` | Synology iSCSI, `/volume1` | Databases, SQLite apps, and single-writer workloads |
-| `synology-nfs-subdir` | NFS `192.168.68.138:/volume1/k8s-nfs` | Mealie shared media and other ReadWriteMany data; default class |
+| `synology-nfs-subdir` | NFS `<nas-ip>:/volume1/k8s-nfs` | Mealie shared media and other ReadWriteMany data; default class |
 
 `synology-nfs` is **not** a real StorageClass in this cluster. Use
 `synology-nfs-subdir` for NFS.
@@ -1197,7 +1203,7 @@ kubectl -n kube-system logs deploy/traefik --tail=100
 kubectl get ingressroute -A
 ```
 
-Remember that `boulder.local` may need a local `/etc/hosts` entry.
+Remember that `<node-hostname>` may need a local `/etc/hosts` entry.
 
 ### SealedSecret will not decrypt
 
@@ -1212,7 +1218,7 @@ If the controller key changed, restore the old key or re-seal the secret.
 ### k3s itself
 
 ```sh
-ssh <user>@192.168.68.71
+ssh <user>@<node-ip>
 sudo systemctl status k3s
 sudo journalctl -u k3s -f
 sudo k3s kubectl get nodes
@@ -1246,9 +1252,9 @@ fixed.
 - [x] Verify Mealie can write to `mealie-media` as UID/GID 911.
 - [x] Remove the old `ntfy-ntfy-data` NFS PVC once ntfy is healthy on iSCSI.
 - [x] Delete the Released ntfy NFS PV.
-- [x] Set real hostnames: `meals.lakotko.synology.me` for Mealie,
-  `tasks.lakotko.synology.me` for Donetick, and
-  `ntfy.lakotko.synology.me` for ntfy.
+- [x] Set real hostnames: `meals.<your-domain>` for Mealie,
+  `tasks.<your-domain>` for Donetick, and
+  `ntfy.<your-domain>` for ntfy.
 - [x] Remove the stale duplicate
   `applications/apps/adguard-home/overlays/home/application.yaml`.
 - [x] Fix the Argo CD IngressRoute service name to `argo-argocd-server`, which
