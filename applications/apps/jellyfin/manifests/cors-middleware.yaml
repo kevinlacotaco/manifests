@@ -28,6 +28,7 @@ spec:
       - Content-Range
       - Accept-Ranges
     accessControlAllowCredentials: true
+    accessControlAllowPrivateNetwork: true
     accessControlMaxAge: 86400
     addVaryHeader: true
     customResponseHeaders:
