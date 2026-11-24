@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd-tls-sync
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+    app.kubernetes.io/part-of: argocd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argocd-lakotko-tls-sync
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+    app.kubernetes.io/part-of: argocd
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - argocd-lakotko-tls
+    verbs:
+      - get
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argocd-lakotko-tls-sync
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+    app.kubernetes.io/part-of: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: argocd-lakotko-tls-sync
+subjects:
+  - kind: ServiceAccount
+    name: argocd-tls-sync
+    namespace: argocd
+---
+# Long-lived token used by the root DSM Task Scheduler job that syncs the
+# Synology system certificate into the argocd-lakotko-tls Secret. Only this
+# namespace-scoped ServiceAccount token is stored on the NAS (root-only).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-tls-sync-token
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+    app.kubernetes.io/part-of: argocd
+  annotations:
+    kubernetes.io/service-account.name: argocd-tls-sync
+type: kubernetes.io/service-account-token

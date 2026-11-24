@@ -330,11 +330,57 @@ Argo CD runs in the `argocd` namespace. The server is configured with
 
 ### UI through Traefik
 
+Trusted Let's Encrypt wildcard certificate, routed on the Traefik `websecure`
+entry point:
+
 ```text
-http://boulder.local:8081
+https://argocd.lakotko.synology.me
+```
+
+The certificate is the Synology system-default wildcard
+(`*.lakotko.synology.me`). It is copied into the `argocd/argocd-lakotko-tls`
+Secret by a root DSM Task Scheduler job; see
+[Argo CD certificate sync](#argo-cd-certificate-sync).
+
+Fallback routes are intentionally kept:
+
+```text
+http://boulder.local:8081              # dedicated Traefik argocd entry point
+https://argocd.home.arpa               # self-signed IngressRoute
 ```
 
 Traefik exposes a dedicated `argocd` entry point on port `8081`.
+
+### Argo CD certificate sync
+
+The DSM Task Scheduler task `argocd-tls-sync` runs daily as root on the NAS. It:
+
+1. Reads `/usr/syno/etc/certificate/system/default/RSA-fullchain.pem` and
+   `RSA-privkey.pem`.
+2. Aborts if the certificate and key do not match.
+3. Computes a SHA-256 checksum of the pair and skips the update when the
+   `argocd.lakotko.synology.me/cert-sha256` annotation on the Secret already
+   matches.
+4. Writes `argocd/argocd-lakotko-tls` directly over the Kubernetes API at
+   `https://192.168.68.71:6443`, verifying the API server against the cluster
+   CA.
+
+The job uses the namespace-scoped ServiceAccount `argocd-tls-sync`, whose Role
+allows only `get`, `update`, and `patch` on the single Secret
+`argocd-lakotko-tls`. RBAC and the token Secret are declared in
+`applications/platform/argocd/rbac.yaml`.
+
+Runtime-only NAS state (never committed):
+
+- `/root/.config/argocd-tls-sync/token` (0600, root-only)
+- `/root/.config/argocd-tls-sync/ca.crt` (0600, root-only)
+- `/root/.config/argocd-tls-sync/curlrc` (0600, root-only)
+- `/var/log/argocd-tls-sync.log` (0600, root-only)
+
+To re-bootstrap after a cluster rebuild, recreate the RBAC, then place the
+ServiceAccount token, cluster CA, and a curl config referencing them in that
+directory on the NAS. Do not copy the token or private keys into this
+repository or the NFS share.
 
 ### UI through port-forward (no DNS needed)
 

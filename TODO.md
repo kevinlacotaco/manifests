@@ -46,12 +46,15 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 ## P3 — Automation and documentation
 
 - [ ] Test the committed Ansible baseline in a VM, then apply to boulder/grapple.
+- [ ] Make the physical AdGuard Home rewrite for `argocd.lakotko.synology.me` durable; it is currently applied through the API and the AdGuard sync CronJob is disabled. The cluster AdGuard rewrite is in `applications/apps/adguard-home/base/configmap.yaml`.
+- [ ] Add monitoring for DSM task `argocd-tls-sync` failures (`/var/log/argocd-tls-sync.log`).
 - [ ] Ansible phase 2: storage validation and k3s join; phase 3: Zigbee/RTL-SDR/Bluetooth workloads.
 - [ ] Renovate: enable GitHub Issues or remove `:dependencyDashboard`; decide weekly vs daily; uninstall old GitHub App; tune custom managers.
 - [ ] Update the README known-gaps/checklist and remove completed items.
 
 ## Recently completed
 
+- Argo CD is reachable at `https://argocd.lakotko.synology.me` with the trusted Let's Encrypt wildcard. A root DSM task syncs the Synology system certificate into `argocd/argocd-lakotko-tls` under namespace-scoped RBAC; the `boulder.local:8081` and `argocd.home.arpa` fallbacks are retained.
 - CrowdSec LAPI and Grafana moved to PostgreSQL; the legacy Grafana SQLite PVC is retained for rollback.
 - Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
 - Synology DSM system, disk, RAID, and network metrics scraped over SNMPv3; `Synology NAS` and expanded `Synology Health` Grafana dashboards added.

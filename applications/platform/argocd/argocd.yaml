@@ -99,3 +99,11 @@ spec:
     automated: {}
     syncOptions:
       - CreateNamespace=true
+  ignoreDifferences:
+    # The controller populates /data on this token Secret.
+    - group: ""
+      kind: Secret
+      name: argocd-tls-sync-token
+      namespace: argocd
+      jsonPointers:
+        - /data

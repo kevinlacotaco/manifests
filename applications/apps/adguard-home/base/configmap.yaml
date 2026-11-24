@@ -60,6 +60,12 @@ data:
         - domain: jellyfin.lakotko.synology.me
           answer: 192.168.68.71
           enabled: true
+        - domain: argocd.home.arpa
+          answer: 192.168.68.71
+          enabled: true
+        - domain: argocd.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
 
     http:
       address: 0.0.0.0:3000

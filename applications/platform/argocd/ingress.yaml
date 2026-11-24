@@ -30,3 +30,38 @@ spec:
         - name: argo-argocd-server
           port: 80
           scheme: h2c
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-lakotko
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+    argocd.argoproj.io/instance: applications
+    app.kubernetes.io/part-of: argocd
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Argo CD"
+    gethomepage.dev/group: "Edge"
+    gethomepage.dev/icon: "argocd.png"
+    gethomepage.dev/href: "https://argocd.lakotko.synology.me"
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`argocd.lakotko.synology.me`) && Headers(`Content-Type`, `application/grpc`)
+      priority: 11
+      services:
+        - name: argo-argocd-server
+          port: 80
+          scheme: h2c
+    - kind: Rule
+      match: Host(`argocd.lakotko.synology.me`)
+      priority: 10
+      services:
+        - name: argo-argocd-server
+          port: 80
+  tls:
+    secretName: argocd-lakotko-tls
