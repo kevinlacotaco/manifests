@@ -45,16 +45,28 @@ spec:
               env:
                 - name: ORIGIN_URL
                   value: http://adguard-home.networking.svc.cluster.local:3001
-                - name: ORIGIN_USERNAME_FILE
-                  value: /etc/adguard-sync/origin-username
-                - name: ORIGIN_PASSWORD_FILE
-                  value: /etc/adguard-sync/origin-password
+                - name: ORIGIN_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-sync-auth
+                      key: origin-username
+                - name: ORIGIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-sync-auth
+                      key: origin-password
                 - name: REPLICA1_URL
                   value: http://192.168.68.72:8080
-                - name: REPLICA1_USERNAME_FILE
-                  value: /etc/adguard-sync/replica-username
-                - name: REPLICA1_PASSWORD_FILE
-                  value: /etc/adguard-sync/replica-password
+                - name: REPLICA1_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-sync-auth
+                      key: replica-username
+                - name: REPLICA1_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-sync-auth
+                      key: replica-password
                 - name: CRON
                   value: ""
                 - name: RUN_ON_START
@@ -101,15 +113,8 @@ spec:
                     - ALL
                 readOnlyRootFilesystem: true
               volumeMounts:
-                - name: auth
-                  mountPath: /etc/adguard-sync
-                  readOnly: true
                 - name: tmp
                   mountPath: /tmp
           volumes:
-            - name: auth
-              secret:
-                secretName: adguard-sync-auth
-                defaultMode: 0440
             - name: tmp
               emptyDir: {}
