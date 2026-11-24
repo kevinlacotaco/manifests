@@ -12,6 +12,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
 - [ ] Add permanent Traefik dashboard IngressRoute using `api@internal` behind Authelia/TLS.
 - [x] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
+- [x] Serve Grafana at `https://grafana.lakotko.synology.me` with the trusted wildcard and remove the dedicated Traefik `3000` entrypoint.
 - [x] Verify Postgres `fsGroup` on the CSI volume.
 - [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
 - [ ] Store Kopia repo password and Renovate GitHub App private key offline; remove plaintext working copies.

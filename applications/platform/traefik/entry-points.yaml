@@ -60,12 +60,6 @@ spec:
           default: true
         exposedPort: 8080
         protocol: TCP
-      grafana:
-        port: 3000
-        expose:
-          default: true
-        exposedPort: 3000
-        protocol: TCP
       mqtt:
         port: 1883
         expose:
