@@ -6031,7 +6031,7 @@ data:
           },
           "id": 14,
           "options": {
-            "content": "Phase 1: Traefik bouncer is attached to Homepage only and is fail-open. CrowdSec agent runs on boulder and hauler. LAPI and AppSec metrics are shown; MQTT is not counted in `rabbitmq_connections`. Global bouncer rollout is pending."
+            "content": "Traefik bouncer is global at the web and websecure entrypoints, alongside geoblock. Mode is live with AppSec enabled and fail-open. CrowdSec agents run on boulder and hauler. LAPI and AppSec metrics are shown. MQTT connections are not counted in `rabbitmq_connections`; use MQTT-specific metrics or logs."
           },
           "title": "CrowdSec rollout note",
           "type": "text"
