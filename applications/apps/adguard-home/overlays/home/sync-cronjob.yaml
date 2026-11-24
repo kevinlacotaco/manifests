@@ -4,9 +4,9 @@ metadata:
   name: adguardhome-sync
   namespace: networking
 spec:
-  # Enable this after the physical AdGuard sync user has been created by
-  # ansible-playbook playbooks/adguard.yml.
-  suspend: true
+  # Cluster AdGuard is the source of truth; sync auth is provisioned via
+  # adguard-secret and adguard-sync-auth.
+  suspend: false
   schedule: "*/10 * * * *"
   timeZone: America/New_York
   concurrencyPolicy: Forbid
