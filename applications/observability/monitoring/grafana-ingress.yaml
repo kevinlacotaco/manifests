@@ -8,14 +8,16 @@ metadata:
     gethomepage.dev/name: "Grafana"
     gethomepage.dev/group: "Observability"
     gethomepage.dev/icon: "grafana.png"
-    gethomepage.dev/href: "http://boulder.local:3000"
+    gethomepage.dev/href: "https://grafana.lakotko.synology.me"
 spec:
   entryPoints:
-    - grafana
+    - websecure
   routes:
     - kind: Rule
-      match: Host(`boulder.local`)
+      match: Host(`grafana.lakotko.synology.me`)
       priority: 10
       services:
         - name: grafana
           port: 80
+  tls:
+    secretName: grafana-lakotko-tls

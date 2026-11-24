@@ -19,6 +19,7 @@ resources:
   - grafana.yaml
   - grafana-ingress.yaml
   - grafana-network-policy.yaml
+  - grafana-tls-sync.yaml
   - grafana-dashboards.yaml
   - prometheus.yaml
   - snmp-exporter.yaml

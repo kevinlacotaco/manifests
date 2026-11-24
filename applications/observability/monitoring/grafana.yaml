@@ -21,6 +21,9 @@ spec:
         # Database settings live in grafana.ini; the password is injected as
         # GF_DATABASE_PASSWORD from a SealedSecret so it never enters values.
         grafana.ini:
+          server:
+            domain: grafana.lakotko.synology.me
+            root_url: https://grafana.lakotko.synology.me/
           database:
             type: postgres
             host: postgres-headless-service.database.svc.cluster.local:5432

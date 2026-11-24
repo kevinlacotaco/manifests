@@ -79,7 +79,7 @@ Run this checklist when you come back to the cluster after a while:
    | What | URL |
    | --- | --- |
    | Argo CD | <https://argocd.lakotko.synology.me> |
-   | Grafana | <http://boulder.local:3000> |
+   | Grafana | <https://grafana.lakotko.synology.me> |
    | Uptime Kuma | <https://kuma.lakotko.synology.me> |
    | AdGuard Home | <http://192.168.68.71:31628> |
    | Traefik dashboard | <http://192.168.68.71:8080/dashboard/> |
@@ -793,7 +793,7 @@ plaintext secret with the new controller certificate.
 | `authelia` | `auth` | Git path `applications/platform/authelia/manifests` | 2 replicas; Postgres storage; Redis sessions; OIDC provider |
 | `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI at `https://argocd.lakotko.synology.me`; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
-| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | Postgres storage; 10Gi iSCSI retained for plugins/rollback; UI on 3000 |
+| `grafana` | `monitoring` | Helm `grafana` `7.3.7` | Postgres storage; 10Gi iSCSI retained for plugins/rollback; UI at `https://grafana.lakotko.synology.me` |
 | `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; PolicyExceptions enabled in `kyverno` |
 | `kyverno-policies` | `kyverno` | Git path `applications/platform/kyverno-policies/manifests` | Audit-only ClusterPolicies: no `:latest`, no privileged/host access, require limits; 0 current failures |
 | `loki` | `monitoring` | Helm `loki` `6.55.0` | SingleBinary; 20Gi iSCSI; fed by Alloy; memcached caches disabled to save memory |
@@ -963,7 +963,7 @@ The Synology reverse proxy must forward `git.lakotko.synology.me` to Traefik at
 | --- | --- |
 | Kubernetes API | `https://192.168.68.71:6443` |
 | Argo CD | `https://argocd.lakotko.synology.me` |
-| Grafana | `http://boulder.local:3000` |
+| Grafana | `https://grafana.lakotko.synology.me` |
 | Uptime Kuma | `https://kuma.lakotko.synology.me` |
 | Mealie | `https://meals.lakotko.synology.me` |
 | Donetick | `https://tasks.lakotko.synology.me` |
@@ -1032,6 +1032,21 @@ Grafana also provisions five compact operational dashboards from
   per-application request source; there is no separate app request counter.
 
 - **PostgreSQL** — connections by database, database size, transactions per second, cache hit ratio, locks, deadlocks, temp bytes, active sessions, max transaction duration, WAL size, and archiver failures.
+
+### Grafana access and TLS
+
+Grafana is served on the Traefik `websecure` entry point at
+`https://grafana.lakotko.synology.me`. It no longer uses a dedicated Traefik
+entry point on port `3000`, so the only exposed Grafana port is `443` through
+Traefik. Grafana keeps its own admin login and stays LAN-only; the AdGuard
+rewrite sends the hostname to `192.168.68.71`.
+
+The IngressRoute uses `monitoring/grafana-lakotko-tls`, a copy of the trusted
+`*.lakotko.synology.me` Secret. The DSM task `argocd-tls-sync` remains the
+source of truth in `argocd/argocd-lakotko-tls`; the in-cluster CronJob
+`monitoring/grafana-tls-sync` mirrors it into `monitoring` daily so the
+private key never enters Git. The target Secret must exist before the job can
+update it; both RBAC roles are namespaced and scoped to the single Secret.
 
 ### Storage
 

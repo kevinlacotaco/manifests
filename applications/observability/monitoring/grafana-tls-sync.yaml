@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-tls-sync
+  namespace: monitoring
+---
+# Read-only access to the DSM-managed wildcard certificate in argocd.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: grafana-tls-source-reader
+  namespace: argocd
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - argocd-lakotko-tls
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: grafana-tls-source-reader
+  namespace: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: grafana-tls-source-reader
+subjects:
+  - kind: ServiceAccount
+    name: grafana-tls-sync
+    namespace: monitoring
+---
+# The Grafana certificate Secret is runtime-managed by the CronJob below so
+# the private key never enters Git. The initial Secret must exist; the job
+# only refreshes it. Prune=false keeps Argo from deleting the untracked Secret.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: grafana-tls-sync
+  namespace: monitoring
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - grafana-lakotko-tls
+    verbs:
+      - get
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: grafana-tls-sync
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: grafana-tls-sync
+subjects:
+  - kind: ServiceAccount
+    name: grafana-tls-sync
+    namespace: monitoring
+---
+# The Synology DSM task argocd-tls-sync writes the trusted wildcard
+# certificate to argocd/argocd-lakotko-tls. This job mirrors that Secret into
+# monitoring for the Grafana IngressRoute without exposing the key in Git.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: grafana-tls-sync
+  namespace: monitoring
+spec:
+  schedule: "15 2 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: grafana-tls-sync
+        spec:
+          restartPolicy: Never
+          serviceAccountName: grafana-tls-sync
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sync
+              image: alpine/k8s:1.31.4
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: HOME
+                  value: /tmp
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -euo pipefail
+                  kubectl get secret -n argocd argocd-lakotko-tls \
+                    -o go-template='{"apiVersion":"v1","kind":"Secret","metadata":{"name":"grafana-lakotko-tls","namespace":"monitoring","labels":{"app.kubernetes.io/name":"grafana","app.kubernetes.io/part-of":"monitoring"},"annotations":{"argocd.argoproj.io/sync-options":"Prune=false"}},"type":"kubernetes.io/tls","data":{"tls.crt":"{{ index .data "tls.crt" }}","tls.key":"{{ index .data "tls.key" }}"}}' \
+                    | kubectl apply --server-side --force-conflicts -f -
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+          volumes:
+            - name: tmp
+              emptyDir: {}
