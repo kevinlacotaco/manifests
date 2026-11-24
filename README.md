@@ -78,7 +78,7 @@ Run this checklist when you come back to the cluster after a while:
 
    | What | URL |
    | --- | --- |
-   | Argo CD | <http://boulder.local:8081> |
+   | Argo CD | <https://argocd.lakotko.synology.me> |
    | Grafana | <http://boulder.local:3000> |
    | Uptime Kuma | <https://kuma.lakotko.synology.me> |
    | AdGuard Home | <http://192.168.68.71:31628> |
@@ -342,14 +342,14 @@ The certificate is the Synology system-default wildcard
 Secret by a root DSM Task Scheduler job; see
 [Argo CD certificate sync](#argo-cd-certificate-sync).
 
-Fallback routes are intentionally kept:
+Fallback route retained:
 
 ```text
-http://boulder.local:8081              # dedicated Traefik argocd entry point
 https://argocd.home.arpa               # self-signed IngressRoute
 ```
 
-Traefik exposes a dedicated `argocd` entry point on port `8081`.
+The legacy `boulder.local:8081` Traefik `argocd` entrypoint and IngressRoute
+have been removed. Argo CD is served only through the `websecure` entrypoint.
 
 ### Argo CD certificate sync
 
@@ -435,10 +435,10 @@ curl -sSL -o /tmp/argocd \
 sudo install -m 755 /tmp/argocd /usr/local/bin/argocd
 
 argocd version --client
-argocd login boulder.local:8081 --plaintext --username admin
+argocd login argocd.lakotko.synology.me --username admin
 ```
 
-`--plaintext` is required because the server is HTTP, not HTTPS.
+TLS terminates at Traefik, so use the trusted HTTPS hostname.
 
 Alternative login through port-forward:
 
@@ -791,7 +791,7 @@ plaintext secret with the new controller certificate.
 | `applications` | `argocd` | Git path `applications` | App-of-apps; auto prune/self-heal |
 | `adguard-home` | `networking` | Git path `applications/apps/adguard-home/overlays/home` | Only pure Kustomize workload; pinned image and probes |
 | `authelia` | `auth` | Git path `applications/platform/authelia/manifests` | 2 replicas; Postgres storage; Redis sessions; OIDC provider |
-| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI on 8081; old `argocd-*` release and duplicate RBAC removed |
+| `argocd` | `argocd` | Helm `argo-cd` `9.5.14` | Self-managing; UI at `https://argocd.lakotko.synology.me`; old `argocd-*` release and duplicate RBAC removed |
 | `alloy` | `monitoring` | Helm `alloy` `1.8.1` | Ships pod logs to Loki |
 | `grafana` | `monitoring` | Helm `grafana` `7.3.7` | Postgres storage; 10Gi iSCSI retained for plugins/rollback; UI on 3000 |
 | `kyverno` | `kyverno` | Helm `kyverno` `3.9.2` | Policy engine; admission, background, cleanup, reports controllers; PolicyExceptions enabled in `kyverno` |
@@ -962,7 +962,7 @@ The Synology reverse proxy must forward `git.lakotko.synology.me` to Traefik at
 | Endpoint | Address |
 | --- | --- |
 | Kubernetes API | `https://192.168.68.71:6443` |
-| Argo CD | `http://boulder.local:8081` |
+| Argo CD | `https://argocd.lakotko.synology.me` |
 | Grafana | `http://boulder.local:3000` |
 | Uptime Kuma | `https://kuma.lakotko.synology.me` |
 | Mealie | `https://meals.lakotko.synology.me` |
@@ -1328,4 +1328,5 @@ fixed.
 - The Traefik dashboard is enabled with `--api.insecure=true`. Keep it on the
   trusted LAN; do not expose it to the internet.
 - Argo CD is running with `server.insecure: "true"` because TLS terminates at
-  Traefik. Do not expose port `8081` publicly.
+  Traefik. It is reachable only through the `websecure` entrypoint; do not add
+  a direct Argo CD port.

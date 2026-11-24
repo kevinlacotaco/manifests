@@ -46,8 +46,7 @@ Covered:
 
 Not covered:
 
-- Traefik direct admin ports `8081` (Argo CD), `3000` (Grafana), and `8080`
-  (Traefik dashboard).
+- Traefik direct admin ports `3000` (Grafana) and `8080` (Traefik dashboard).
 - MQTT `1883` (it is a TCP entrypoint, not HTTP).
 - Synology DSM itself.
 - Traffic that reaches a pod without passing through Traefik.

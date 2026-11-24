@@ -11,7 +11,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [ ] Add the Synology reverse proxy rule for `git.lakotko.synology.me` to Traefik and verify external Forgejo access.
 - [x] Remove Traefik `--api.insecure=true`; use `kubectl port-forward` or an Authelia-protected TLS route.
 - [ ] Add permanent Traefik dashboard IngressRoute using `api@internal` behind Authelia/TLS.
-- [ ] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
+- [x] Ensure Argo CD is ClusterIP-only and port 8081 is not directly reachable.
 - [x] Verify Postgres `fsGroup` on the CSI volume.
 - [x] Fix AdGuard `/opt/adguardhome/work` permissions (0775 -> 0700 or document exception).
 - [ ] Store Kopia repo password and Renovate GitHub App private key offline; remove plaintext working copies.
@@ -54,7 +54,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## Recently completed
 
-- Argo CD is reachable at `https://argocd.lakotko.synology.me` with the trusted Let's Encrypt wildcard. A root DSM task syncs the Synology system certificate into `argocd/argocd-lakotko-tls` under namespace-scoped RBAC; the `boulder.local:8081` and `argocd.home.arpa` fallbacks are retained.
+- Argo CD is reachable at `https://argocd.lakotko.synology.me` with the trusted Let's Encrypt wildcard. A root DSM task syncs the Synology system certificate into `argocd/argocd-lakotko-tls` under namespace-scoped RBAC; the legacy `boulder.local:8081` entrypoint and IngressRoute were removed while the `argocd.home.arpa` self-signed fallback is retained.
 - CrowdSec LAPI and Grafana moved to PostgreSQL; the legacy Grafana SQLite PVC is retained for rollback.
 - Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
 - Synology DSM system, disk, RAID, and network metrics scraped over SNMPv3; `Synology NAS` and expanded `Synology Health` Grafana dashboards added.

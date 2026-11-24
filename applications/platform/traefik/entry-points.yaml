@@ -54,12 +54,6 @@ spec:
       dashboard:
         enabled: false
     ports:
-      argocd:
-        port: 8081
-        expose:
-          default: true
-        exposedPort: 8081
-        protocol: TCP
       traefik:
         port: 8080
         expose:
