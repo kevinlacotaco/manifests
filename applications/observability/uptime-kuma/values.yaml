@@ -121,9 +121,11 @@ controllers:
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'RabbitMQ AMQP')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, hostname, port)
-            SELECT 'Traefik', 1, 1, 60, 'port', 2000, 2, 60, 'Traefik TCP listener', 'traefik.kube-system.svc.cluster.local', 8080
+            SELECT 'Traefik', 1, 1, 60, 'port', 2000, 2, 60, 'Traefik TCP listener', 'traefik.kube-system.svc.cluster.local', 443
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Traefik')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            UPDATE monitor SET type = 'port', hostname = 'traefik.kube-system.svc.cluster.local', port = 443, description = 'Traefik TCP listener'
+            WHERE name = 'Traefik';
             INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
             SELECT 'Kuma ingress', 1, 1, 60, 'http', 2000, 2, 60, 'Uptime Kuma through Traefik ingress', 'https://kuma.lakotko.synology.me/', 'GET', 10, '["200-299"]', 0, 0, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Kuma ingress')
