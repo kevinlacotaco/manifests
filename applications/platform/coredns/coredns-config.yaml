@@ -13,3 +13,8 @@ data:
         fallthrough
       }
     }
+  jellyfin.override: |
+    hosts {
+      192.168.68.71 jellyfin.lakotko.synology.me
+      fallthrough
+    }
