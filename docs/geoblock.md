@@ -46,13 +46,14 @@ Covered:
 
 Not covered:
 
-- Traefik direct admin ports `3000` (Grafana) and `8080` (Traefik dashboard).
 - MQTT `1883` (it is a TCP entrypoint, not HTTP).
 - Synology DSM itself.
 - Traffic that reaches a pod without passing through Traefik.
 
-If those direct ports are reachable from the internet, geoblocking does not
-protect them; remove the port forwards or put them behind Traefik instead.
+Grafana and the Traefik dashboard now use `websecure` hostnames, so there are
+no direct HTTP admin ports to exempt. If a direct admin port is ever added,
+geoblocking will not protect it; remove the port forward or put it behind
+Traefik instead.
 
 ## Verify
 
