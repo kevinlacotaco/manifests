@@ -5,6 +5,10 @@ metadata:
   namespace: networking
 spec:
   type: LoadBalancer
+  # Keep the real LAN client IP visible in AdGuard query logs instead of the
+  # node's SNAT address. The pod is pinned to boulder, so only boulder serves
+  # the LoadBalancer VIP; other nodes' IPs (.102) no longer answer DNS for it.
+  externalTrafficPolicy: Local
   selector:
     app: adguard-home
   ports:
