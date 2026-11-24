@@ -377,9 +377,24 @@ Runtime-only NAS state (never committed):
 - `/root/.config/argocd-tls-sync/curlrc` (0600, root-only)
 - `/var/log/argocd-tls-sync.log` (0600, root-only)
 
-To re-bootstrap after a cluster rebuild, recreate the RBAC, then place the
-ServiceAccount token, cluster CA, and a curl config referencing them in that
-directory on the NAS. Do not copy the token or private keys into this
+To re-bootstrap after a cluster rebuild, let Argo CD create the RBAC from
+`applications/platform/argocd/rbac.yaml`, then create the target Secret once
+with a temporary self-signed pair so the namespace-scoped Role (which
+intentionally has no `create` verb) can update it:
+
+```sh
+openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+  -subj "/CN=argocd.lakotko.synology.me" \
+  -addext "subjectAltName=DNS:argocd.lakotko.synology.me" \
+  -keyout /tmp/argocd-tls.key -out /tmp/argocd-tls.crt
+kubectl -n argocd create secret tls argocd-lakotko-tls \
+  --cert=/tmp/argocd-tls.crt --key=/tmp/argocd-tls.key
+shred -u /tmp/argocd-tls.key
+```
+
+Then place the ServiceAccount token, cluster CA, and a curl config
+referencing them in `/root/.config/argocd-tls-sync` on the NAS and run the
+`argocd-tls-sync` DSM task. Do not copy the token or private keys into this
 repository or the NFS share.
 
 ### UI through port-forward (no DNS needed)
