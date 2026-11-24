@@ -4,6 +4,7 @@ metadata:
   name: jellyfin
   namespace: jellyfin
   annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: jellyfin-jellyfin-cors@kubernetescrd
     gethomepage.dev/enabled: "true"
     gethomepage.dev/name: "Jellyfin"
     gethomepage.dev/group: "Media"
