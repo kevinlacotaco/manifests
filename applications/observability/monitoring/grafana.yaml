@@ -76,8 +76,17 @@ spec:
                 editable: true
                 options:
                   path: /var/lib/grafana/dashboards/default
+              - name: service
+                orgId: 1
+                folder: 'Services'
+                type: file
+                disableDeletion: false
+                editable: true
+                options:
+                  path: /var/lib/grafana/dashboards/service
         dashboardsConfigMaps:
           default: grafana-dashboards
+          service: grafana-service-dashboards
         datasources:
           datasources.yaml:
             apiVersion: 1

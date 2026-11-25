@@ -23,6 +23,7 @@ resources:
   - grafana-network-policy.yaml
   - grafana-tls-sync.yaml
   - grafana-dashboards.yaml
+  - grafana-service-dashboards.yaml
   - prometheus.yaml
   - snmp-exporter.yaml
   - snmp-exporter-auth-sealed-secret.yaml
