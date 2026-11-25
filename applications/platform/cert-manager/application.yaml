@@ -16,6 +16,11 @@ spec:
         crds:
           enabled: true
 
+        replicaCount: 2
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 1
+
         resources:
           requests:
             cpu: 10m
@@ -25,6 +30,11 @@ spec:
             memory: 256Mi
 
         webhook:
+          replicaCount: 2
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: 1
+
           resources:
             requests:
               cpu: 10m
@@ -34,6 +44,11 @@ spec:
               memory: 256Mi
 
         cainjector:
+          replicaCount: 2
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: 1
+
           resources:
             requests:
               cpu: 10m

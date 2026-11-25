@@ -12,6 +12,24 @@ spec:
       limits:
         cpu: 500m
         memory: 512Mi
+    # Keep ingress available through a single Traefik pod failure or rollout.
+    # maxUnavailable is used instead of minAvailable so a temporary scale-down
+    # to one replica cannot block node drains.
+    deployment:
+      replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: traefik
+                  app.kubernetes.io/instance: traefik-kube-system
+              topologyKey: kubernetes.io/hostname
     # CrowdSec bouncer plugin. The plugin is downloaded from the Traefik
     # plugin catalog at startup, so Traefik needs egress access to GitHub.
     experimental:

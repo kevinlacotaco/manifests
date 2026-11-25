@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k3s-sqlite-backup
+  namespace: k3s-backup
+data:
+  backup.py: |
+    import datetime
+    import hashlib
+    import json
+    import os
+    import sqlite3
+    import time
+    from pathlib import Path
+
+    SOURCE = Path("/source/state.db")
+    OUTPUT_DIR = Path("/backup")
+    RETENTION_DAYS = 30
+
+
+    def sha256(path: Path) -> str:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+
+
+    def main() -> None:
+        if not SOURCE.exists():
+            raise SystemExit(f"source database not found: {SOURCE}")
+
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        destination = OUTPUT_DIR / f"k3s-state-{stamp}.db"
+        if destination.exists():
+            raise SystemExit(f"refusing to overwrite existing backup: {destination}")
+
+        source = sqlite3.connect(f"file:{SOURCE}?mode=ro", uri=True, timeout=60)
+        try:
+            source.execute(f"VACUUM INTO '{destination}'")
+        finally:
+            source.close()
+
+        check = sqlite3.connect(f"file:{destination}?mode=ro", uri=True)
+        try:
+            integrity = check.execute("PRAGMA integrity_check").fetchone()[0]
+        finally:
+            check.close()
+        if integrity != "ok":
+            raise SystemExit(f"integrity check failed: {integrity}")
+
+        os.chmod(destination, 0o600)
+        digest = sha256(destination)
+        size = destination.stat().st_size
+        metadata = {
+            "backup": destination.name,
+            "bytes": size,
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "integrity": integrity,
+            "retention_days": RETENTION_DAYS,
+            "sha256": digest,
+            "source": str(SOURCE),
+        }
+        (OUTPUT_DIR / f"{destination.name}.sha256").write_text(
+            f"{digest}  {destination.name}\n", encoding="utf-8"
+        )
+        (OUTPUT_DIR / f"{destination.name}.json").write_text(
+            json.dumps(metadata, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        print(f"backup={destination} bytes={size} sha256={digest} integrity={integrity}")
+
+        cutoff = time.time() - (RETENTION_DAYS * 86400)
+        for path in OUTPUT_DIR.glob("k3s-state-*"):
+            if path.is_file() and path.stat().st_mtime < cutoff:
+                path.unlink()
+                print(f"pruned={path}")
+
+
+    if __name__ == "__main__":
+        main()

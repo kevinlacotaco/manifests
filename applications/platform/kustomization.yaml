@@ -15,6 +15,7 @@ resources:
   - authelia
   - crowdsec
   - backup
+  - k3s-backup
   - renovate
   - cert-manager
   - cert-manager-test

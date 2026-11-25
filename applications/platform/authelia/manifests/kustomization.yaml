@@ -6,6 +6,7 @@ resources:
 - networkpolicy.yaml
 - configmap.yaml
 - deployment.yaml
+- pdb.yaml
 - redis.yaml
 - service.yaml
 - ingress.yaml
