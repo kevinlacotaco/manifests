@@ -48,6 +48,12 @@ data:
         - domain: adguard-primary.home.arpa
           answer: 192.168.68.72
           enabled: true
+        - domain: dns-1
+          answer: 192.168.68.72
+          enabled: true
+        - domain: dns-2
+          answer: 192.168.68.71
+          enabled: true
         - domain: pebble.home.arpa
           answer: 192.168.68.72
           enabled: true
