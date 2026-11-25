@@ -1020,7 +1020,7 @@ status/capacity, network throughput/link status, and a table of all SNMP
 metrics. The exporter is reachable at
 `prometheus-snmp-exporter.monitoring.svc.cluster.local:9116`.
 
-Grafana also provisions five compact operational dashboards from
+Grafana also provisions compact operational dashboards from
 `applications/observability/monitoring/grafana-dashboards.yaml`:
 
 - **Kubernetes Capacity** — node CPU/memory, requests and limits against
@@ -1038,6 +1038,13 @@ Grafana also provisions five compact operational dashboards from
   per-application request source; there is no separate app request counter.
 
 - **PostgreSQL** — connections by database, database size, transactions per second, cache hit ratio, locks, deadlocks, temp bytes, active sessions, max transaction duration, WAL size, and archiver failures.
+
+The `Services` folder adds a **DNS & Auth** dashboard with AdGuard DNS
+query, blocking, processing-time, top-client, and top-domain panels, plus
+Authelia request, login, 2FA, authorization, and latency panels. AdGuard
+metrics come from `sfragata/adguardhome_exporter`, which polls the AdGuard
+API using `monitoring/adguard-metrics-auth`; Authelia exposes its own
+Prometheus endpoint on `auth/authelia:9959` and is scraped per replica.
 
 ### Grafana access and TLS
 
