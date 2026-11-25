@@ -14,3 +14,7 @@ spec:
     port: 9091
     targetPort: http
     protocol: TCP
+  - name: metrics
+    port: 9959
+    targetPort: metrics
+    protocol: TCP

@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguard-exporter
+  namespace: monitoring
+  labels:
+    app: adguard-exporter
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: adguard-exporter
+  template:
+    metadata:
+      labels:
+        app: adguard-exporter
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: sfragata/adguardhome_exporter:v1.0.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - -H
+            - adguard-home.networking.svc.cluster.local
+            - -p
+            - "3001"
+            - -l
+            - "9311"
+          env:
+            - name: ADGUARD_HOME_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: adguard-metrics-auth
+                  key: token
+          ports:
+            - name: metrics
+              containerPort: 9311
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: metrics
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard-exporter
+  namespace: monitoring
+  labels:
+    app: adguard-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: adguard-exporter
+  ports:
+    - name: metrics
+      port: 9311
+      targetPort: metrics
+      protocol: TCP

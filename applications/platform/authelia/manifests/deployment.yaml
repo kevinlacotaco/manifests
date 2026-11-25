@@ -48,6 +48,9 @@ spec:
         - name: http
           containerPort: 9091
           protocol: TCP
+        - name: metrics
+          containerPort: 9959
+          protocol: TCP
         env:
         - name: AUTHELIA_SESSION_SECRET
           valueFrom:

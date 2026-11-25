@@ -10,6 +10,8 @@ labels:
     includeSelectors: false
 
 resources:
+  - adguard-exporter.yaml
+  - adguard-metrics-auth-sealed-secret.yaml
   - grafana-admin-sealed-secret.yaml
   - grafana-db-sealed-secret.yaml
   - alertmanager-ntfy-sealed-secret.yaml

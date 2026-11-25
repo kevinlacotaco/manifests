@@ -674,6 +674,16 @@ spec:
             static_configs:
               - targets: ["home-assistant.home-assistant.svc.cluster.local:8123"]
 
+          - job_name: authelia
+            scrape_interval: 30s
+            static_configs:
+              - targets: ["authelia.auth.svc.cluster.local:9959"]
+
+          - job_name: adguard
+            scrape_interval: 30s
+            static_configs:
+              - targets: ["adguard-exporter.monitoring.svc.cluster.local:9311"]
+
           - job_name: crowdsec-lapi
             static_configs:
               - targets: ["crowdsec-service.crowdsec.svc.cluster.local:6060"]
