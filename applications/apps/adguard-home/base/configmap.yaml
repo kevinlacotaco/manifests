@@ -75,6 +75,27 @@ data:
         - domain: homepage.lakotko.synology.me
           answer: 192.168.68.71
           enabled: true
+        - domain: home.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
+        - domain: changedetection.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
+        - domain: frigate.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
+        - domain: omni.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
+        - domain: zigbee2mqtt.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
+        - domain: paperless.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
+        - domain: git.lakotko.synology.me
+          answer: 192.168.68.71
+          enabled: true
 
     http:
       address: 0.0.0.0:3000
