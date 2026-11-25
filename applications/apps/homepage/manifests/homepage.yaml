@@ -130,6 +130,16 @@ data:
     mode: cluster
     ingress: true
     traefik: true
+  # Homepage copies missing skeleton files into the config directory at startup.
+  # The ConfigMap mount is read-only, so every skeleton file must exist here.
+  proxmox.yaml: |
+    ---
+    # pve:
+    #   url: https://proxmox.host.or.ip:8006
+    #   token: username@pam!Token ID
+    #   secret: secret
+  custom.css: ""
+  custom.js: ""
 ---
 apiVersion: apps/v1
 kind: Deployment
