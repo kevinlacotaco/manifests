@@ -747,12 +747,13 @@ data:
           },
           "targets": [
             {
-              "expr": "up{job=\"authelia\"}",
+              "expr": "sum(up{job=\"kubernetes-pods\",namespace=\"auth\",pod=~\"authelia-.*\"})",
               "refId": "A"
             }
           ],
-          "title": "Exporter",
-          "type": "stat"
+          "title": "Replicas up",
+          "type": "stat",
+          "description": "Number of Authelia replicas currently scraped successfully."
         },
         {
           "datasource": {

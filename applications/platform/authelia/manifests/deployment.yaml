@@ -21,6 +21,10 @@ spec:
       labels:
         app: authelia
         requires-db: postgres
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9959"
+        prometheus.io/path: "/metrics"
     spec:
       enableServiceLinks: false
       securityContext:
