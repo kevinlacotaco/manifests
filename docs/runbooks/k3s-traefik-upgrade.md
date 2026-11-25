@@ -20,7 +20,7 @@
 
 **Recommended order:** `boulder` → `grapple` → `hauler`.
 
-`hauler` is last because it hosts the only Traefik pod, the only CoreDNS pod, and the Argo server. If it has a problem, the server and the low-risk agent are already on the new version.
+`hauler` is last because it hosts a Traefik replica, a CoreDNS replica, and single-instance workloads such as the Argo server. If it has a problem, the server and the low-risk agent are already on the new version.
 
 **You may stop after stage 1.** That is a complete, stable state. Do stage 3 on a separate day if that is less stressful.
 
@@ -46,16 +46,16 @@
 
 | Node | What happens | Expected impact |
 |---|---|---|
-| `boulder` | k3s server stops/restarts | Kubernetes API, `kubectl`, and Argo reconciliation are unavailable for roughly 1–3 minutes. Existing pods keep running. Ingress from the Traefik pod on `hauler` continues using its last configuration. |
+| `boulder` | k3s server stops/restarts | Kubernetes API, `kubectl`, and Argo reconciliation are unavailable for roughly 1–3 minutes. Existing pods keep running. Ingress continues from the surviving Traefik replica using its last configuration. |
 | `grapple` | k3s agent stops/restarts | Node goes `NotReady` briefly. Existing radio pods keep running. No ingress impact. |
-| `hauler` | k3s agent stops/restarts | Node goes `NotReady` briefly. Traefik, CoreDNS, and the Argo server may restart. Expect a short ingress/DNS/Argo UI blip. |
+| `hauler` | k3s agent stops/restarts | Node goes `NotReady` briefly. The Traefik and CoreDNS replicas on `hauler` may restart, but the replicas on `boulder` can keep serving. The Argo server is single-instance, so expect a short Argo UI blip. |
 
 ### Why there are no drains
 
 **Do not run `kubectl drain` on any node.**
 
 - `boulder` runs many controllers and stateful workloads.
-- `hauler` runs the only Traefik, the only CoreDNS, and the Argo server.
+- `hauler` runs a Traefik replica, a CoreDNS replica, and single-instance workloads such as the Argo server.
 - `grapple` runs radio workloads pinned by labels and taints; they cannot move to another node.
 
 K3s binary replacement stops the k3s service without a drain. Container processes may continue briefly through the runtime, but the node's Kubernetes control plane and networking are unavailable during the restart, so do not treat this as zero-downtime. Draining would additionally evict the single-instance workloads and turn a short blip into a guaranteed outage.
@@ -140,8 +140,8 @@ kubectl get pods -A -o wide | grep -E 'traefik|coredns|argocd-server|argocd-appl
 
 Expected:
 
-- Traefik: one pod on `hauler`.
-- CoreDNS: one pod on `hauler`.
+- Traefik: two pods, one on `boulder` and one on `hauler`.
+- CoreDNS: two pods, one on `boulder` and one on `hauler`.
 - Argo server/controller: on `hauler`.
 
 If this is different, stop and adjust the order. The runbook assumes `hauler` is the critical node.
@@ -236,6 +236,8 @@ Expected: no `automated` block.
 ### 4.2 Take a fresh SQLite backup
 
 The cluster uses SQLite at `/var/lib/rancher/k3s/server/db/state.db`, not etcd. Do **not** use `k3s etcd-snapshot`.
+
+> A daily CronJob at `k3s-backup/k3s-sqlite-backup` runs at 01:00 America/New_York and keeps 30 days. For this upgrade, still trigger a fresh backup at the start of the window; do not use the previous night's copy.
 
 Use the backup pod manifest in [Appendix A](#appendix-a-sqlite-backup-pod). Apply it from a workstation:
 
@@ -447,8 +449,8 @@ Expected:
 
 - All nodes `v1.31.14+k3s1`.
 - Traefik image `rancher/mirrored-library-traefik:2.11.24`.
-- Traefik `1/1`.
-- CoreDNS `1/1`.
+- Traefik `2/2`.
+- CoreDNS `2/2`; re-scale to 2 if the k3s addon reset it.
 - Argo apps healthy (may be `OutOfSync` because auto-sync is paused).
 
 Run the URL/TLS/MQTT/DNS checklist in [Appendix C](#appendix-c-url-and-service-checklist). If anything fails, roll back stage 1 before proceeding.
@@ -638,8 +640,8 @@ kubectl -n kube-system get deploy traefik -o jsonpath='{.spec.template.spec.cont
 Expected after the addon rolls:
 
 - Traefik image `rancher/mirrored-library-traefik:3.6.9`.
-- Traefik pod `1/1` on `hauler`.
-- CoreDNS `1/1` (or more, if you have scaled it separately).
+- Traefik `2/2` across `boulder` and `hauler`.
+- CoreDNS `2/2`; re-scale to 2 if the k3s addon reset it.
 
 At this point the server is 1.32 and the agents are still 1.31.14. That is within supported skew. Do not upgrade the agents until the API and Traefik v3 are stable.
 
@@ -775,8 +777,8 @@ Expected:
 
 - All nodes `v1.32.13+k3s1`
 - Traefik `3.6.9`
-- Traefik `1/1`
-- CoreDNS `1/1`
+- Traefik `2/2`
+- CoreDNS `2/2`
 
 ### 8.2 Argo
 
@@ -1013,8 +1015,8 @@ When the cluster is healthy again, restore the saved policy from section 4.1.
 ### 9.5 After rollback
 
 - [ ] All nodes `Ready`.
-- [ ] Traefik `1/1` and expected image.
-- [ ] CoreDNS `1/1`.
+- [ ] Traefik `2/2` and expected image.
+- [ ] CoreDNS `2/2`.
 - [ ] Argo apps healthy.
 - [ ] Critical URLs and TLS work.
 - [ ] MQTT port works.
@@ -1210,6 +1212,6 @@ Use this manual, pinned runbook for the 1.31 → 1.32 Traefik v3 jump. If you la
 - [ ] Update `README.md` and `TODO.md` with the new k3s/Traefik versions.
 - [ ] Record the Traefik v3 metrics-name changes if a dashboard panel went blank.
 - [ ] Plan k3s 1.33/1.34 and chart v40 as a separate upgrade.
-- [ ] Consider two Traefik replicas with anti-affinity and a PodDisruptionBudget.
-- [ ] Consider two CoreDNS replicas if DNS blips are unacceptable.
+- [x] Keep two Traefik replicas with anti-affinity and a PodDisruptionBudget.
+- [x] Keep two CoreDNS replicas; re-scale to 2 after a k3s addon reset.
 - [ ] Re-test the Jellyfin PNA header on Traefik v3 if you want HA media playback fixed.

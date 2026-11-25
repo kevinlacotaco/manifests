@@ -1098,6 +1098,24 @@ ReadWriteMany data, and runs as UID/GID 911; the NFS export must allow that UID.
 ntfy uses `synology-iscsi` because SQLite on NFS is unsafe. Verify a non-root
 write from a test pod before relying on NFS for a new application.
 
+### Kubernetes datastore backup
+
+k3s uses SQLite, not etcd, so the backup source is
+`/var/lib/rancher/k3s/server/db/state.db`; `k3s etcd-snapshot` does not apply.
+The `k3s-backup/k3s-sqlite-backup` CronJob runs daily at 01:00
+America/New_York, uses SQLite `VACUUM INTO` for an online snapshot, verifies
+`PRAGMA integrity_check`, and writes a SHA256 plus JSON metadata to
+`<nas-ip>:/volume1/k8s-nfs/k3s-backups`. It keeps 30 days of backups.
+
+The CronJob runs in a privileged namespace because it mounts the k3s state
+directory from `boulder`; a default-deny NetworkPolicy, ResourceQuota, and
+LimitRange constrain it. This is Kubernetes state only. Application data on
+PVCs and NFS is handled by Kopia and the app-specific dumps.
+
+Before a k3s upgrade, take a fresh backup at the start of the maintenance
+window; do not rely on the previous night's copy. See
+[`docs/runbooks/k3s-traefik-upgrade.md`](docs/runbooks/k3s-traefik-upgrade.md).
+
 ### SQLite single-writer workloads
 
 Any application that keeps SQLite on a ReadWriteOnce volume must use the

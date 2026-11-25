@@ -41,6 +41,8 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 - [x] Add a Postgres exporter and PostgreSQL Grafana dashboard.
 - [x] Add AdGuard and Authelia metrics/dashboards.
 - [ ] Add backup-staleness and certificate-expiry alerts.
+- [x] Automate k3s SQLite state backups with 30-day retention.
+- [x] Run two Traefik and CoreDNS replicas with PDBs; add PDBs for Authelia and cert-manager.
 - [ ] Investigate node-exporter historical restarts.
 - [ ] Add probes to `nfs-subdir-provisioner` and `synology-csi` or document the exception.
 
@@ -55,6 +57,7 @@ Priorities are impact-first. Check items off when verified, not just deployed.
 
 ## Recently completed
 
+- k3s SQLite state is backed up daily with integrity checks, SHA256 metadata, and 30-day retention. Traefik and CoreDNS run two replicas with PDBs; Authelia and cert-manager also have PDBs.
 - Argo CD is reachable at `https://argocd.lakotko.synology.me` with the trusted Let's Encrypt wildcard. A root DSM task syncs the Synology system certificate into `argocd/argocd-lakotko-tls` under namespace-scoped RBAC; the legacy `boulder.local:8081` entrypoint and IngressRoute were removed while the `argocd.home.arpa` self-signed fallback is retained.
 - CrowdSec LAPI and Grafana moved to PostgreSQL; the legacy Grafana SQLite PVC is retained for rollback.
 - Forgejo deployed with Postgres, NFS, native login, and GitHub push-mirror support; Actions runner online and smoke workflow passed.
