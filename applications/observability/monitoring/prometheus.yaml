@@ -679,6 +679,33 @@ spec:
             static_configs:
               - targets: ["adguard-exporter.monitoring.svc.cluster.local:9311"]
 
+          - job_name: alertmanager
+            static_configs:
+              - targets: ["prometheus-alertmanager.monitoring.svc.cluster.local:9093"]
+
+          - job_name: sealed-secrets
+            static_configs:
+              - targets: ["sealed-secrets-metrics.kube-system.svc.cluster.local:8081"]
+
+          - job_name: kyverno
+            static_configs:
+              - targets: ["kyverno-svc-metrics.kyverno.svc.cluster.local:8000"]
+                labels:
+                  controller: admission
+              - targets: ["kyverno-background-controller-metrics.kyverno.svc.cluster.local:8000"]
+                labels:
+                  controller: background
+              - targets: ["kyverno-cleanup-controller-metrics.kyverno.svc.cluster.local:8000"]
+                labels:
+                  controller: cleanup
+              - targets: ["kyverno-reports-controller-metrics.kyverno.svc.cluster.local:8000"]
+                labels:
+                  controller: reports
+
+          - job_name: loki-canary
+            static_configs:
+              - targets: ["loki-canary.monitoring.svc.cluster.local:3500"]
+
           - job_name: crowdsec-lapi
             static_configs:
               - targets: ["crowdsec-service.crowdsec.svc.cluster.local:6060"]
