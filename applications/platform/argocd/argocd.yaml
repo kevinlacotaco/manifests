@@ -64,6 +64,13 @@ spec:
           metrics:
             enabled: true
         notifications:
+          metrics:
+            enabled: true
+            service:
+              annotations:
+                prometheus.io/scrape: "true"
+                prometheus.io/port: "9001"
+                prometheus.io/path: "/metrics"
           resources:
             requests:
               cpu: 10m
