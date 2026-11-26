@@ -171,9 +171,29 @@ controllers:
             SELECT 'MQTT broker', 1, 1, 60, 'port', 2000, 2, 60, 'MQTT broker listener', 'mqtt.messaging.svc.cluster.local', 1883, 1
             WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'MQTT broker')
               AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Argo CD ingress', 1, 1, 60, 'http', 2000, 2, 60, 'Argo CD through Traefik ingress', 'https://argocd.lakotko.synology.me/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Argo CD ingress')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Grafana ingress', 1, 1, 60, 'http', 2000, 2, 60, 'Grafana through Traefik ingress', 'https://grafana.lakotko.synology.me/api/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Grafana ingress')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Jellyfin ingress', 1, 1, 60, 'http', 2000, 2, 60, 'Jellyfin through Traefik ingress', 'https://jellyfin.lakotko.synology.me/health', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Jellyfin ingress')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Home Assistant ingress', 1, 1, 60, 'http', 2000, 2, 60, 'Home Assistant through Traefik ingress', 'https://ha.lakotko.synology.me/', 'GET', 10, '["200-299"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Home Assistant ingress')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
+            INSERT INTO monitor (name, active, user_id, "interval", type, weight, maxretries, retry_interval, description, url, method, maxredirects, accepted_statuscodes_json, ignore_tls, upside_down, expiry_notification)
+            SELECT 'Traefik dashboard', 1, 1, 60, 'http', 2000, 2, 60, 'Traefik dashboard through Traefik ingress', 'https://traefik.lakotko.synology.me/dashboard/', 'GET', 10, '["200-299","401"]', 0, 0, 1
+            WHERE NOT EXISTS (SELECT 1 FROM monitor WHERE name = 'Traefik dashboard')
+              AND EXISTS (SELECT 1 FROM user WHERE id = 1);
             INSERT INTO monitor_notification (monitor_id, notification_id)
             SELECT m.id, n.id FROM monitor m, notification n
-            WHERE n.name = CASE WHEN m.name IN ('Argo CD','Grafana','Prometheus','Alertmanager','Loki','Uptime Kuma','AdGuard Home','AdGuard DNS','AdGuard Pi DNS','Kubernetes API','PostgreSQL','RabbitMQ AMQP','Traefik','Kuma ingress','Authelia','Kopia backups','CrowdSec LAPI','MQTT broker') THEN 'platform' ELSE 'apps' END
+            WHERE n.name = CASE WHEN m.name IN ('Argo CD','Argo CD ingress','Grafana','Grafana ingress','Prometheus','Alertmanager','Loki','Uptime Kuma','AdGuard Home','AdGuard DNS','AdGuard Pi DNS','Kubernetes API','PostgreSQL','RabbitMQ AMQP','Traefik','Traefik dashboard','Kuma ingress','Authelia','Kopia backups','CrowdSec LAPI','MQTT broker') THEN 'platform' ELSE 'apps' END
               AND NOT EXISTS (SELECT 1 FROM monitor_notification mn WHERE mn.monitor_id = m.id AND mn.notification_id = n.id);
             UPDATE monitor SET maxretries = 2, retry_interval = 60;
             COMMIT;

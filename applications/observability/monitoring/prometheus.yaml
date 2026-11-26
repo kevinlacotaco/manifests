@@ -580,6 +580,90 @@ spec:
                       summary: Application monitor {{ $labels.monitor_name }} is down
                       description: Uptime Kuma has reported {{ $labels.monitor_name }} down for 5 minutes.
 
+              - name: homelab-ha
+                rules:
+                  - alert: K3sSQLiteBackupJobFailed
+                    expr: kube_job_status_failed{namespace="k3s-backup",job_name=~"k3s-sqlite-backup-.*"} > 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: backup
+                    annotations:
+                      summary: k3s SQLite backup job failed
+                      description: A k3s SQLite backup job has failed.
+
+                  - alert: K3sSQLiteBackupStale
+                    expr: |
+                      kube_cronjob_status_last_successful_time{namespace="k3s-backup",cronjob="k3s-sqlite-backup"} > 0
+                      and (time() - kube_cronjob_status_last_successful_time{namespace="k3s-backup",cronjob="k3s-sqlite-backup"}) > 93600
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: backup
+                    annotations:
+                      summary: k3s SQLite backup is stale
+                      description: No successful k3s SQLite backup has completed in over 26 hours.
+
+                  - alert: K3sSQLiteBackupMissing
+                    expr: absent(kube_cronjob_status_last_successful_time{namespace="k3s-backup",cronjob="k3s-sqlite-backup"})
+                    for: 30m
+                    labels:
+                      severity: warning
+                      component: backup
+                    annotations:
+                      summary: k3s SQLite backup metric is missing
+                      description: The k3s SQLite backup CronJob or its success metric has been absent for 30 minutes.
+
+                  - alert: TraefikReplicasDegraded
+                    expr: kube_deployment_status_replicas_available{namespace="kube-system",deployment="traefik"} < 2
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: ingress
+                    annotations:
+                      summary: Traefik has fewer than two ready replicas
+                      description: Traefik has {{ $value }} available replicas; expected 2.
+
+                  - alert: CoreDNSReplicasDegraded
+                    expr: kube_deployment_status_replicas_available{namespace="kube-system",deployment="coredns"} < 2
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: dns
+                    annotations:
+                      summary: CoreDNS has fewer than two ready replicas
+                      description: CoreDNS has {{ $value }} available replicas; expected 2.
+
+                  - alert: CertManagerReplicasDegraded
+                    expr: kube_deployment_status_replicas_available{namespace="cert-manager",deployment=~"cert-manager|cert-manager-webhook|cert-manager-cainjector"} < 2
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: cert-manager
+                    annotations:
+                      summary: cert-manager component has fewer than two ready replicas
+                      description: "{{ $labels.deployment }} has {{ $value }} available replicas; expected 2."
+
+                  - alert: AutheliaReplicasDegraded
+                    expr: kube_deployment_status_replicas_available{namespace="auth",deployment="authelia"} < 2
+                    for: 5m
+                    labels:
+                      severity: warning
+                      component: auth
+                    annotations:
+                      summary: Authelia has fewer than two ready replicas
+                      description: Authelia has {{ $value }} available replicas; expected 2.
+
+                  - alert: PodDisruptionBudgetBlocked
+                    expr: kube_poddisruptionbudget_status_disruptions_allowed == 0 and on(namespace, poddisruptionbudget) kube_poddisruptionbudget_status_expected_pods > 0
+                    for: 15m
+                    labels:
+                      severity: warning
+                      component: availability
+                    annotations:
+                      summary: PodDisruptionBudget is blocking disruptions
+                      description: "{{ $labels.namespace }}/{{ $labels.poddisruptionbudget }} has allowed zero disruptions for 15 minutes."
+
               - name: homelab-crowdsec
                 rules:
                   - alert: CrowdSecThreatDetected
